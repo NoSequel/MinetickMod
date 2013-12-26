@@ -110,6 +110,13 @@ public abstract class Entity {
     public EnumEntitySize at;
     public boolean valid; // CraftBukkit
 
+    // Poweruser start
+    protected boolean allowedToTeleport = true;
+    public boolean allowedToTeleport() {
+        return this.allowedToTeleport;
+    }
+    // Poweruser end
+
     public int getId() {
         return this.id;
     }
@@ -252,7 +259,8 @@ public abstract class Entity {
         this.lastYaw = this.yaw;
         int i;
 
-        if (!this.world.isStatic && this.world instanceof WorldServer) {
+        //if (!this.world.isStatic && this.world instanceof WorldServer) {
+        if (!this.world.isStatic && this.world instanceof WorldServer && this.allowedToTeleport()) { // Poweruser
             this.world.methodProfiler.a("portal");
             MinecraftServer minecraftserver = ((WorldServer) this.world).getMinecraftServer();
 
