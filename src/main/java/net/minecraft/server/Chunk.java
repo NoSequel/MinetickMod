@@ -41,6 +41,18 @@ public class Chunk {
     public long s;
     private int x;
 
+    // Poweruser start
+    private boolean isCorrupt = false;
+
+    public boolean isCorrupt() {
+        return this.isCorrupt;
+    }
+
+    public void markAsCorrupt() {
+        this.isCorrupt = true;
+    }
+    // Poweruser end
+
     public Chunk(World world, int i, int j) {
         this.sections = new ChunkSection[16];
         this.v = new byte[256];
