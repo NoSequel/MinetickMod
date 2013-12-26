@@ -38,10 +38,12 @@ public class BlockRedstoneWire extends Block {
     }
 
     private void e(World world, int i, int j, int k) {
-        this.a(world, i, j, k, i, j, k);
-        ArrayList arraylist = new ArrayList(this.b);
-
-        this.b.clear();
+        ArrayList arraylist;
+        synchronized(this.b) { // Poweruser - synchronizing access to HashSet b to avoid a rare concurrent modification exception
+            this.a(world, i, j, k, i, j, k);
+            arraylist = new ArrayList(this.b);
+            this.b.clear();
+        }
 
         for (int l = 0; l < arraylist.size(); ++l) {
             ChunkPosition chunkposition = (ChunkPosition) arraylist.get(l);
