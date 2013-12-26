@@ -11,6 +11,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
@@ -101,6 +102,12 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
     public java.util.Queue<Runnable> processQueue = new java.util.concurrent.ConcurrentLinkedQueue<Runnable>();
     public int autosavePeriod;
     // CraftBukkit end
+
+    // Poweruser start
+    private LinkedList<WorldServer> autoSaveWorlds = new LinkedList<WorldServer>();
+    private int autoSaveDelay = 0;
+    private boolean autoSaveOrdered = false;
+    // Poweruser end
 
     public MinecraftServer(OptionSet options, Proxy proxy) { // CraftBukkit - signature file -> OptionSet
         i = this;
@@ -560,9 +567,16 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
         if ((this.autosavePeriod > 0) && ((this.ticks % this.autosavePeriod) == 0)) { // CraftBukkit
             this.methodProfiler.a("save");
             this.t.savePlayers();
-            this.saveChunks(true);
+            //this.saveChunks(true);
+            this.queueWorldsForAutoSave(); // Poweruser
             this.methodProfiler.b();
         }
+
+        // Poweruser start
+        if(this.autoSaveOrdered) {
+            this.autoSaveNextWorld();
+        }
+        // Poweruser end
 
         this.methodProfiler.a("tallying");
         this.f[this.ticks % 100] = System.nanoTime() - i;
@@ -1294,4 +1308,37 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
     public static PlayerList a(MinecraftServer minecraftserver) {
         return minecraftserver.t;
     }
+
+    // Poweruser end
+    private void queueWorldsForAutoSave() {
+        if (!this.L) {
+            this.autoSaveWorlds.clear();
+            for (int j = 0; j < this.worlds.size(); ++j) {
+                WorldServer worldserver = this.worlds.get(j);
+                if(worldserver != null) {
+                    this.autoSaveWorlds.addLast(worldserver);
+                }
+            }
+            this.autoSaveDelay = 0;
+            this.autoSaveOrdered = true;
+            h.info("[AutoSave] " + this.autoSaveWorlds.size() + " worlds - Starting ...");
+        }
+    }
+
+    private void autoSaveNextWorld() throws ExceptionWorldConflict {
+        if(!this.autoSaveWorlds.isEmpty()) {
+            if(this.autoSaveDelay++ > 100) { // delay of 5 seconds between each save
+                this.autoSaveDelay = 0;
+                WorldServer ws = this.autoSaveWorlds.removeFirst();
+                ws.save(true, (IProgressUpdate) null);
+                ws.saveLevel();
+                WorldSaveEvent event = new WorldSaveEvent(ws.getWorld());
+                this.server.getPluginManager().callEvent(event);
+            }
+        } else if(this.autoSaveOrdered){
+            h.info("[AutoSave] Done.");
+            this.autoSaveOrdered = false;
+        }
+    }
+    // Poweruser end
 }
