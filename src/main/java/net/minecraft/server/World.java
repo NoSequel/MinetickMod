@@ -26,6 +26,8 @@ import org.bukkit.event.weather.WeatherChangeEvent;
 import org.bukkit.event.weather.ThunderChangeEvent;
 // CraftBukkit end
 
+import org.bukkit.craftbukkit.util.LongHash; // Poweruser
+
 public abstract class World implements IBlockAccess {
 
     public boolean d;
@@ -75,6 +77,10 @@ public abstract class World implements IBlockAccess {
     private ArrayList M;
     private boolean N;
     int[] I;
+
+    // Poweruser start
+    private HashSet<Long> alreadyCheckedChunks = new HashSet<Long>();
+    // Poweruser end
 
     public BiomeBase getBiome(int i, int j) {
         if (this.isLoaded(i, 0, j)) {
@@ -1182,6 +1188,8 @@ public abstract class World implements IBlockAccess {
         this.f.clear();
         this.methodProfiler.c("regular");
 
+        this.alreadyCheckedChunks.clear(); // Poweruser - Maybe clear less frequent
+
         for (i = 0; i < this.entityList.size(); ++i) {
             entity = (Entity) this.entityList.get(i);
 
@@ -1322,9 +1330,21 @@ public abstract class World implements IBlockAccess {
     public void entityJoinedWorld(Entity entity, boolean flag) {
         int i = MathHelper.floor(entity.locX);
         int j = MathHelper.floor(entity.locZ);
-        byte b0 = 32;
+        //byte b0 = 32;
+        // Poweruser start
+        byte b0 = 4; // It should be enough to check the chunks within a range of 4 blocks, instead of always 25 chunks
+        long hash = LongHash.toLong(i, j);
+        boolean isChunkLoaded = this.alreadyCheckedChunks.contains(hash);
+        if(!isChunkLoaded) {
+            isChunkLoaded = this.b(i - b0, 0, j - b0, i + b0, 0, j + b0);
+            if(isChunkLoaded) {
+                this.alreadyCheckedChunks.add(hash);
+            }
+        }
 
-        if (!flag || this.b(i - b0, 0, j - b0, i + b0, 0, j + b0)) {
+        //if (!flag || this.b(i - b0, 0, j - b0, i + b0, 0, j + b0)) {
+        if (!flag || isChunkLoaded) {
+        // Poweruser end
             entity.T = entity.locX;
             entity.U = entity.locY;
             entity.V = entity.locZ;
