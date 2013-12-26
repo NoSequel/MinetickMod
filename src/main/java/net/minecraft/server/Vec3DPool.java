@@ -2,6 +2,9 @@ package net.minecraft.server;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Vec3DPool {
 
@@ -19,6 +22,11 @@ public class Vec3DPool {
     private int largestSize;
     private int resizeTime;
 
+    // Poweruser start
+    private ReentrantLock lockObject = new ReentrantLock();
+    private Logger logger = Logger.getLogger("Minecraft");
+    // Poweruser end
+
     public Vec3DPool(int i, int j) {
         this.a = i;
         this.b = j;
@@ -28,6 +36,7 @@ public class Vec3DPool {
         if (this.resizeTime == 0) return Vec3D.a(d0, d1, d2); // CraftBukkit - Don't pool objects indefinitely if thread doesn't adhere to contract
         Vec3D vec3d;
 
+        this.aquireLock(); // Poweruser
         if (this.freelist == null) { // CraftBukkit
             vec3d = new Vec3D(this, d0, d1, d2);
             this.total_size++; // CraftBukkit
@@ -47,11 +56,15 @@ public class Vec3DPool {
         this.alloclist = vec3d;
         // CraftBukkit end
         ++this.position;
+
+        this.lockObject.unlock(); // Poweruser
+
         return vec3d;
     }
 
     // CraftBukkit start - Offer back vector (can save LOTS of unneeded bloat) - works about 90% of the time
     public void release(Vec3D v) {
+        this.aquireLock(); // Poweruser
         if (this.alloclist == v) {
             this.alloclist = v.next; // Pop off alloc list
             // Push on to free list
@@ -60,10 +73,12 @@ public class Vec3DPool {
             this.freelist = v;
             this.position--;
         }
+        this.lockObject.unlock(); // Poweruser
     }
     // CraftBukkit end
 
     public void a() {
+        this.aquireLock(); // Poweruser
         if (this.position > this.largestSize) {
             this.largestSize = this.position;
         }
@@ -96,6 +111,7 @@ public class Vec3DPool {
 
         this.position = 0;
         // CraftBukkit end
+        this.lockObject.unlock(); // Poweruser
     }
 
     public int c() {
@@ -109,4 +125,13 @@ public class Vec3DPool {
     private boolean e() {
         return this.b < 0 || this.a < 0;
     }
+
+    // Poweruser start
+    private void aquireLock() {
+        if(!this.lockObject.tryLock()) {
+            this.logger.log(Level.WARNING, "Asynchronous access to one of the Vec3DPools! Synchronizing ...");
+            this.lockObject.lock();
+        }
+    }
+    // Poweruser end
 }
