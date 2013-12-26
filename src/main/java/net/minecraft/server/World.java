@@ -80,6 +80,7 @@ public abstract class World implements IBlockAccess {
 
     // Poweruser start
     private HashSet<Long> alreadyCheckedChunks = new HashSet<Long>();
+    public ChunkProviderServer chunkProviderServer; // moved here from class WorldServer
     // Poweruser end
 
     public BiomeBase getBiome(int i, int j) {
@@ -109,7 +110,10 @@ public abstract class World implements IBlockAccess {
     public boolean pvpMode;
     public boolean keepSpawnInMemory = true;
     public ChunkGenerator generator;
-    Chunk lastChunkAccessed;
+    //Chunk lastChunkAccessed;
+    // Poweruser start - setting a valid initial value to get rid of the check for null in getChunkAt
+    private Chunk lastChunkAccessed = new EmptyChunk(this, Integer.MIN_VALUE, Integer.MIN_VALUE);
+    // Poweruser end
     int lastXAccessed = Integer.MIN_VALUE;
     int lastZAccessed = Integer.MIN_VALUE;
     final Object chunkLock = new Object();
@@ -268,8 +272,29 @@ public abstract class World implements IBlockAccess {
     }
 
     public Chunk getChunkAt(int i, int j) {
+        // Poweruser start
+        Chunk result = null;
+        Chunk last = this.lastChunkAccessed;
+        if(last.a(i,j)) {
+            result = last;
+        } else {
+            // Synchronizing shouldnt be necessary for getting loaded chunks
+            if(this.chunkProviderServer.isChunkLoaded(i, j)) {
+                result = this.chunkProviderServer.getChunkAt(i, j);
+                this.lastChunkAccessed = result;
+            } else {
+                synchronized (this.chunkLock) {
+                    result = this.chunkProvider.getOrCreateChunk(i, j);
+                    this.lastChunkAccessed = result;
+                }
+            }
+        }
+        return result;
+        // Poweruser end
+        /*
         // CraftBukkit start
         Chunk result = null;
+
         synchronized (this.chunkLock) {
             if (this.lastChunkAccessed == null || this.lastXAccessed != i || this.lastZAccessed != j) {
                 this.lastChunkAccessed = this.chunkProvider.getOrCreateChunk(i, j);
@@ -280,6 +305,7 @@ public abstract class World implements IBlockAccess {
         }
         return result;
         // CraftBukkit end
+        */
     }
 
     public boolean setTypeAndData(int i, int j, int k, Block block, int l, int i1) {

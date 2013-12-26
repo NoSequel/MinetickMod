@@ -31,7 +31,7 @@ public class WorldServer extends World implements org.bukkit.BlockChangeDelegate
     private final PlayerChunkMap manager;
     private Set M;
     private TreeSet N;
-    public ChunkProviderServer chunkProviderServer;
+    //public ChunkProviderServer chunkProviderServer; // Poweruser - moved to class World
     public boolean savingDisabled;
     private boolean O;
     private int emptyTime;
