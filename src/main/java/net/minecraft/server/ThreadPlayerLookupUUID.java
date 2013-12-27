@@ -22,10 +22,20 @@ class ThreadPlayerLookupUUID extends Thread {
 
     public void run() {
         try {
-            String s = (new BigInteger(MinecraftEncryption.a(LoginListener.a(this.a), LoginListener.b(this.a).I().getPublic(), LoginListener.c(this.a)))).toString(16);
+            // Poweruser start
+            boolean isOnlineMode = LoginListener.b(this.a).getOnlineMode();
+            boolean allowedToEnter = !isOnlineMode;
+            if(isOnlineMode) {
+            // Poweruser end
+                String s = (new BigInteger(MinecraftEncryption.a(LoginListener.a(this.a), LoginListener.b(this.a).I().getPublic(), LoginListener.c(this.a)))).toString(16);
 
-            LoginListener.a(this.a, LoginListener.b(this.a).as().hasJoinedServer(new GameProfile((String) null, LoginListener.d(this.a).getName()), s));
-            if (LoginListener.d(this.a) != null) {
+                LoginListener.a(this.a, LoginListener.b(this.a).as().hasJoinedServer(new GameProfile((String) null, LoginListener.d(this.a).getName()), s));
+            // Poweruser start
+                allowedToEnter = (LoginListener.d(this.a) != null);
+            }
+            //if (LoginListener.d(this.a) != null) {
+            if(allowedToEnter) {
+            // Poweruser end
                 // CraftBukkit start
                 if (!this.a.networkManager.d()) {
                     return;
@@ -37,7 +47,6 @@ class ThreadPlayerLookupUUID extends Thread {
 
                 AsyncPlayerPreLoginEvent asyncEvent = new AsyncPlayerPreLoginEvent(playerName, address);
                 server.getPluginManager().callEvent(asyncEvent);
-
                 if (PlayerPreLoginEvent.getHandlerList().getRegisteredListeners().length != 0) {
                     final PlayerPreLoginEvent event = new PlayerPreLoginEvent(playerName, address);
                     if (asyncEvent.getResult() != PlayerPreLoginEvent.Result.ALLOWED) {
@@ -63,7 +72,9 @@ class ThreadPlayerLookupUUID extends Thread {
                 }
                 // CraftBukkit end
 
+                if(isOnlineMode) { // Poweruser
                 LoginListener.e().info("UUID of player " + LoginListener.d(this.a).getName() + " is " + LoginListener.d(this.a).getId());
+                }
                 LoginListener.a(this.a, EnumProtocolState.READY_TO_ACCEPT);
             } else {
                 this.a.disconnect("Failed to verify username!");
