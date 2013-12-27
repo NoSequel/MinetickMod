@@ -74,13 +74,27 @@ public abstract class World implements IBlockAccess {
     public long ticksPerMonsterSpawns;
     public boolean populating;
     // CraftBukkit end
-    private ArrayList M;
+    //private ArrayList M; // Poweruser - replaced by two ThreadLocal lists
     private boolean N;
     int[] I;
 
     // Poweruser start
     private HashSet<Long> alreadyCheckedChunks = new HashSet<Long>();
     public ChunkProviderServer chunkProviderServer; // moved here from class WorldServer
+
+    private static ThreadLocal<List> getCubesList = new ThreadLocal<List>() {
+        @Override
+        public List initialValue() {
+            return new ArrayList();
+        }
+    };
+
+    private static ThreadLocal<List> getBoundingBoxList = new ThreadLocal<List>() {
+        @Override
+        public List initialValue() {
+            return new ArrayList();
+        }
+    };
     // Poweruser end
 
     public BiomeBase getBiome(int i, int j) {
@@ -137,7 +151,7 @@ public abstract class World implements IBlockAccess {
         this.L = this.random.nextInt(12000);
         this.allowMonsters = true;
         this.allowAnimals = true;
-        this.M = new ArrayList();
+        //this.M = new ArrayList(); // Poweruser - replaced by two ThreadLocal lists
         this.I = new int['\u8000'];
         this.dataManager = idatamanager;
         this.methodProfiler = methodprofiler;
@@ -1015,7 +1029,11 @@ public abstract class World implements IBlockAccess {
     }
 
     public List getCubes(Entity entity, AxisAlignedBB axisalignedbb) {
-        this.M.clear();
+        //this.M.clear();
+        // Poweruser start
+        List threadlocalList = getCubesList.get();
+        threadlocalList.clear();
+        // Poweruser end
         int i = MathHelper.floor(axisalignedbb.a);
         int j = MathHelper.floor(axisalignedbb.d + 1.0D);
         int k = MathHelper.floor(axisalignedbb.b);
@@ -1035,7 +1053,8 @@ public abstract class World implements IBlockAccess {
                             block = Blocks.STONE;
                         }
 
-                        block.a(this, k1, i2, l1, axisalignedbb, this.M, entity);
+                        //block.a(this, k1, i2, l1, axisalignedbb, this.M, entity);
+                        block.a(this, k1, i2, l1, axisalignedbb, threadlocalList, entity); // Poweruser
                     }
                 }
             }
@@ -1048,20 +1067,27 @@ public abstract class World implements IBlockAccess {
             AxisAlignedBB axisalignedbb1 = ((Entity) list.get(j2)).J();
 
             if (axisalignedbb1 != null && axisalignedbb1.b(axisalignedbb)) {
-                this.M.add(axisalignedbb1);
+                //this.M.add(axisalignedbb1);
+                threadlocalList.add(axisalignedbb1); // Poweruser
             }
 
             axisalignedbb1 = entity.g((Entity) list.get(j2));
             if (axisalignedbb1 != null && axisalignedbb1.b(axisalignedbb)) {
-                this.M.add(axisalignedbb1);
+                //this.M.add(axisalignedbb1);
+                threadlocalList.add(axisalignedbb1); // Poweruser
             }
         }
 
-        return this.M;
+        //return this.M;
+        return threadlocalList; // Poweruser
     }
 
     public List a(AxisAlignedBB axisalignedbb) {
-        this.M.clear();
+        //this.M.clear();
+        // Poweruser start
+        List threadLocalList = getBoundingBoxList.get();
+        threadLocalList.clear();
+        // Poweruser end
         int i = MathHelper.floor(axisalignedbb.a);
         int j = MathHelper.floor(axisalignedbb.d + 1.0D);
         int k = MathHelper.floor(axisalignedbb.b);
@@ -1081,13 +1107,15 @@ public abstract class World implements IBlockAccess {
                             block = Blocks.BEDROCK;
                         }
 
-                        block.a(this, k1, i2, l1, axisalignedbb, this.M, (Entity) null);
+                        //block.a(this, k1, i2, l1, axisalignedbb, this.M, (Entity) null);
+                        block.a(this, k1, i2, l1, axisalignedbb, threadLocalList, (Entity) null); // Poweruser
                     }
                 }
             }
         }
 
-        return this.M;
+        //return this.M;
+        return threadLocalList; // Poweruser
     }
 
     public int a(float f) {
