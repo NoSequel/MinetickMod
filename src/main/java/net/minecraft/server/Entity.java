@@ -127,6 +127,11 @@ public abstract class Entity {
     public boolean isPlayer() {
         return this.isPlayer;
     }
+
+    private int targetDimension;
+    public int getTargetDimension() {
+        return this.targetDimension;
+    }
     // Poweruser end
 
     public int getId() {
@@ -154,6 +159,7 @@ public abstract class Entity {
         this.setPosition(0.0D, 0.0D, 0.0D);
         if (world != null) {
             this.dimension = world.worldProvider.dimension;
+            this.targetDimension = this.dimension; // Poweruser
         }
 
         this.datawatcher = new DataWatcher(this);
@@ -1764,6 +1770,15 @@ public abstract class Entity {
     }
 
     public void b(int i) {
+        // Poweruser start - Entities will be queued and teleported after all worlds have been ticked
+        if(i != this.dimension) {
+            this.targetDimension = i;
+            this.world.queueEntityForDimensionChange(this);
+        }
+    }
+
+    public void changeDimension(int i) {
+        // Poweruser end
         if (!this.world.isStatic && !this.dead) {
             this.world.methodProfiler.a("changeDimension");
             MinecraftServer minecraftserver = MinecraftServer.getServer();
@@ -1791,7 +1806,12 @@ public abstract class Entity {
                 return;
             }
             exit = event.useTravelAgent() ? event.getPortalTravelAgent().findOrCreate(event.getTo()) : event.getTo();
-            this.teleportTo(exit, true);
+            //this.teleportTo(exit, true);
+            // Poweruser start - If there's no exit location, where is this entity supposed to be teleported to?
+            if(exit != null) {
+                this.teleportTo(exit, true);
+            }
+            // Poweruser end
         }
     }
 

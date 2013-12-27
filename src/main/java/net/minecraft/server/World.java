@@ -3,8 +3,10 @@ package net.minecraft.server;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Random;
@@ -87,6 +89,7 @@ public abstract class World implements IBlockAccess {
     protected boolean cancelHeavyCalculations = false;
     private int nextTickEntityIndex = 0;
     private long lastTickAvg = 0L;
+    private List<Entity> dimensionChangeQueue = Collections.synchronizedList(new LinkedList<Entity>());
 
     private static ThreadLocal<List> getCubesList = new ThreadLocal<List>() {
         @Override
@@ -108,6 +111,18 @@ public abstract class World implements IBlockAccess {
 
     public long getLastTickAvg() {
         return this.lastTickAvg;
+    }
+
+    public void queueEntityForDimensionChange(Entity entity) {
+        this.dimensionChangeQueue.add(entity);
+    }
+
+    public void processDimensionChangeQueue() {
+        Iterator<Entity> iter = this.dimensionChangeQueue.iterator();
+        while(iter.hasNext()) {
+            Entity entity = iter.next();
+            entity.changeDimension(entity.getTargetDimension());
+        }
     }
     // Poweruser end
 
