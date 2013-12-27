@@ -50,6 +50,9 @@ public class WorldServer extends World implements org.bukkit.BlockChangeDelegate
 
     // Poweruser start
     private PriorityQueue<NextTickListEntry> N;
+    public void cancelHeavyCalculations(boolean cancel) {
+        this.cancelHeavyCalculations = cancel;
+    }
     // Poweruser end
 
     // Add env and gen to constructor

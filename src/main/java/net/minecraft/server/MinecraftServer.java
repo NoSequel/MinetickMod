@@ -42,6 +42,8 @@ import org.bukkit.event.server.RemoteServerCommandEvent;
 import org.bukkit.event.world.WorldSaveEvent;
 // CraftBukkit end
 
+import de.minetick.MinetickMod;
+
 public abstract class MinecraftServer implements ICommandListener, Runnable, IMojangStatistics {
 
     private static final Logger h = LogManager.getLogger();
@@ -104,9 +106,16 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
     // CraftBukkit end
 
     // Poweruser start
+    protected MinetickMod minetickMod = new MinetickMod();
     private LinkedList<WorldServer> autoSaveWorlds = new LinkedList<WorldServer>();
     private int autoSaveDelay = 0;
     private boolean autoSaveOrdered = false;
+
+    public void cancelHeavyCalculationsForAllWorlds(boolean cancel) {
+        for(WorldServer ws: this.worlds) {
+            ws.cancelHeavyCalculations(cancel);
+        }
+    }
     // Poweruser end
 
     public MinecraftServer(OptionSet options, Proxy proxy) { // CraftBukkit - signature file -> OptionSet
@@ -492,6 +501,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
             this.a(crashreport);
         } finally {
             try {
+                this.minetickMod.shutdown(); // Poweruser
                 this.stop();
                 this.isStopped = true;
             } catch (Throwable throwable1) {
@@ -540,6 +550,10 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
     protected void t() throws ExceptionWorldConflict { // CraftBukkit - added throws
         long i = System.nanoTime();
 
+        // Poweruser start
+        this.minetickMod.startTickTimerTask();
+        // Poweruser end
+
         AxisAlignedBB.a().a();
         ++this.ticks;
         if (this.Q) {
@@ -576,10 +590,12 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
         if(this.autoSaveOrdered) {
             this.autoSaveNextWorld();
         }
+        long tickTime = System.nanoTime() - i;
+        this.minetickMod.checkTickTime(tickTime);
         // Poweruser end
 
-        this.methodProfiler.a("tallying");
-        this.f[this.ticks % 100] = System.nanoTime() - i;
+        //this.f[this.ticks & 100] = System.nanoTime() - i;
+        this.f[this.ticks % 100] = tickTime; // Poweruser - just measured the time, a few lines up
         this.methodProfiler.b();
         this.methodProfiler.a("snooper");
         if (!this.k.d() && this.ticks > 100) {
@@ -622,6 +638,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
 
             // if (i == 0 || this.getAllowNether()) {
                 WorldServer worldserver = this.worlds.get(i);
+                worldserver.cancelHeavyCalculations(false);
 
                 this.methodProfiler.a(worldserver.getWorldData().getName());
                 this.methodProfiler.a("pools");
@@ -664,6 +681,8 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
 
             // this.g[i][this.ticks % 100] = System.nanoTime() - j; // CraftBukkit
         }
+
+        this.minetickMod.cancelTimerTask(false); // Poweruser
 
         this.methodProfiler.c("connection");
         this.ag().c();
