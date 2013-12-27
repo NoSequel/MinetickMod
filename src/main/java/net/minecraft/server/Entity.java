@@ -122,6 +122,11 @@ public abstract class Entity {
     public boolean isImportantEntity() {
         return this.isImportantEntity;
     }
+
+    protected boolean isPlayer = false;
+    public boolean isPlayer() {
+        return this.isPlayer;
+    }
     // Poweruser end
 
     public int getId() {

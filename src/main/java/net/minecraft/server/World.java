@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.PriorityQueue;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -27,6 +28,8 @@ import org.bukkit.event.weather.ThunderChangeEvent;
 // CraftBukkit end
 
 import org.bukkit.craftbukkit.util.LongHash; // Poweruser
+
+import de.minetick.LockObject;
 
 public abstract class World implements IBlockAccess {
 
@@ -83,6 +86,7 @@ public abstract class World implements IBlockAccess {
     public ChunkProviderServer chunkProviderServer; // moved here from class WorldServer
     protected boolean cancelHeavyCalculations = false;
     private int nextTickEntityIndex = 0;
+    private long lastTickAvg = 0L;
 
     private static ThreadLocal<List> getCubesList = new ThreadLocal<List>() {
         @Override
@@ -97,6 +101,14 @@ public abstract class World implements IBlockAccess {
             return new ArrayList();
         }
     };
+
+    public void setLastTickAvg(long avg) {
+        this.lastTickAvg = avg;
+    }
+
+    public long getLastTickAvg() {
+        return this.lastTickAvg;
+    }
     // Poweruser end
 
     public BiomeBase getBiome(int i, int j) {
@@ -1303,7 +1315,13 @@ public abstract class World implements IBlockAccess {
                         playerIsPassenger = entity.passenger.isImportantEntity();
                     }
                     if(entity.isImportantEntity() || playerIsPassenger || !this.cancelHeavyCalculations) {
-                        this.playerJoinedWorld(entity);
+                        if(entity.isPlayer() || playerIsPassenger) {
+                            synchronized(LockObject.playerTickLock) {
+                                this.playerJoinedWorld(entity);
+                            }
+                        } else {
+                            this.playerJoinedWorld(entity);
+                        }
                     }
                     // Poweruser end
                 } catch (Throwable throwable1) {

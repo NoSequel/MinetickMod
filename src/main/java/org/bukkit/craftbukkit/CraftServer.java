@@ -1452,4 +1452,18 @@ public final class CraftServer implements Server {
 
         return new CraftIconCache("data:image/png;base64," + bytebuf1.toString(Charsets.UTF_8));
     }
+
+    // Poweruser start
+    public boolean getMinetickModProfilerWriteEnabled() {
+        return configuration.getBoolean("minetickmod.profiler-write-log");
+    }
+
+    public int getMinetickModProfilerWriteInterval() {
+        return configuration.getInt("minetickmod.profiler-write-interval");
+    }
+
+    public int getMinetickModProfilerLogInterval() {
+        return configuration.getInt("minetickmod.profiler-log-interval");
+    }
+    // Poweruser end
 }

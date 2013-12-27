@@ -125,6 +125,8 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
 
         this.a((PlayerList) (new DedicatedPlayerList(this))); // CraftBukkit
 
+        this.minetickMod.init(); // Poweruser
+
         if (!this.getOnlineMode()) {
             h.warn("**** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!");
             h.warn("The server will make no attempt to authenticate usernames. Beware.");

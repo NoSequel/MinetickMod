@@ -98,6 +98,8 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
         // this.canPickUpLoot = true; TODO
         this.maxHealthCache = this.getMaxHealth();
         // CraftBukkit end
+
+        this.isPlayer = true; // Poweruser
     }
 
     public void a(NBTTagCompound nbttagcompound) {

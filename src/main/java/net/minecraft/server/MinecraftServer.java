@@ -13,6 +13,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.PriorityQueue;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.Callable;
@@ -43,6 +44,7 @@ import org.bukkit.event.world.WorldSaveEvent;
 // CraftBukkit end
 
 import de.minetick.MinetickMod;
+import de.minetick.profiler.ProfilingComperator;
 
 public abstract class MinecraftServer implements ICommandListener, Runnable, IMojangStatistics {
 
@@ -107,6 +109,8 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
 
     // Poweruser start
     protected MinetickMod minetickMod = new MinetickMod();
+    private WorldServer sortedWorldsArray[] = null;
+    private PriorityQueue<WorldServer> priQueue = new PriorityQueue<WorldServer>(20, new ProfilingComperator());
     private LinkedList<WorldServer> autoSaveWorlds = new LinkedList<WorldServer>();
     private int autoSaveDelay = 0;
     private boolean autoSaveOrdered = false;
@@ -464,13 +468,23 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
                     j += l;
                     i = k;
                     if (this.worlds.get(0).everyoneDeeplySleeping()) { // CraftBukkit
+                        // Poweruser start
+                        this.minetickMod.getProfiler().start("GameLogicLoop");
                         this.t();
+                        this.minetickMod.getProfiler().stop("GameLogicLoop");
+                        this.minetickMod.getProfiler().newTick();
+                        // Poweruser end
                         j = 0L;
                     } else {
                         while (j > 50L) {
                             MinecraftServer.currentTick = (int) (System.currentTimeMillis() / 50); // CraftBukkit
                             j -= 50L;
+                            // Poweruser start
+                            this.minetickMod.getProfiler().start("GameLogicLoop");
                             this.t();
+                            this.minetickMod.getProfiler().stop("GameLogicLoop");
+                            this.minetickMod.getProfiler().newTick();
+                            // Poweruser end
                         }
                     }
 
@@ -632,18 +646,18 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
         }
 
         int i;
-
+        /*
         for (i = 0; i < this.worlds.size(); ++i) {
             long j = System.nanoTime();
 
             // if (i == 0 || this.getAllowNether()) {
                 WorldServer worldserver = this.worlds.get(i);
-                worldserver.cancelHeavyCalculations(false);
 
                 this.methodProfiler.a(worldserver.getWorldData().getName());
                 this.methodProfiler.a("pools");
                 worldserver.getVec3DPool().a();
                 this.methodProfiler.b();
+        */
                 /* Drop global time updates
                 if (this.ticks % 20 == 0) {
                     this.methodProfiler.a("timeSync");
@@ -651,7 +665,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
                     this.methodProfiler.b();
                 }
                 // CraftBukkit end */
-
+        /*
                 this.methodProfiler.a("tick");
 
                 CrashReport crashreport;
@@ -681,8 +695,38 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
 
             // this.g[i][this.ticks % 100] = System.nanoTime() - j; // CraftBukkit
         }
+         */
+        // Poweruser start
+        int worldCount = this.worlds.size();
+        if(this.sortedWorldsArray == null || this.minetickMod.getProfiler().checkAvgs() ||
+                this.sortedWorldsArray.length != worldCount) {
+            this.priQueue.clear();
+            this.priQueue.addAll(this.worlds);
+            if(this.sortedWorldsArray == null || this.sortedWorldsArray.length < worldCount) {
+                this.sortedWorldsArray = new WorldServer[worldCount];
+            }
+            for(i = 0; !this.priQueue.isEmpty(); i++) {
+                this.sortedWorldsArray[i] = this.priQueue.poll();
+            }
+        }
 
-        this.minetickMod.cancelTimerTask(false); // Poweruser
+        this.minetickMod.getThreadPool().prepareTick(worldCount);
+        for(i = 0; i < worldCount; i++) {
+            WorldServer worldserver = this.sortedWorldsArray[i];
+            worldserver.cancelHeavyCalculations(false);
+            worldserver.getVec3DPool().a();
+            try {
+                worldserver.doTick();
+            } catch (Throwable throwable) {
+                CrashReport crashreport = CrashReport.a(throwable, "Exception ticking world");
+                worldserver.a(crashreport);
+                throw new ReportedException(crashreport);
+            }
+            this.minetickMod.getThreadPool().tickWorld(worldserver);
+        }
+        this.minetickMod.getThreadPool().waitUntilDone();
+        this.minetickMod.cancelTimerTask(false);
+        // Poweruser end
 
         this.methodProfiler.c("connection");
         this.ag().c();

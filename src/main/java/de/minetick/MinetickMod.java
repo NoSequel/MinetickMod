@@ -6,6 +6,10 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import org.bukkit.craftbukkit.CraftServer;
+
+import de.minetick.profiler.Profiler;
+
 import net.minecraft.server.Entity;
 import net.minecraft.server.EntityArrow;
 import net.minecraft.server.EntityEnderCrystal;
@@ -23,12 +27,34 @@ public class MinetickMod {
     private ScheduledExecutorService timerService = Executors.newScheduledThreadPool(2);
     private ScheduledFuture<Object> tickTimerTask;
     private static MinetickMod instance;
+    private Profiler profiler;
+    private ThreadPool threadPool;
+    private boolean initDone = false;
 
     public MinetickMod() {
         this.tickTimerObject = new TickTimer();
         instance = this;
     }
     
+    public void init() {
+        if(!this.initDone) {
+            this.initDone = true;
+            CraftServer craftserver = MinecraftServer.getServer().server;
+            this.profiler = new Profiler(craftserver.getMinetickModProfilerLogInterval(),
+                    craftserver.getMinetickModProfilerWriteEnabled(),
+                    craftserver.getMinetickModProfilerWriteInterval());
+            this.threadPool = new ThreadPool(this.profiler);
+        }
+    }
+
+    public Profiler getProfiler() {
+        return this.profiler;
+    }
+
+    public ThreadPool getThreadPool() {
+        return this.threadPool;
+    }
+
     public static boolean isImportantEntity(Entity entity) {
         return (entity instanceof EntityArrow || entity instanceof EntityPlayer || 
                 entity instanceof EntityProjectile || entity instanceof EntityFireball ||
