@@ -11,6 +11,10 @@ public class WorldChunkManager {
     private BiomeCache e;
     private List f;
 
+    // Poweruser start
+    private IntCache intCache = new IntCache();
+    // Poweruser end
+
     protected WorldChunkManager() {
         this.e = new BiomeCache(this);
         this.f = new ArrayList();
@@ -25,7 +29,7 @@ public class WorldChunkManager {
 
     public WorldChunkManager(long i, WorldType worldtype) {
         this();
-        GenLayer[] agenlayer = GenLayer.a(i, worldtype);
+        GenLayer[] agenlayer = GenLayer.a(i, worldtype, this.intCache);
 
         this.c = agenlayer[0];
         this.d = agenlayer[1];
@@ -44,7 +48,7 @@ public class WorldChunkManager {
     }
 
     public float[] getWetness(float[] afloat, int i, int j, int k, int l) {
-        IntCache.a();
+        this.intCache.a(); // Poweruser
         if (afloat == null || afloat.length < k * l) {
             afloat = new float[k * l];
         }
@@ -78,7 +82,7 @@ public class WorldChunkManager {
     }
 
     public BiomeBase[] getBiomes(BiomeBase[] abiomebase, int i, int j, int k, int l) {
-        IntCache.a();
+        this.intCache.a(); // Poweruser
         if (abiomebase == null || abiomebase.length < k * l) {
             abiomebase = new BiomeBase[k * l];
         }
@@ -109,7 +113,7 @@ public class WorldChunkManager {
     }
 
     public BiomeBase[] a(BiomeBase[] abiomebase, int i, int j, int k, int l, boolean flag) {
-        IntCache.a();
+        this.intCache.a(); // Poweruser
         if (abiomebase == null || abiomebase.length < k * l) {
             abiomebase = new BiomeBase[k * l];
         }
@@ -131,7 +135,7 @@ public class WorldChunkManager {
     }
 
     public boolean a(int i, int j, int k, List list) {
-        IntCache.a();
+        this.intCache.a(); // Poweruser
         int l = i - k >> 2;
         int i1 = j - k >> 2;
         int j1 = i + k >> 2;
@@ -164,7 +168,7 @@ public class WorldChunkManager {
     }
 
     public ChunkPosition a(int i, int j, int k, List list, Random random) {
-        IntCache.a();
+        this.intCache.a(); // Poweruser
         int l = i - k >> 2;
         int i1 = j - k >> 2;
         int j1 = i + k >> 2;
