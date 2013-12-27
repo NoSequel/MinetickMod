@@ -281,7 +281,8 @@ public class ChunkProviderGenerate implements IChunkProvider {
     }
 
     public void getChunkAt(IChunkProvider ichunkprovider, int i, int j) {
-        BlockFalling.instaFall = true;
+        //BlockFalling.instaFall = true;
+        BlockFalling.enableInstantFall(this.n); // Poweruser
         int k = i * 16;
         int l = j * 16;
         BiomeBase biomebase = this.n.getBiome(k + 16, l + 16);
@@ -346,7 +347,8 @@ public class ChunkProviderGenerate implements IChunkProvider {
             }
         }
 
-        BlockFalling.instaFall = false;
+        //BlockFalling.instaFall = false;
+        BlockFalling.disableInstantFall(this.n); // Poweruser
     }
 
     public boolean saveChunks(boolean flag, IProgressUpdate iprogressupdate) {
