@@ -53,6 +53,28 @@ public class WorldServer extends World implements org.bukkit.BlockChangeDelegate
     public void cancelHeavyCalculations(boolean cancel) {
         this.cancelHeavyCalculations = cancel;
     }
+
+    public boolean chunkExists(int x, int z) {
+        return this.chunkProviderServer.doesChunkExist(x, z);
+    }
+
+    boolean allowChunkGeneration = false;
+    public boolean isChunkGenerationAllowed() {
+        if(this.worldData.getType().equals(WorldType.FLAT)) {
+            return true;
+        } else {
+            this.allowChunkGeneration = !this.allowChunkGeneration;
+        }
+        return this.allowChunkGeneration;
+    }
+
+    public int loadAndGenerateChunks() {
+        if(this.players.size() > 0) {
+            return this.manager.updatePlayers(this.isChunkGenerationAllowed());
+        } else {
+            return 0;
+        }
+    }
     // Poweruser end
 
     // Add env and gen to constructor

@@ -3,7 +3,11 @@ package net.minecraft.server;
 import java.util.ArrayList;
 import java.util.List;
 
-class PlayerChunk {
+import de.minetick.PlayerChunkManager;
+import de.minetick.PlayerChunkManager.ChunkPosEnum;
+
+//class PlayerChunk {
+public class PlayerChunk { // Poweruser
 
     private final List b;
     private final ChunkCoordIntPair location;
@@ -14,18 +18,33 @@ class PlayerChunk {
     final PlayerChunkMap playerChunkMap;
     private boolean loaded = false; // CraftBukkit
 
+    //Poweruser start
+    public boolean newChunk = false;
+    public boolean isNewChunk() {
+        boolean out = this.newChunk;
+        this.newChunk = false;
+        return out;
+    }
+    // Poweruser end
+
     public PlayerChunk(PlayerChunkMap playerchunkmap, int i, int j) {
         this.playerChunkMap = playerchunkmap;
         this.b = new ArrayList();
         this.dirtyBlocks = new short[64];
         this.location = new ChunkCoordIntPair(i, j);
         // CraftBukkit start
-        playerchunkmap.a().chunkProviderServer.getChunkAt(i, j, new Runnable() {
+        Chunk c = playerchunkmap.a().chunkProviderServer.getChunkAt(i, j, new Runnable() {
             public void run() {
                 PlayerChunk.this.loaded = true;
             }
         });
         // CraftBukkit end
+        // Poweruser start
+        if(c != null && !(c instanceof EmptyChunk)) {
+            this.newChunk = c.newChunk;
+            c.newChunk = false;
+        }
+        // Poweruser end
     }
 
     public void a(final EntityPlayer entityplayer) { // CraftBukkit - added final to argument
@@ -37,6 +56,7 @@ class PlayerChunk {
             }
 
             this.b.add(entityplayer);
+            /*
             // CraftBukkit start
             if (this.loaded) {
                 entityplayer.chunkCoordIntPairQueue.add(this.location);
@@ -48,19 +68,35 @@ class PlayerChunk {
                 });
             }
             // CraftBukkit end
+            */
+            // Poweruser start - if the chunks, close around the player, are to not yet loaded, do it now
+            if(!this.loaded) {
+                int x = (int) entityplayer.locX >> 4;
+                int z = (int) entityplayer.locZ >> 4;
+                ChunkPosEnum pos = PlayerChunkManager.isWithinRadius(this.location.x, this.location.z, x, z, 1);
+                if(pos.equals(ChunkPosEnum.INSIDE)) {
+                    this.playerChunkMap.a().chunkProviderServer.getChunkAt(this.location.x, this.location.z);
+                }
+            }
+            // Poweruser end
         }
     }
 
     public void b(EntityPlayer entityplayer) {
         if (this.b.contains(entityplayer)) {
+            this.b.remove(entityplayer); // Poweruser - moved up here
             Chunk chunk = PlayerChunkMap.a(this.playerChunkMap).getChunkAt(this.location.x, this.location.z);
 
             if (chunk.k()) {
                 entityplayer.playerConnection.sendPacket(new PacketPlayOutMapChunk(chunk, true, 0));
             }
 
-            this.b.remove(entityplayer);
-            entityplayer.chunkCoordIntPairQueue.remove(this.location);
+            //this.b.remove(entityplayer);
+            /* Poweruser - chunkCoordIntPairQueue is not used anymore.
+             * MinetickMod got its own queue
+             */
+            //entityplayer.chunkCoordIntPairQueue.remove(this.location);
+
             if (this.b.isEmpty()) {
                 long i = (long) this.location.x + 2147483647L | (long) this.location.z + 2147483647L << 32;
 
@@ -175,7 +211,8 @@ class PlayerChunk {
         }
     }
 
-    static ChunkCoordIntPair a(PlayerChunk playerchunk) {
+    //static ChunkCoordIntPair a(PlayerChunk playerchunk) {
+    public static ChunkCoordIntPair a(PlayerChunk playerchunk) { // Poweruser
         return playerchunk.location;
     }
 

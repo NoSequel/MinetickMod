@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import net.minecraft.util.com.google.common.collect.Sets;
 import net.minecraft.util.com.mojang.authlib.GameProfile;
@@ -26,6 +27,8 @@ import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 // CraftBukkit end
+
+import de.minetick.PlayerChunkSendQueue;
 
 public class EntityPlayer extends EntityHuman implements ICrafting {
 
@@ -63,6 +66,17 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
     public boolean keepLevel = false;
     public double maxHealthCache;
     // CraftBukkit end
+
+    // Poweruser start
+    public PlayerChunkSendQueue chunkQueue;
+
+    public void setPlayerChunkSendQueue(PlayerChunkSendQueue pcsq) {
+        if(this.chunkQueue != null) {
+            this.chunkQueue.clear();
+        }
+        this.chunkQueue = pcsq;
+    }
+    // Poweruser end
 
     public EntityPlayer(MinecraftServer minecraftserver, WorldServer worldserver, GameProfile gameprofile, PlayerInteractManager playerinteractmanager) {
         super(worldserver, gameprofile);
@@ -188,7 +202,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
 
             this.playerConnection.sendPacket(new PacketPlayOutEntityDestroy(aint));
         }
-
+        /* Poweruser - moved to de.minetick.PlayerChunkManager
         if (!this.chunkCoordIntPairQueue.isEmpty()) {
             ArrayList arraylist = new ArrayList();
             Iterator iterator1 = this.chunkCoordIntPairQueue.iterator();
@@ -231,7 +245,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
                 }
             }
         }
-
+        */
         if (this.bY > 0L && this.server.aq() > 0 && MinecraftServer.ap() - this.bY > (long) (this.server.aq() * 1000 * 60)) {
             this.playerConnection.disconnect("You have been idle for too long!");
         }
@@ -489,7 +503,8 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
         }
     }
 
-    private void b(TileEntity tileentity) {
+    //private void b(TileEntity tileentity) {
+    public void b(TileEntity tileentity) { // Poweruser
         if (tileentity != null) {
             Packet packet = tileentity.getUpdatePacket();
 

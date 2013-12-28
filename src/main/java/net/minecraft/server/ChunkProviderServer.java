@@ -162,6 +162,7 @@ public class ChunkProviderServer implements IChunkProvider {
                 }
                 newChunk = true; // CraftBukkit
                 // Poweruser start
+                chunk.newChunk = true;
                 if(chunk != null && isMarkedCorrupt) {
                     chunk.markAsCorrupt();
                 }

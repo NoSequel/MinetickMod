@@ -51,6 +51,13 @@ public class Chunk {
     public void markAsCorrupt() {
         this.isCorrupt = true;
     }
+
+    public boolean newChunk = false;
+    public boolean isNew() {
+        boolean out = newChunk;
+        this.newChunk = false;
+        return out;
+    }
     // Poweruser end
 
     public Chunk(World world, int i, int j) {
