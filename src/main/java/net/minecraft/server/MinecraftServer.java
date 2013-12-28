@@ -566,6 +566,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
 
         // Poweruser start
         this.minetickMod.startTickTimerTask();
+        this.minetickMod.increaseTickCounter();
         // Poweruser end
 
         AxisAlignedBB.a().a();

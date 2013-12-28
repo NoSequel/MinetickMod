@@ -1,5 +1,8 @@
 package de.minetick;
 
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -8,6 +11,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.bukkit.craftbukkit.CraftServer;
 
+import de.minetick.modcommands.TPSCommand;
 import de.minetick.profiler.Profiler;
 
 import net.minecraft.server.Entity;
@@ -30,9 +34,15 @@ public class MinetickMod {
     private Profiler profiler;
     private ThreadPool threadPool;
     private boolean initDone = false;
+    private TickCounter tickCounterObject;
+    private List<Integer> ticksPerSecond;
+    private int ticksCounter = 0;
 
     public MinetickMod() {
         this.tickTimerObject = new TickTimer();
+        this.tickCounterObject = new TickCounter();
+        this.ticksPerSecond = Collections.synchronizedList(new LinkedList<Integer>());
+        this.timerService.scheduleAtFixedRate(this.tickCounterObject, 1, 1, TimeUnit.SECONDS);
         instance = this;
     }
     
@@ -40,6 +50,7 @@ public class MinetickMod {
         if(!this.initDone) {
             this.initDone = true;
             CraftServer craftserver = MinecraftServer.getServer().server;
+            craftserver.getCommandMap().register("tps", "MinetickMod", new TPSCommand("tps"));
             this.profiler = new Profiler(craftserver.getMinetickModProfilerLogInterval(),
                     craftserver.getMinetickModProfilerWriteEnabled(),
                     craftserver.getMinetickModProfilerWriteInterval());
@@ -89,5 +100,24 @@ public class MinetickMod {
             MinecraftServer.getServer().cancelHeavyCalculationsForAllWorlds(true);
             return null;
         }
+    }
+
+    private class TickCounter implements Runnable {
+        @Override
+        public void run() {
+            ticksPerSecond.add(ticksCounter);
+            ticksCounter = 0;
+            if(ticksPerSecond.size() > 30) {
+                ticksPerSecond.remove(0);
+            }
+        }
+    }
+
+    public void increaseTickCounter() {
+        this.ticksCounter++;
+    }
+
+    public static Integer[] getTicksPerSecond() {
+        return instance.ticksPerSecond.toArray(new Integer[0]);
     }
 }
