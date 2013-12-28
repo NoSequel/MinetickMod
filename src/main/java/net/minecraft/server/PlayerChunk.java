@@ -5,6 +5,7 @@ import java.util.List;
 
 import de.minetick.PlayerChunkManager;
 import de.minetick.PlayerChunkManager.ChunkPosEnum;
+import de.minetick.PlayerChunkSendQueue;
 
 //class PlayerChunk {
 public class PlayerChunk { // Poweruser
@@ -143,10 +144,19 @@ public class PlayerChunk { // Poweruser
     public void sendAll(Packet packet) {
         for (int i = 0; i < this.b.size(); ++i) {
             EntityPlayer entityplayer = (EntityPlayer) this.b.get(i);
-
+            /*
             if (!entityplayer.chunkCoordIntPairQueue.contains(this.location)) {
                 entityplayer.playerConnection.sendPacket(packet);
             }
+            */
+            // Poweruser
+            PlayerChunkSendQueue sq = entityplayer.chunkQueue;
+            if(sq != null) {
+                if(!sq.isAboutToSend(this.location)) {
+                    entityplayer.playerConnection.sendPacket(packet);
+                }
+            }
+            // Poweruser
         }
     }
 
