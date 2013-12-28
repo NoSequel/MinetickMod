@@ -11,7 +11,8 @@ final class CrashReportGenLayer1 implements Callable {
     }
 
     public String a() {
-        return String.valueOf(BiomeBase.getBiome(this.a));
+        //return String.valueOf(BiomeBase.getBiome(this.a));
+        return String.valueOf(this.a); // Poweruser
     }
 
     public Object call() {

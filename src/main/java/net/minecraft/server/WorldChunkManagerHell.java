@@ -9,8 +9,10 @@ public class WorldChunkManagerHell extends WorldChunkManager {
     private BiomeBase c;
     private float d;
 
-    public WorldChunkManagerHell(BiomeBase biomebase, float f) {
-        this.c = biomebase;
+    //public WorldChunkManagerHell(BiomeBase biomebase, float f) {
+    public WorldChunkManagerHell(int biomeid, float f) { // Poweruser
+        //this.c = biomebase;
+        this.c = this.getBiomeBaseObject().getBiome(biomeid); // Poweruser
         this.d = f;
     }
 

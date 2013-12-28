@@ -932,7 +932,11 @@ public class Chunk {
             this.v[j << 4 | i] = (byte) (k & 255);
         }
 
-        return BiomeBase.getBiome(k) == null ? BiomeBase.PLAINS : BiomeBase.getBiome(k);
+        //return BiomeBase.getBiome(k) == null ? BiomeBase.PLAINS : BiomeBase.getBiome(k);
+        // Poweruser start
+        BiomeBaseObject biomeBaseObj = worldchunkmanager.getBiomeBaseObject();
+        return biomeBaseObj.getBiome(k) == null ? biomeBaseObj.PLAINS : biomeBaseObj.getBiome(k);
+        // Poweruser end
     }
 
     public byte[] m() {

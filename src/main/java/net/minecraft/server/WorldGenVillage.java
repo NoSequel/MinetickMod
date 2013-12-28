@@ -9,7 +9,9 @@ import java.util.Map.Entry;
 
 public class WorldGenVillage extends StructureGenerator {
 
-    public static final List e = Arrays.asList(new BiomeBase[] { BiomeBase.PLAINS, BiomeBase.DESERT, BiomeBase.SAVANNA});
+    private static final BiomeBaseObject biomeBaseObj = new BiomeBaseObject(); // Poweruser
+    //public static final List e = Arrays.asList(new BiomeBase[] { BiomeBase.PLAINS, BiomeBase.DESERT, BiomeBase.SAVANNA});
+    public static final List e = Arrays.asList(new BiomeBase[] { biomeBaseObj.PLAINS, biomeBaseObj.DESERT, biomeBaseObj.SAVANNA}); // Poweruser
     private int f;
     private int g;
     private int h;

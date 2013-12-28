@@ -23,7 +23,8 @@ public class WorldGenVillageStartPiece extends WorldGenVillageWell {
         this.c = l;
         BiomeBase biomebase = worldchunkmanager.getBiome(j, k);
 
-        this.b = biomebase == BiomeBase.DESERT || biomebase == BiomeBase.DESERT_HILLS;
+        //this.b = biomebase == BiomeBase.DESERT || biomebase == BiomeBase.DESERT_HILLS;
+        this.b = biomebase.equals(worldchunkmanager.getBiomeBaseObject().DESERT) || biomebase.equals(worldchunkmanager.getBiomeBaseObject().DESERT_HILLS); // Poweruser
     }
 
     public WorldChunkManager e() {
