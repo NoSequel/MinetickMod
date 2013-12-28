@@ -570,7 +570,7 @@ public class WorldServer extends World implements org.bukkit.BlockChangeDelegate
             // Poweruser start
             for (int j = 0; j < i && !this.N.isEmpty(); ++j) {
                 nextticklistentry = (NextTickListEntry) this.N.peek();
-                if (!flag && nextticklistentry.e > this.worldData.getTime()) {
+                if (!flag && nextticklistentry.d > this.worldData.getTime()) {
                     break;
                 }
                 this.N.poll();
