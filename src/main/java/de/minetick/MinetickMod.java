@@ -75,6 +75,7 @@ public class MinetickMod {
     
     public void shutdown() {
         this.timerService.shutdown();
+        this.threadPool.shutdown();
     }
 
     public void checkTickTime(long tickTime) {         
