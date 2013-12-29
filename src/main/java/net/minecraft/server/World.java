@@ -2195,14 +2195,21 @@ public abstract class World implements IBlockAccess {
         }
     }
 
+    // Poweruser start
     public boolean t(int i, int j, int k) {
+        return this.t(i, j, k, false);
+    }
+    // Poweruser end
+
+    //public boolean t(int i, int j, int k) {
+    public boolean t(int i, int j, int k, boolean chunksAlreadyChecked) { // Poweruser
         boolean flag = false;
 
         if (!this.worldProvider.g) {
-            flag |= this.c(EnumSkyBlock.SKY, i, j, k);
+            flag |= this.c(EnumSkyBlock.SKY, i, j, k, chunksAlreadyChecked);
         }
 
-        flag |= this.c(EnumSkyBlock.BLOCK, i, j, k);
+        flag |= this.c(EnumSkyBlock.BLOCK, i, j, k, chunksAlreadyChecked);
         return flag;
     }
 
@@ -2247,8 +2254,17 @@ public abstract class World implements IBlockAccess {
         }
     }
 
+    // Poweruser start
     public boolean c(EnumSkyBlock enumskyblock, int i, int j, int k) {
-        if (!this.areChunksLoaded(i, j, k, 17)) {
+        return this.c(enumskyblock, i, j, k, false);
+    }
+
+    //public boolean c(EnumSkyBlock enumskyblock, int i, int j, int k) {
+    public boolean c(EnumSkyBlock enumskyblock, int i, int j, int k, boolean chunksAlreadyChecked) {
+        boolean chunksAreloaded = chunksAlreadyChecked || this.areChunksLoaded(i, j, k, 17);
+        //if (!this.areChunksLoaded(i, j, k, 17)) {
+        if(!chunksAreloaded) {
+    // Poweruser end
             return false;
         } else {
             int l = 0;
