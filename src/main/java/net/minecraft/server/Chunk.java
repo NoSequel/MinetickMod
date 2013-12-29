@@ -1010,7 +1010,8 @@ public class Chunk {
         this.done = true;
         this.lit = true;
         if (!this.world.worldProvider.g) {
-            if (this.world.b(this.locX * 16 - 1, 0, this.locZ * 16 - 1, this.locX * 16 + 1, 63, this.locZ * 16 + 1)) {
+            //if (this.world.b(this.locX * 16 - 1, 0, this.locZ * 16 - 1, this.locX * 16 + 1, 63, this.locZ * 16 + 1)) {
+            if (this.world.b(this.locX * 16 - 1, 0, this.locZ * 16 - 1, this.locX * 16 + 16, 63, this.locZ * 16 + 16)) { // Poweruser
                 for (int i = 0; i < 16; ++i) {
                     for (int j = 0; j < 16; ++j) {
                         if (!this.f(i, j)) {
