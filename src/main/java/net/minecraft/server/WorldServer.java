@@ -52,6 +52,7 @@ public class WorldServer extends World implements org.bukkit.BlockChangeDelegate
     private PriorityQueue<NextTickListEntry> N;
     public void cancelHeavyCalculations(boolean cancel) {
         this.cancelHeavyCalculations = cancel;
+        this.manager.skipChunkGeneration(cancel);
     }
 
     public boolean chunkExists(int x, int z) {

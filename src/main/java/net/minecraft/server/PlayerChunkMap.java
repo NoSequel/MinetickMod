@@ -29,6 +29,10 @@ public class PlayerChunkMap {
     // Poweruser start
     private PlayerChunkManager playerChunkManager;
 
+    public void skipChunkGeneration(boolean skip) {
+        this.playerChunkManager.skipChunkGeneration(skip);
+    }
+
     public int updatePlayers(boolean allowGeneration) {
         return this.playerChunkManager.updatePlayers(allowGeneration);
     }

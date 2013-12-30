@@ -57,3 +57,6 @@ minetickmod:
     profiler-log-interval: 30
     profiler-write-log: true
     profiler-write-interval: 10
+    packetCompressionLevel: 7
+    packetBuilderThreadPoolSize: -1
+    packetsPerTick: 1

@@ -69,6 +69,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
 
     // Poweruser start
     public PlayerChunkSendQueue chunkQueue;
+    public ConcurrentLinkedQueue<Chunk> chunksForTracking = new ConcurrentLinkedQueue<Chunk>();
 
     public void setPlayerChunkSendQueue(PlayerChunkSendQueue pcsq) {
         if(this.chunkQueue != null) {
@@ -202,6 +203,14 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
 
             this.playerConnection.sendPacket(new PacketPlayOutEntityDestroy(aint));
         }
+
+        // Poweruser start
+        while(!this.chunksForTracking.isEmpty()) {
+            Chunk c = this.chunksForTracking.poll();
+            this.r().getTracker().a(this, c);
+        }
+        // Poweruser end
+
         /* Poweruser - moved to de.minetick.PlayerChunkManager
         if (!this.chunkCoordIntPairQueue.isEmpty()) {
             ArrayList arraylist = new ArrayList();

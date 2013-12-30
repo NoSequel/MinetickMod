@@ -9,6 +9,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
 
+import de.minetick.packetbuilder.PacketBuilderThreadPool;
+import de.minetick.packetbuilder.jobs.PBJobPlayOutMapChunkBulk;
+
 import net.minecraft.server.Chunk;
 import net.minecraft.server.ChunkCoordIntPair;
 import net.minecraft.server.PacketPlayOutMapChunkBulk;
@@ -125,7 +128,7 @@ public class PlayerChunkManager {
 
             // Low priority chunks
             queue = buff.getLowPriorityQueue();
-            while(queue.size() > 0 && buff.loadedChunks < 40 && buff.skippedChunks < 1) {
+            while(queue.size() > 0 && buff.loadedChunks < 40) {
                 ChunkCoordIntPair ccip = queue.poll();
                 if(buff.getPlayerChunkSendQueue().isOnServer(ccip) && !buff.getPlayerChunkSendQueue().alreadyLoaded(ccip)) {
                     if(allowGeneration && !this.skipChunkGeneration && allGenerated <= (this.world.getWorldData().getType().equals(WorldType.FLAT) ? 1 : 0)) {
@@ -167,7 +170,8 @@ public class PlayerChunkManager {
             ArrayList<Chunk> arraylist = new ArrayList<Chunk>();
             ArrayList arraylist1 = new ArrayList();
             int skipped = 0;
-            while(chunkQueue.hasChunksQueued() && arraylist.size() < PacketPlayOutMapChunkBulk.c() && skipped < 10) {
+            int previouslySkipped = chunkQueue.requeuePreviouslySkipped();
+            while(chunkQueue.hasChunksQueued() && arraylist.size() < PacketPlayOutMapChunkBulk.c() && skipped < previouslySkipped + 10) {
                 ChunkCoordIntPair chunkcoordintpair = chunkQueue.peekFirst(); // Poweruser
                 if (chunkcoordintpair != null) {
                     if(this.world.isLoaded(chunkcoordintpair.x << 4, 0, chunkcoordintpair.z << 4)) {
@@ -180,33 +184,22 @@ public class PlayerChunkManager {
                         }
                         // CraftBukkit end
                         else {
-                            chunkQueue.skipFirst();
+                            ChunkPosEnum pos = this.isWithinRadius(chunkcoordintpair.x, chunkcoordintpair.z, playerChunkPosX, playerChunkPosZ, 2);
+                            chunkQueue.skipFirst(pos.equals(ChunkPosEnum.INSIDE));
                             skipped++;
                         }
                     } else {
-                        chunkQueue.skipFirst(); // Poweruser
+                        ChunkPosEnum pos = this.isWithinRadius(chunkcoordintpair.x, chunkcoordintpair.z, playerChunkPosX, playerChunkPosZ, 2);
+                        chunkQueue.skipFirst(pos.equals(ChunkPosEnum.INSIDE));
                         skipped++;
-                        //break;
                     }
+                } else {
+                    chunkQueue.removeFirst();
                 }
             }
             if (!arraylist.isEmpty()) {
-                entityplayer.playerConnection.sendPacket(new PacketPlayOutMapChunkBulk(arraylist));
-                Iterator iterator2 = arraylist1.iterator();
-
-                while (iterator2.hasNext()) {
-                    TileEntity tileentity = (TileEntity) iterator2.next();
-
-                    entityplayer.b(tileentity);
-                }
-
-                iterator2 = arraylist.iterator();
-
-                while (iterator2.hasNext()) {
-                    Chunk chunk = (Chunk) iterator2.next();
-
-                    entityplayer.r().getTracker().a(entityplayer, chunk);
-                }
+                //entityplayer.playerConnection.sendPacket(new PacketPlayOutMapChunkBulk(arraylist));
+                PacketBuilderThreadPool.addJobStatic(new PBJobPlayOutMapChunkBulk(entityplayer.playerConnection, arraylist, chunkQueue)); // Poweruser
             }
             }
             // Poweruser end

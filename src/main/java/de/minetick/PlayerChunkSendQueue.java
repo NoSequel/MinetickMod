@@ -18,6 +18,7 @@ public class PlayerChunkSendQueue {
     private LinkedHashSet<Long> serverData; // what it should be
     private LinkedHashSet<ChunkCoordIntPair> clientData; // sent Data
     private LinkedList<ChunkCoordIntPair> queue; // waiting to be sent
+    private LinkedList<ChunkCoordIntPair> skippedChunks;
     private Object lock = new Object();
     private PlayerChunkManager pcm;
     private EntityPlayer player;
@@ -27,6 +28,7 @@ public class PlayerChunkSendQueue {
         this.serverData = new LinkedHashSet<Long>();
         this.clientData = new LinkedHashSet<ChunkCoordIntPair>();
         this.queue = new LinkedList<ChunkCoordIntPair>();
+        this.skippedChunks = new LinkedList<ChunkCoordIntPair>();
         this.player = entityplayer;
     }
     
@@ -142,15 +144,34 @@ public class PlayerChunkSendQueue {
         }
     }
     
-    public void skipFirst() {
+    public void skipFirst(boolean importantChunk) {
         synchronized(this.lock) {
             ChunkCoordIntPair ccip = this.queue.removeFirst();
             this.player.chunkCoordIntPairQueue.remove(ccip);
             if(this.isOnServer(ccip) && !this.isChunkSent(ccip)) {
-                this.queue.addLast(ccip);
-                this.player.chunkCoordIntPairQueue.add(ccip);
+                if(importantChunk) {
+                    this.skippedChunks.addLast(ccip);
+                } else {
+                    this.queue.addLast(ccip);
+                    this.player.chunkCoordIntPairQueue.add(ccip);
+                }
             }
         }
+    }
+
+    public int requeuePreviouslySkipped() {
+        int count = 0;
+        synchronized(this.lock) {
+            while(this.skippedChunks.size() > 0) {
+                ChunkCoordIntPair ccip = this.skippedChunks.removeLast();
+                if(this.isOnServer(ccip) && !this.alreadyLoaded(ccip)) {
+                    count++;
+                    this.queue.addFirst(ccip);
+                    this.player.chunkCoordIntPairQueue.add(ccip);
+                }
+            }
+        }
+        return count;
     }
     
     public void clear() {

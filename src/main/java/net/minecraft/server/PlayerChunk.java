@@ -6,6 +6,8 @@ import java.util.List;
 import de.minetick.PlayerChunkManager;
 import de.minetick.PlayerChunkManager.ChunkPosEnum;
 import de.minetick.PlayerChunkSendQueue;
+import de.minetick.packetbuilder.PacketBuilderThreadPool;
+import de.minetick.packetbuilder.jobs.PBJobPlayOutMapChunk;
 
 //class PlayerChunk {
 public class PlayerChunk { // Poweruser
@@ -70,16 +72,6 @@ public class PlayerChunk { // Poweruser
             }
             // CraftBukkit end
             */
-            // Poweruser start - if the chunks, close around the player, are to not yet loaded, do it now
-            if(!this.loaded) {
-                int x = (int) entityplayer.locX >> 4;
-                int z = (int) entityplayer.locZ >> 4;
-                ChunkPosEnum pos = PlayerChunkManager.isWithinRadius(this.location.x, this.location.z, x, z, 1);
-                if(pos.equals(ChunkPosEnum.INSIDE)) {
-                    this.playerChunkMap.a().chunkProviderServer.getChunkAt(this.location.x, this.location.z);
-                }
-            }
-            // Poweruser end
         }
     }
 
@@ -89,7 +81,8 @@ public class PlayerChunk { // Poweruser
             Chunk chunk = PlayerChunkMap.a(this.playerChunkMap).getChunkAt(this.location.x, this.location.z);
 
             if (chunk.k()) {
-                entityplayer.playerConnection.sendPacket(new PacketPlayOutMapChunk(chunk, true, 0));
+                //entityplayer.playerConnection.sendPacket(new PacketPlayOutMapChunk(chunk, true, 0));
+                PacketBuilderThreadPool.addJobStatic(new PBJobPlayOutMapChunk(entityplayer.playerConnection, entityplayer.chunkQueue, chunk, true, 0)); // Poweruser
             }
 
             //this.b.remove(entityplayer);
@@ -180,8 +173,23 @@ public class PlayerChunk { // Poweruser
                 if (this.dirtyCount == 64) {
                     i = this.location.x * 16;
                     j = this.location.z * 16;
-                    this.sendAll(new PacketPlayOutMapChunk(PlayerChunkMap.a(this.playerChunkMap).getChunkAt(this.location.x, this.location.z), (this.f == 0xFFFF), this.f)); // CraftBukkit - send everything (including biome) if all sections flagged
-
+                    //this.sendAll(new PacketPlayOutMapChunk(PlayerChunkMap.a(this.playerChunkMap).getChunkAt(this.location.x, this.location.z), (this.f == 0xFFFF), this.f)); // CraftBukkit - send everything (including biome) if all sections flagged
+                    // Poweruser start
+                    PlayerConnection[] players = new PlayerConnection[this.b.size()];
+                    PlayerChunkSendQueue[] queues = new PlayerChunkSendQueue[this.b.size()];
+                    for(int index = 0; index < this.b.size(); index++) {
+                        EntityPlayer entityplayer = (EntityPlayer) this.b.get(index);
+                        PlayerChunkSendQueue sq = entityplayer.chunkQueue;
+                        if(sq != null) {
+                            if(!sq.isAboutToSend(this.location)) {
+                                players[index] = entityplayer.playerConnection;
+                                queues[index] = entityplayer.chunkQueue;
+                            }
+                        }
+                    }
+                    PacketBuilderThreadPool.addJobStatic(new PBJobPlayOutMapChunk(players, queues, PlayerChunkMap.a(this.playerChunkMap).getChunkAt(this.location.x, this.location.z), (this.f == 0xFFFF), this.f, true));
+                    // Poweruser end
+                    /*
                     for (k = 0; k < 16; ++k) {
                         if ((this.f & 1 << k) != 0) {
                             l = k << 4;
@@ -192,6 +200,7 @@ public class PlayerChunk { // Poweruser
                             }
                         }
                     }
+                    */
                 } else {
                     this.sendAll(new PacketPlayOutMultiBlockChange(this.dirtyCount, this.dirtyBlocks, PlayerChunkMap.a(this.playerChunkMap).getChunkAt(this.location.x, this.location.z)));
 

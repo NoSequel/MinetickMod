@@ -11,7 +11,10 @@ import java.util.concurrent.TimeUnit;
 
 import org.bukkit.craftbukkit.CraftServer;
 
+import de.minetick.modcommands.PacketCompressionCommand;
+import de.minetick.modcommands.PacketsPerTickCommand;
 import de.minetick.modcommands.TPSCommand;
+import de.minetick.packetbuilder.PacketBuilderThreadPool;
 import de.minetick.profiler.Profiler;
 
 import net.minecraft.server.Entity;
@@ -19,10 +22,13 @@ import net.minecraft.server.EntityArrow;
 import net.minecraft.server.EntityEnderCrystal;
 import net.minecraft.server.EntityEnderDragon;
 import net.minecraft.server.EntityFireball;
+import net.minecraft.server.EntityHuman;
 import net.minecraft.server.EntityPlayer;
 import net.minecraft.server.EntityProjectile;
 import net.minecraft.server.EntityWither;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.PacketPlayOutMapChunk;
+import net.minecraft.server.PacketPlayOutMapChunkBulk;
 
 public class MinetickMod {
 
@@ -37,8 +43,13 @@ public class MinetickMod {
     private TickCounter tickCounterObject;
     private List<Integer> ticksPerSecond;
     private int ticksCounter = 0;
+    public static final int defaultPacketCompression = 7;
+    private PacketBuilderThreadPool packetBuilderPool;
+    private int availableProcessors;
+    private int packetbuilderPoolSize;
 
     public MinetickMod() {
+        this.availableProcessors = Runtime.getRuntime().availableProcessors();
         this.tickTimerObject = new TickTimer();
         this.tickCounterObject = new TickCounter();
         this.ticksPerSecond = Collections.synchronizedList(new LinkedList<Integer>());
@@ -51,15 +62,39 @@ public class MinetickMod {
             this.initDone = true;
             CraftServer craftserver = MinecraftServer.getServer().server;
             craftserver.getCommandMap().register("tps", "MinetickMod", new TPSCommand("tps"));
+            craftserver.getCommandMap().register("packetspertick", "MinetickMod", new PacketsPerTickCommand("packetspertick"));
+            craftserver.getCommandMap().register("packetcompression", "MinetickMod", new PacketCompressionCommand("packetcompression"));
             this.profiler = new Profiler(craftserver.getMinetickModProfilerLogInterval(),
                     craftserver.getMinetickModProfilerWriteEnabled(),
                     craftserver.getMinetickModProfilerWriteInterval());
             this.threadPool = new ThreadPool(this.profiler);
+
+            int pbps = craftserver.getMinetickModPacketBuilderPoolSize();
+            if(pbps <= 0 || pbps > 64) {
+                pbps = this.availableProcessors;
+            }
+            this.packetbuilderPoolSize = pbps;
+            this.packetBuilderPool = new PacketBuilderThreadPool(this.packetbuilderPoolSize);
+            int level = craftserver.getMinetickModCompressionLevel();
+            if(level < 1 || level > 9) {
+                level = defaultPacketCompression;
+            }
+            PacketPlayOutMapChunk.targetCompressionLevel = level;
+            PacketPlayOutMapChunkBulk.targetCompressionLevel = level;
+            int packets = craftserver.getMinetickModPacketsPerTick();
+            if(packets < 1 || packets > 20) {
+                packets = 1;
+            }
+            PlayerChunkManager.packetsPerTick = packets;
         }
     }
 
     public Profiler getProfiler() {
         return this.profiler;
+    }
+
+    public static Profiler getProfilerStatic() {
+        return instance.getProfiler();
     }
 
     public ThreadPool getThreadPool() {
@@ -76,6 +111,7 @@ public class MinetickMod {
     public void shutdown() {
         this.timerService.shutdown();
         this.threadPool.shutdown();
+        PacketBuilderThreadPool.shutdownStatic();
     }
 
     public void checkTickTime(long tickTime) {         
