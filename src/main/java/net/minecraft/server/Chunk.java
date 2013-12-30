@@ -285,7 +285,8 @@ public class Chunk {
     private void c(int i, int j, int k, int l) {
         if (l > k && this.world.areChunksLoaded(i, 0, j, 16)) {
             for (int i1 = k; i1 < l; ++i1) {
-                this.world.c(EnumSkyBlock.SKY, i, i1, j);
+                //this.world.c(EnumSkyBlock.SKY, i, i1, j);
+                this.world.c(EnumSkyBlock.SKY, i, i1, j, true); // Poweruser
             }
 
             this.n = true;
