@@ -2077,7 +2077,9 @@ public abstract class World implements IBlockAccess {
                     }
                     // CraftBukkit end
 
-                    this.chunkTickList.add(org.bukkit.craftbukkit.util.LongHash.toLong(l + j, i1 + k)); // CraftBukkit
+                    if(chunkProviderServer.isChunkLoaded(l + j, i1 + k)) { // Poweruser
+                        this.chunkTickList.add(org.bukkit.craftbukkit.util.LongHash.toLong(l + j, i1 + k)); // CraftBukkit
+                    }
                 }
             }
         }
