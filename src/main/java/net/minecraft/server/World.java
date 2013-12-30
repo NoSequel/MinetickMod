@@ -482,7 +482,14 @@ public abstract class World implements IBlockAccess {
         this.applyPhysics(i, j, k, block);
     }
 
+    // Poweruser start
     public void b(int i, int j, int k, int l) {
+        this.b(i, j, k, l, false);
+    }
+    // Poweruser end
+
+    //public void b(int i, int j, int k, int l) {
+    public void b(int i, int j, int k, int l, boolean chunksAlreadyChecked) { // Poweruser
         int i1;
 
         if (k > l) {
@@ -493,7 +500,8 @@ public abstract class World implements IBlockAccess {
 
         if (!this.worldProvider.g) {
             for (i1 = k; i1 <= l; ++i1) {
-                this.c(EnumSkyBlock.SKY, i, i1, j);
+                //this.c(EnumSkyBlock.SKY, i, i1, j);
+                this.c(EnumSkyBlock.SKY, i, i1, j, chunksAlreadyChecked); // Poweruser
             }
         }
 
