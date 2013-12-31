@@ -58,6 +58,13 @@ public class Chunk {
         this.newChunk = false;
         return out;
     }
+
+    public Block getTypeIdWithinSection(int section, int x, int y, int z) {
+        if(this.sections[section] == null) {
+            return Blocks.AIR;
+        }
+        return this.sections[section].getTypeId(x, y, z);
+    }
     // Poweruser end
 
     public Chunk(World world, int i, int j) {

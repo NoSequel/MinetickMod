@@ -11,9 +11,12 @@ import java.util.concurrent.TimeUnit;
 
 import org.bukkit.craftbukkit.CraftServer;
 
+import de.minetick.antixray.AntiXRay;
+import de.minetick.modcommands.AntiXRayCommand;
 import de.minetick.modcommands.PacketCompressionCommand;
 import de.minetick.modcommands.PacketsPerTickCommand;
 import de.minetick.modcommands.TPSCommand;
+import de.minetick.modcommands.ThreadPoolsCommand;
 import de.minetick.packetbuilder.PacketBuilderThreadPool;
 import de.minetick.profiler.Profiler;
 
@@ -29,6 +32,7 @@ import net.minecraft.server.EntityWither;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PacketPlayOutMapChunk;
 import net.minecraft.server.PacketPlayOutMapChunkBulk;
+import net.minecraft.server.WorldServer;
 
 public class MinetickMod {
 
@@ -47,6 +51,7 @@ public class MinetickMod {
     private PacketBuilderThreadPool packetBuilderPool;
     private int availableProcessors;
     private int packetbuilderPoolSize;
+    private int antixrayPoolSize;
 
     public MinetickMod() {
         this.availableProcessors = Runtime.getRuntime().availableProcessors();
@@ -64,11 +69,19 @@ public class MinetickMod {
             craftserver.getCommandMap().register("tps", "MinetickMod", new TPSCommand("tps"));
             craftserver.getCommandMap().register("packetspertick", "MinetickMod", new PacketsPerTickCommand("packetspertick"));
             craftserver.getCommandMap().register("packetcompression", "MinetickMod", new PacketCompressionCommand("packetcompression"));
+            craftserver.getCommandMap().register("antixray", "MinetickMod", new AntiXRayCommand("antixray"));
+            craftserver.getCommandMap().register("threadpools", "MinetickMod", new ThreadPoolsCommand("threadpools"));
             this.profiler = new Profiler(craftserver.getMinetickModProfilerLogInterval(),
                     craftserver.getMinetickModProfilerWriteEnabled(),
                     craftserver.getMinetickModProfilerWriteInterval());
             this.threadPool = new ThreadPool(this.profiler);
-
+            AntiXRay.setWorldsFromConfig(craftserver.getMinetickModOrebfuscatedWorlds());
+            int axrps = craftserver.getMinetickModAntiXRayPoolSize();
+            if(axrps <= 0 || axrps > 64) {
+                axrps = this.availableProcessors;
+            }
+            this.antixrayPoolSize = axrps;
+            AntiXRay.adjustThreadPoolSize(this.antixrayPoolSize);
             int pbps = craftserver.getMinetickModPacketBuilderPoolSize();
             if(pbps <= 0 || pbps > 64) {
                 pbps = this.availableProcessors;
@@ -112,6 +125,7 @@ public class MinetickMod {
         this.timerService.shutdown();
         this.threadPool.shutdown();
         PacketBuilderThreadPool.shutdownStatic();
+        AntiXRay.shutdown();
     }
 
     public void checkTickTime(long tickTime) {         

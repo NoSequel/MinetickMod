@@ -255,6 +255,7 @@ public class PacketPlayOutMapChunk extends Packet {
         // Poweruser start
         chunkmap.dataSize = j;
         chunkmap.a = pbb.requestBuildBufferAndCopy(j, j, abyte);
+        chunk.world.antiXRay.orebfuscate(chunkmap.a, chunkmap.dataSize, chunk, chunkmap.b);
         pbb.offerBuildBuffer(abyte);
         abyte = null;
         // Poweruser end

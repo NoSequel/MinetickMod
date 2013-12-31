@@ -32,6 +32,7 @@ import org.bukkit.event.weather.ThunderChangeEvent;
 import org.bukkit.craftbukkit.util.LongHash; // Poweruser
 
 import de.minetick.LockObject;
+import de.minetick.antixray.AntiXRay;
 
 public abstract class World implements IBlockAccess {
 
@@ -90,6 +91,7 @@ public abstract class World implements IBlockAccess {
     private int nextTickEntityIndex = 0;
     private long lastTickAvg = 0L;
     private List<Entity> dimensionChangeQueue = Collections.synchronizedList(new LinkedList<Entity>());
+    public AntiXRay antiXRay = null;
 
     private static ThreadLocal<List> getCubesList = new ThreadLocal<List>() {
         @Override

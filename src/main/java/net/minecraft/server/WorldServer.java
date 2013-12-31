@@ -24,6 +24,8 @@ import org.bukkit.event.weather.LightningStrikeEvent;
 import org.bukkit.event.weather.ThunderChangeEvent;
 import org.bukkit.event.weather.WeatherChangeEvent;
 
+import de.minetick.antixray.AntiXRay;
+
 public class WorldServer extends World implements org.bukkit.BlockChangeDelegate {
     // CraftBukkit end
 
@@ -100,6 +102,7 @@ public class WorldServer extends World implements org.bukkit.BlockChangeDelegate
             //this.N = new TreeSet();
             this.N = new PriorityQueue<NextTickListEntry>(1500); // Poweruser
         }
+        this.antiXRay = new AntiXRay(this); // Poweruser
 
         this.Q = new org.bukkit.craftbukkit.CraftTravelAgent(this); // CraftBukkit
         this.scoreboard = new ScoreboardServer(minecraftserver);
