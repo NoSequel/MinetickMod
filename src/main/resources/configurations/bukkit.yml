@@ -55,8 +55,9 @@ database:
     url: jdbc:sqlite:{DIR}{NAME}.db
 minetickmod:
     profiler-log-interval: 30
-    profiler-write-log: true
+    profiler-write-log: false
     profiler-write-interval: 10
     packetCompressionLevel: 7
+    antixrayThreadPoolSize: -1
     packetBuilderThreadPoolSize: -1
     packetsPerTick: 1
