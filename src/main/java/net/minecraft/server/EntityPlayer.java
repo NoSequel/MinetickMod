@@ -597,7 +597,9 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
     public void startCrafting(int i, int j, int k) {
         // CraftBukkit start - Inventory open hook
         Container container = CraftEventFactory.callInventoryOpenEvent(this, new ContainerWorkbench(this.inventory, this.world, i, j, k));
-        if(container == null) return;
+        if (container == null) {
+            return;
+        }
         // CraftBukkit end
 
         this.nextContainerCounter();
@@ -610,7 +612,9 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
     public void startEnchanting(int i, int j, int k, String s) {
         // CraftBukkit start - Inventory open hook
         Container container = CraftEventFactory.callInventoryOpenEvent(this, new ContainerEnchantTable(this.inventory, this.world, i, j, k));
-        if(container == null) return;
+        if (container == null) {
+            return;
+        }
         // CraftBukkit end
 
         this.nextContainerCounter();
@@ -623,7 +627,9 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
     public void openAnvil(int i, int j, int k) {
         // CraftBukkit start - Inventory open hook
         Container container = CraftEventFactory.callInventoryOpenEvent(this, new ContainerAnvil(this.inventory, this.world, i, j, k, this));
-        if(container == null) return;
+        if (container == null) {
+            return;
+        }
         // CraftBukkit end
 
         this.nextContainerCounter();
@@ -640,7 +646,10 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
 
         // CraftBukkit start - Inventory open hook
         Container container = CraftEventFactory.callInventoryOpenEvent(this, new ContainerChest(this.inventory, iinventory));
-        if(container == null) return;
+        if (container == null) {
+            iinventory.l_(); // Should be closeContainer
+            return;
+        }
         // CraftBukkit end
 
         this.nextContainerCounter();
@@ -653,7 +662,10 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
     public void openHopper(TileEntityHopper tileentityhopper) {
         // CraftBukkit start - Inventory open hook
         Container container = CraftEventFactory.callInventoryOpenEvent(this, new ContainerHopper(this.inventory, tileentityhopper));
-        if(container == null) return;
+        if (container == null) {
+            tileentityhopper.l_(); // Should be closeContainer
+            return;
+        }
         // CraftBukkit end
 
         this.nextContainerCounter();
@@ -666,7 +678,10 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
     public void openMinecartHopper(EntityMinecartHopper entityminecarthopper) {
         // CraftBukkit start - Inventory open hook
         Container container = CraftEventFactory.callInventoryOpenEvent(this, new ContainerHopper(this.inventory, entityminecarthopper));
-        if(container == null) return;
+        if (container == null) {
+            entityminecarthopper.l_(); // Should be closeContainer
+            return;
+        }
         // CraftBukkit end
 
         this.nextContainerCounter();
@@ -679,7 +694,10 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
     public void openFurnace(TileEntityFurnace tileentityfurnace) {
         // CraftBukkit start - Inventory open hook
         Container container = CraftEventFactory.callInventoryOpenEvent(this, new ContainerFurnace(this.inventory, tileentityfurnace));
-        if(container == null) return;
+        if (container == null) {
+            tileentityfurnace.l_(); // Should be closeContainer
+            return;
+        }
         // CraftBukkit end
 
         this.nextContainerCounter();
@@ -692,7 +710,10 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
     public void openDispenser(TileEntityDispenser tileentitydispenser) {
         // CraftBukkit start - Inventory open hook
         Container container = CraftEventFactory.callInventoryOpenEvent(this, new ContainerDispenser(this.inventory, tileentitydispenser));
-        if(container == null) return;
+        if (container == null) {
+            tileentitydispenser.l_(); // Should be closeContainer
+            return;
+        }
         // CraftBukkit end
 
         this.nextContainerCounter();
@@ -705,7 +726,10 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
     public void openBrewingStand(TileEntityBrewingStand tileentitybrewingstand) {
         // CraftBukkit start - Inventory open hook
         Container container = CraftEventFactory.callInventoryOpenEvent(this, new ContainerBrewingStand(this.inventory, tileentitybrewingstand));
-        if(container == null) return;
+        if (container == null) {
+            tileentitybrewingstand.l_(); // Should be closeContainer
+            return;
+        }
         // CraftBukkit end
 
         this.nextContainerCounter();
@@ -718,7 +742,10 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
     public void openBeacon(TileEntityBeacon tileentitybeacon) {
         // CraftBukkit start - Inventory open hook
         Container container = CraftEventFactory.callInventoryOpenEvent(this, new ContainerBeacon(this.inventory, tileentitybeacon));
-        if(container == null) return;
+        if (container == null) {
+            tileentitybeacon.l_(); // Should be closeContainer
+            return;
+        }
         // CraftBukkit end
 
         this.nextContainerCounter();
@@ -731,7 +758,9 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
     public void openTrade(IMerchant imerchant, String s) {
         // CraftBukkit start - Inventory open hook
         Container container = CraftEventFactory.callInventoryOpenEvent(this, new ContainerMerchant(this.inventory, imerchant, this.world));
-        if(container == null) return;
+        if (container == null) {
+            return;
+        }
         // CraftBukkit end
 
         this.nextContainerCounter();
@@ -759,7 +788,10 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
     public void openHorseInventory(EntityHorse entityhorse, IInventory iinventory) {
         // CraftBukkit start - Inventory open hook
         Container container = CraftEventFactory.callInventoryOpenEvent(this, new ContainerHorse(this.inventory, iinventory, entityhorse));
-        if(container == null) return;
+        if (container == null) {
+            iinventory.l_(); // Should be closeContainer
+            return;
+        }
         // CraftBukkit end
 
         if (this.activeContainer != this.defaultContainer) {
