@@ -1,6 +1,7 @@
 package de.minetick;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -52,6 +53,7 @@ public class MinetickMod {
     private int availableProcessors;
     private int packetbuilderPoolSize;
     private int antixrayPoolSize;
+    private HashSet<String> notGeneratingWorlds;
 
     public MinetickMod() {
         this.availableProcessors = Runtime.getRuntime().availableProcessors();
@@ -59,6 +61,7 @@ public class MinetickMod {
         this.tickCounterObject = new TickCounter();
         this.ticksPerSecond = Collections.synchronizedList(new LinkedList<Integer>());
         this.timerService.scheduleAtFixedRate(this.tickCounterObject, 1, 1, TimeUnit.SECONDS);
+        this.notGeneratingWorlds = new HashSet<String>();
         instance = this;
     }
     
@@ -99,6 +102,10 @@ public class MinetickMod {
                 packets = 1;
             }
             PlayerChunkManager.packetsPerTick = packets;
+            List<String> worlds = craftserver.getMinetickModNotGeneratingWorlds();
+            for(String w: worlds) {
+                this.notGeneratingWorlds.add(w.toLowerCase());
+            }
         }
     }
 
@@ -170,5 +177,9 @@ public class MinetickMod {
 
     public static Integer[] getTicksPerSecond() {
         return instance.ticksPerSecond.toArray(new Integer[0]);
+    }
+
+    public static boolean doesWorldNotGenerateChunks(String worldName) {
+        return instance.notGeneratingWorlds.contains(worldName.toLowerCase());
     }
 }

@@ -20,6 +20,9 @@ import org.bukkit.craftbukkit.util.LongObjectHashMap;
 import org.bukkit.event.world.ChunkUnloadEvent;
 // CraftBukkit end
 
+import de.minetick.MinetickMod;
+import de.minetick.MinetickEmptyChunk;
+
 public class ChunkProviderServer implements IChunkProvider {
 
     private static final Logger b = LogManager.getLogger();
@@ -36,6 +39,7 @@ public class ChunkProviderServer implements IChunkProvider {
     // Poweruser start
     private ChunkRegionLoader checkedRegionLoader = null;
     private LongHashSet corruptRegions = new LongHashSet();
+    private MinetickEmptyChunk mtmEmptyChunk;
 
     public boolean doesChunkExist(int x, int z) {
         if(this.checkedRegionLoader == null) {
@@ -65,6 +69,7 @@ public class ChunkProviderServer implements IChunkProvider {
     public ChunkProviderServer(WorldServer worldserver, IChunkLoader ichunkloader, IChunkProvider ichunkprovider) {
         //this.emptyChunk = new EmptyChunk(worldserver, 0, 0);
         this.emptyChunk = new EmptyChunk(worldserver, Integer.MIN_VALUE, Integer.MIN_VALUE); // Poweruser
+        this.mtmEmptyChunk = new MinetickEmptyChunk(worldserver, Integer.MIN_VALUE, Integer.MIN_VALUE); // Poweruser
         this.world = worldserver;
         this.f = ichunkloader;
         this.chunkProvider = ichunkprovider;
@@ -143,10 +148,15 @@ public class ChunkProviderServer implements IChunkProvider {
             if(!isMarkedCorrupt) {
                 chunk = this.loadChunk(i, j);
             }
+
             // Poweruser end
             if (chunk == null) {
                 if (this.chunkProvider == null) {
                     chunk = this.emptyChunk;
+                // Poweruser start
+                } else if (MinetickMod.doesWorldNotGenerateChunks(this.world.getWorld().getName())) {
+                    return this.mtmEmptyChunk;
+                // Poweruser end
                 } else {
                     try {
                         chunk = this.chunkProvider.getOrCreateChunk(i, j);
@@ -241,7 +251,7 @@ public class ChunkProviderServer implements IChunkProvider {
 
     public void saveChunkNOP(Chunk chunk) { // CraftBukkit - private -> public
         //if (this.f != null) {
-        if (this.f != null && !chunk.isCorrupt()) { // Poweruser
+        if (this.f != null && !chunk.isCorrupt() && !chunk.isEmpty()) { // Poweruser
             try {
                 this.f.b(this.world, chunk);
             } catch (Exception exception) {
@@ -252,7 +262,7 @@ public class ChunkProviderServer implements IChunkProvider {
 
     public void saveChunk(Chunk chunk) { // CraftBukkit - private -> public
         //if (this.f != null) {
-        if (this.f != null && !chunk.isCorrupt()) { // Poweruser
+        if (this.f != null && !chunk.isCorrupt() && !chunk.isEmpty()) { // Poweruser
             try {
                 chunk.p = this.world.getTime();
                 this.f.a(this.world, chunk);
