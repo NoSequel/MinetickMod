@@ -770,7 +770,7 @@ public abstract class PlayerList {
                     this.broadcastIndex = 0;
                 }
                 EntityPlayer entityplayer = (EntityPlayer) this.players.get(this.broadcastIndex);
-                this.sendAll(new PacketPlayOutPlayerInfo(entityplayer.getName(), true, entityplayer.ping));
+                this.sendAll(new PacketPlayOutPlayerInfo(entityplayer.listName, true, entityplayer.ping));
             }
         }
         // Poweruser end
