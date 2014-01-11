@@ -338,9 +338,11 @@ public class ChunkProviderServer implements IChunkProvider {
             }
         }
         // Poweruser start
+        /*
         if(flag && this.canSave()) {
             this.b();
         }
+        */
         // Poweruser end
 
         return true;
