@@ -129,10 +129,14 @@ public class AntiXRay {
         return block == Blocks.STATIONARY_LAVA || block.r();
     }
 
-    private boolean hasOnlySolidBlockNeighbours(Chunk chunk, int section, int x, int y, int z) {
-        boolean result = false;
+    private boolean hasOnlySolidBlockNeighbours(Chunk chunk, int section, int x, int y, int z, int range) {
+        boolean result = true;
+        int i = range;
         try {
-            result = this.checkForSolidBlocks(chunk, section, x, y, z, 1);
+            while(result && i > 0) {
+                result = this.checkForSolidBlocks(chunk, section, x, y, z, i);
+                i--;
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -143,7 +147,7 @@ public class AntiXRay {
         boolean allSolid = true;
         Block block;
 
-        boolean within = (z != 0 && z != 15 && x != 0 && x != 15);
+        boolean within = (z - distance >= 0 && z + distance <= 15 && x - distance >= 0 && x + distance <= 15);
         if(!within) {
             allSolid = allSolid && this.checkBlockOfOtherPosition(chunk, section, x, y, z, distance, 0);
             allSolid = allSolid && this.checkBlockOfOtherPosition(chunk, section, x, y, z, -distance, 0);
@@ -253,15 +257,15 @@ public class AntiXRay {
                         int blockID = buildBuffer[index] & 255;
                         if(isOverworld()) {
                             if(blocksToHide[blockID]) {
-                                if(hasOnlySolidBlockNeighbours(chunk, sectionID, x, y, z)) {
+                                if(hasOnlySolidBlockNeighbours(chunk, sectionID, x, y, z, 1)) {
                                     buildBuffer[index] = 1; // stone
                                 }
                             } else if(isEnabled()) {
                                 
-                                if(isOverworld() && (blockID == Block.b(Blocks.STONE) || blockID == Block.b(Blocks.DIRT))) {
+                                if(isOverworld() && blockID == Block.b(Blocks.STONE)) {
                                     double r = random.nextDouble();
                                     if(r < 0.15D) {
-                                        if(hasOnlySolidBlockNeighbours(chunk, sectionID, x, y, z)) {
+                                        if(hasOnlySolidBlockNeighbours(chunk, sectionID, x, y, z, 2)) {
                                             if(r < 0.03D) {
                                                 buildBuffer[index] = 56; // diamond ore
                                             } else if(r < 0.06D) {
