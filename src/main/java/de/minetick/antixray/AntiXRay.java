@@ -128,10 +128,6 @@ public class AntiXRay {
         }
     }
 
-    private boolean handleLavaAsSolidBlock(Block block) {
-        return block == Blocks.STATIONARY_LAVA || block.r();
-    }
-
     private boolean hasOnlySolidBlockNeighbours(Chunk chunk, int section, int x, int y, int z, int range) {
         boolean result = true;
         int i = range;
@@ -158,13 +154,13 @@ public class AntiXRay {
             allSolid = allSolid && this.checkBlockOfOtherPosition(chunk, section, x, y, z, 0, -distance);
         } else {
             block = chunk.getTypeIdWithinSection(section, x + distance, y, z);
-            allSolid = allSolid && this.handleLavaAsSolidBlock(block);
+            allSolid = allSolid && block.r();
             block = chunk.getTypeIdWithinSection(section, x - distance, y, z);
-            allSolid = allSolid && this.handleLavaAsSolidBlock(block);
+            allSolid = allSolid && block.r();
             block = chunk.getTypeIdWithinSection(section, x, y, z + distance);
-            allSolid = allSolid && this.handleLavaAsSolidBlock(block);
+            allSolid = allSolid && block.r();
             block = chunk.getTypeIdWithinSection(section, x, y, z - distance);
-            allSolid = allSolid && this.handleLavaAsSolidBlock(block);
+            allSolid = allSolid && block.r();
         }
 
         if(!allSolid) { return allSolid; }
@@ -177,7 +173,7 @@ public class AntiXRay {
         }
         if(belowSection >= 0) {
             block = chunk.getTypeIdWithinSection(belowSection, x, below, z);
-            allSolid = allSolid && this.handleLavaAsSolidBlock(block);
+            allSolid = allSolid && block.r();
         }
 
         int above = y + distance;
@@ -188,7 +184,7 @@ public class AntiXRay {
         }
         if(aboveSection < 16) {
             block = chunk.getTypeIdWithinSection(aboveSection, x, above, z);
-            allSolid = allSolid && this.handleLavaAsSolidBlock(block);
+            allSolid = allSolid && block.r();
         }
         return allSolid;
     }
@@ -210,7 +206,7 @@ public class AntiXRay {
                 return false;
             }
         }
-        return this.handleLavaAsSolidBlock(block);
+        return block.r();
     }
 
     public boolean isEnabled() {
