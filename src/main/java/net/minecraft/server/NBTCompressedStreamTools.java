@@ -15,7 +15,7 @@ import java.util.zip.GZIPOutputStream;
 
 public class NBTCompressedStreamTools {
 
-    public static NBTTagCompound a(InputStream inputstream) {
+    public static NBTTagCompound a(InputStream inputstream) throws IOException { // Poweruser - added throws IOException
         DataInputStream datainputstream = new DataInputStream(new BufferedInputStream(new GZIPInputStream(inputstream)));
 
         NBTTagCompound nbttagcompound;
@@ -29,7 +29,7 @@ public class NBTCompressedStreamTools {
         return nbttagcompound;
     }
 
-    public static void a(NBTTagCompound nbttagcompound, OutputStream outputstream) {
+    public static void a(NBTTagCompound nbttagcompound, OutputStream outputstream) throws IOException { // Poweruser - added throws IOException
         DataOutputStream dataoutputstream = new DataOutputStream(new GZIPOutputStream(outputstream));
 
         try {
@@ -39,7 +39,7 @@ public class NBTCompressedStreamTools {
         }
     }
 
-    public static NBTTagCompound a(byte[] abyte) {
+    public static NBTTagCompound a(byte[] abyte) throws IOException { // Poweruser - added throws IOException
         DataInputStream datainputstream = new DataInputStream(new BufferedInputStream(new GZIPInputStream(new ByteArrayInputStream(abyte))));
 
         NBTTagCompound nbttagcompound;
@@ -53,7 +53,7 @@ public class NBTCompressedStreamTools {
         return nbttagcompound;
     }
 
-    public static byte[] a(NBTTagCompound nbttagcompound) {
+    public static byte[] a(NBTTagCompound nbttagcompound) throws IOException { // Poweruser - added throws IOException
         ByteArrayOutputStream bytearrayoutputstream = new ByteArrayOutputStream();
         DataOutputStream dataoutputstream = new DataOutputStream(new GZIPOutputStream(bytearrayoutputstream));
 
@@ -66,7 +66,7 @@ public class NBTCompressedStreamTools {
         return bytearrayoutputstream.toByteArray();
     }
 
-    public static NBTTagCompound a(DataInput datainput) {
+    public static NBTTagCompound a(DataInput datainput) throws IOException { // Poweruser - added throws IOException
         NBTBase nbtbase = a(datainput, 0);
 
         if (nbtbase instanceof NBTTagCompound) {
@@ -76,11 +76,11 @@ public class NBTCompressedStreamTools {
         }
     }
 
-    public static void a(NBTTagCompound nbttagcompound, DataOutput dataoutput) {
+    public static void a(NBTTagCompound nbttagcompound, DataOutput dataoutput) throws IOException { // Poweruser - added throws IOException
         a((NBTBase) nbttagcompound, dataoutput);
     }
 
-    private static void a(NBTBase nbtbase, DataOutput dataoutput) {
+    private static void a(NBTBase nbtbase, DataOutput dataoutput) throws IOException { // Poweruser - added throws IOException
         dataoutput.writeByte(nbtbase.getTypeId());
         if (nbtbase.getTypeId() != 0) {
             dataoutput.writeUTF("");
@@ -88,7 +88,7 @@ public class NBTCompressedStreamTools {
         }
     }
 
-    private static NBTBase a(DataInput datainput, int i) {
+    private static NBTBase a(DataInput datainput, int i) throws IOException, ReportedException { // Poweruser - added throws IOException, ReportedException
         byte b0 = datainput.readByte();
 
         if (b0 == 0) {

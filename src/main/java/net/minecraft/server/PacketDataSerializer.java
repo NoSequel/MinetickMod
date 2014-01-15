@@ -54,7 +54,7 @@ public class PacketDataSerializer extends ByteBuf {
         this.writeByte(i);
     }
 
-    public void a(NBTTagCompound nbttagcompound) {
+    public void a(NBTTagCompound nbttagcompound) throws IOException { // Poweruser - added throws IOException
         if (nbttagcompound == null) {
             this.writeShort(-1);
         } else {
@@ -65,7 +65,7 @@ public class PacketDataSerializer extends ByteBuf {
         }
     }
 
-    public NBTTagCompound b() {
+    public NBTTagCompound b() throws IOException { // Poweruser - added throws IOException
         short short1 = this.readShort();
 
         if (short1 < 0) {
@@ -78,7 +78,7 @@ public class PacketDataSerializer extends ByteBuf {
         }
     }
 
-    public void a(ItemStack itemstack) {
+    public void a(ItemStack itemstack) throws IOException { // Poweruser - added throws IOException
         if (itemstack == null || itemstack.getItem() == null) { // CraftBukkit - NPE fix itemstack.getItem()
             this.writeShort(-1);
         } else {
@@ -95,7 +95,7 @@ public class PacketDataSerializer extends ByteBuf {
         }
     }
 
-    public ItemStack c() {
+    public ItemStack c() throws IOException { // Poweruser - added throws IOException
         ItemStack itemstack = null;
         short short1 = this.readShort();
 
