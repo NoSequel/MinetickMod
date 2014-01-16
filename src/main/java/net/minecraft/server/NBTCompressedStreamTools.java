@@ -1,7 +1,6 @@
 package net.minecraft.server;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
@@ -33,20 +32,10 @@ public class NBTCompressedStreamTools {
     public static void a(NBTTagCompound nbttagcompound, OutputStream outputstream) throws IOException { // Poweruser - added throws IOException
         DataOutputStream dataoutputstream = new DataOutputStream(new GZIPOutputStream(outputstream));
 
-        // Poweruser start
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        DataOutputStream uncompressedStream = new DataOutputStream(byteArrayOutputStream);
-        // Poweruser end
         try {
-            //a(nbttagcompound, (DataOutput) dataoutputstream);
-            // Poweruser start
-            a(nbttagcompound, (DataOutput) uncompressedStream);
-            uncompressedStream.flush();
-            byteArrayOutputStream.writeTo(dataoutputstream);
-            // Poweruser end
+            a(nbttagcompound, (DataOutput) dataoutputstream);
         } finally {
             dataoutputstream.close();
-            uncompressedStream.close(); // Poweruser
         }
     }
 
@@ -68,20 +57,10 @@ public class NBTCompressedStreamTools {
         ByteArrayOutputStream bytearrayoutputstream = new ByteArrayOutputStream();
         DataOutputStream dataoutputstream = new DataOutputStream(new GZIPOutputStream(bytearrayoutputstream));
 
-        // Poweruser start
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        DataOutputStream uncompressedStream = new DataOutputStream(byteArrayOutputStream);
-        // Poweruser end
         try {
-            //a(nbttagcompound, (DataOutput) dataoutputstream);
-            // Poweruser start
-            a(nbttagcompound, (DataOutput) uncompressedStream);
-            uncompressedStream.flush();
-            byteArrayOutputStream.writeTo(dataoutputstream);
-            // Poweruser end
+            a(nbttagcompound, (DataOutput) dataoutputstream);
         } finally {
             dataoutputstream.close();
-            uncompressedStream.close(); // Poweruser
         }
 
         return bytearrayoutputstream.toByteArray();
