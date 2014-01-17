@@ -1,15 +1,21 @@
 package de.minetick;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.bukkit.craftbukkit.CraftServer;
 
 import de.minetick.antixray.AntiXRay;
@@ -32,6 +38,8 @@ import net.minecraft.server.EntityPlayer;
 import net.minecraft.server.EntityProjectile;
 import net.minecraft.server.EntityWither;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.NBTCompressedStreamTools;
+import net.minecraft.server.NBTTagCompound;
 import net.minecraft.server.PacketPlayOutMapChunk;
 import net.minecraft.server.PacketPlayOutMapChunkBulk;
 import net.minecraft.server.WorldServer;
@@ -41,6 +49,7 @@ public class MinetickMod {
     private TickTimer tickTimerObject;
     private int timerDelay = 45;
     private ScheduledExecutorService timerService = Executors.newScheduledThreadPool(2);
+    private ExecutorService nbtFileService = Executors.newCachedThreadPool(new MinetickThreadFactory(Thread.NORM_PRIORITY - 2));
     private ScheduledFuture<Object> tickTimerTask;
     private static MinetickMod instance;
     private Profiler profiler;
@@ -55,6 +64,7 @@ public class MinetickMod {
     private int packetbuilderPoolSize;
     private int antixrayPoolSize;
     private HashSet<String> notGeneratingWorlds;
+    private final Logger log = LogManager.getLogger();
 
     public MinetickMod() {
         this.availableProcessors = Runtime.getRuntime().availableProcessors();
@@ -135,6 +145,14 @@ public class MinetickMod {
         this.threadPool.shutdown();
         PacketBuilderThreadPool.shutdownStatic();
         AntiXRay.shutdown();
+        this.nbtFileService.shutdown();
+        while(!this.nbtFileService.isTerminated()) {
+            try {
+                if(!this.nbtFileService.awaitTermination(3, TimeUnit.MINUTES)) {
+                    log.warn("MinetickMod is still waiting for NBT Files to be saved.");
+                }
+            } catch(InterruptedException e) {}
+        }
     }
 
     public void checkTickTime(long tickTime) {         
@@ -183,5 +201,43 @@ public class MinetickMod {
 
     public static boolean doesWorldNotGenerateChunks(String worldName) {
         return instance.notGeneratingWorlds.contains(worldName.toLowerCase());
+    }
+
+    public static void saveNBTFileStatic(NBTTagCompound compound, File file) {
+        instance.saveNBTFile(compound, file);
+    }
+
+    public void saveNBTFile(NBTTagCompound compound, File file) {
+        this.nbtFileService.submit(new NBTFileSaver(compound, file));
+    }
+
+    private class NBTFileSaver implements Callable<Object> {
+
+        private NBTTagCompound compound;
+        private File file;
+
+        public NBTFileSaver(NBTTagCompound compound, File file) {
+            this.compound = compound;
+            this.file = file;
+        }
+
+        public Object call() {
+            try {
+                long start = System.currentTimeMillis();
+                FileOutputStream fileoutputstream = new FileOutputStream(this.file);
+                NBTCompressedStreamTools.a(this.compound, (OutputStream) fileoutputstream);
+                fileoutputstream.close();
+                long duration = System.currentTimeMillis() - start;
+                if(duration > 1000L) {
+                    log.info("Saving the file \"" + this.file.getAbsolutePath() + "\" took " + ((float)(duration/100L) / 10.0F) + " seconds.");
+                }
+            } catch (Exception e) {
+                log.error("Error \""+ e.getMessage() +"\" while saving file: " + this.file.getAbsolutePath());
+                e.printStackTrace();
+            }
+            this.compound = null;
+            this.file = null;
+            return null;
+        }
     }
 }

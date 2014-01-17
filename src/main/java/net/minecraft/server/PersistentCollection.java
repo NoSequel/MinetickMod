@@ -15,6 +15,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import de.minetick.MinetickMod;
+
 public class PersistentCollection {
 
     private IDataManager a;
@@ -100,10 +102,16 @@ public class PersistentCollection {
                     NBTTagCompound nbttagcompound1 = new NBTTagCompound();
 
                     nbttagcompound1.set("data", nbttagcompound);
+                    /*
                     FileOutputStream fileoutputstream = new FileOutputStream(file1);
 
                     NBTCompressedStreamTools.a(nbttagcompound1, (OutputStream) fileoutputstream);
                     fileoutputstream.close();
+                    */
+                    // Poweruser start
+                    NBTTagCompound clone = (NBTTagCompound) (nbttagcompound1.clone());
+                    MinetickMod.saveNBTFileStatic(clone, file1);
+                    // Poweruser end
                 }
             } catch (Exception exception) {
                 exception.printStackTrace();

@@ -515,8 +515,8 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
             this.a(crashreport);
         } finally {
             try {
-                this.minetickMod.shutdown(); // Poweruser
                 this.stop();
+                this.minetickMod.shutdown(); // Poweruser
                 this.isStopped = true;
             } catch (Throwable throwable1) {
                 h.error("Exception stopping the server", throwable1);
