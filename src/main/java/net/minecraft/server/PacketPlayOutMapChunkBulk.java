@@ -1,7 +1,6 @@
 package net.minecraft.server;
 
 import java.io.IOException;
-import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.zip.DataFormatException;
@@ -66,7 +65,7 @@ public class PacketPlayOutMapChunkBulk extends Packet {
 
     //public PacketPlayOutMapChunkBulk(List list) {
     // Poweruser start
-    public PacketPlayOutMapChunkBulk(PacketBuilderBuffer pbb, List<WeakReference<Chunk>> list) {
+    public PacketPlayOutMapChunkBulk(PacketBuilderBuffer pbb, List list) {
         this.pbb = pbb;
         this.buildBuffer = this.pbb.requestBuildBuffer(196864);
     // Poweruser end
@@ -77,13 +76,11 @@ public class PacketPlayOutMapChunkBulk extends Packet {
         this.c = new int[i];
         this.d = new int[i];
         this.inflatedBuffers = new byte[i][];
-        //this.h = !list.isEmpty() && !((Chunk) list.get(0)).world.worldProvider.g;
-        this.h = !list.isEmpty() && !(list.get(0).get()).world.worldProvider.g; // Poweruser
+        this.h = !list.isEmpty() && !((Chunk) list.get(0)).world.worldProvider.g;
         int j = 0;
 
         for (int k = 0; k < i; ++k) {
-            //Chunk chunk = (Chunk) list.get(k);
-            Chunk chunk = list.get(k).get(); // Poweruser
+            Chunk chunk = (Chunk) list.get(k);
             //ChunkMap chunkmap = PacketPlayOutMapChunk.a(chunk, true, '\uffff');
             ChunkMap chunkmap = PacketPlayOutMapChunk.a(pbb, chunk, true, '\uffff'); // Poweruser
 

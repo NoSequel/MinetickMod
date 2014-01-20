@@ -1,6 +1,5 @@
 package de.minetick.packetbuilder.jobs;
 
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -19,10 +18,10 @@ import de.minetick.packetbuilder.PacketBuilderThreadPool;
 public class PBJobPlayOutMapChunkBulk implements PacketBuilderJobInterface {
 
     private PlayerConnection connection;
-    private List<WeakReference<Chunk>> chunks;
+    private List<Chunk> chunks;
     private PlayerChunkSendQueue chunkQueue;
 
-    public PBJobPlayOutMapChunkBulk(PlayerConnection connection, List<WeakReference<Chunk>> chunks, PlayerChunkSendQueue chunkQueue) {
+    public PBJobPlayOutMapChunkBulk(PlayerConnection connection, List<Chunk> chunks, PlayerChunkSendQueue chunkQueue) {
         this.connection = connection;
         this.chunks = chunks;
         this.chunkQueue = chunkQueue;
@@ -34,11 +33,11 @@ public class PBJobPlayOutMapChunkBulk implements PacketBuilderJobInterface {
         boolean allStillListed = true;
         // TODO: Im currently not sure if synchronizing is still required here, needs to be checked
         synchronized(checkAndSendLock) {
-            Iterator<WeakReference<Chunk>> iter = this.chunks.iterator();
+            Iterator<Chunk> iter = this.chunks.iterator();
             while(iter.hasNext()) {
-                WeakReference<Chunk> c = iter.next();
+                Chunk c = iter.next();
                 if(this.chunkQueue != null && this.connection != null) {
-                    if(!this.chunkQueue.isOnServer(c.get().locX, c.get().locZ)) {
+                    if(!this.chunkQueue.isOnServer(c.locX, c.locZ)) {
                         allStillListed = false;
                         iter.remove();
                     }
@@ -48,8 +47,8 @@ public class PBJobPlayOutMapChunkBulk implements PacketBuilderJobInterface {
                 packet.setPendingUses(1);
                 this.connection.sendPacket(packet);
                 ArrayList arraylist1 = new ArrayList();
-                for(WeakReference<Chunk> c : this.chunks) {
-                    arraylist1.addAll(c.get().tileEntities.values());
+                for(Chunk c : this.chunks) {
+                    arraylist1.addAll(c.tileEntities.values());
                 }
                 Iterator iterator2 = arraylist1.iterator();
                 EntityPlayer entityplayer = this.connection.player;
@@ -62,9 +61,7 @@ public class PBJobPlayOutMapChunkBulk implements PacketBuilderJobInterface {
                         }
                     }
                 }
-                for(WeakReference<Chunk> wr: this.chunks) {
-                    entityplayer.chunksForTracking.add(wr.get());
-                }
+                entityplayer.chunksForTracking.addAll(this.chunks);
                 this.chunks.clear();
             } else {
                 packet.discard();
