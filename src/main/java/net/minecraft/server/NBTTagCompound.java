@@ -19,7 +19,7 @@ public class NBTTagCompound extends NBTBase {
 
     public NBTTagCompound() {}
 
-    void write(DataOutput dataoutput) {
+    void write(DataOutput dataoutput) throws IOException { // Poweruser - added throws IOException
         Iterator iterator = this.map.keySet().iterator();
 
         while (iterator.hasNext()) {
@@ -32,7 +32,7 @@ public class NBTTagCompound extends NBTBase {
         dataoutput.writeByte(0);
     }
 
-    void load(DataInput datainput, int i) {
+    void load(DataInput datainput, int i) throws IOException { // Poweruser - added throws IOException
         if (i > 512) {
             throw new RuntimeException("Tried to read NBT tag with too high complexity, depth > 512");
         } else {
@@ -286,7 +286,7 @@ public class NBTTagCompound extends NBTBase {
         return super.hashCode() ^ this.map.hashCode();
     }
 
-    private static void a(String s, NBTBase nbtbase, DataOutput dataoutput) {
+    private static void a(String s, NBTBase nbtbase, DataOutput dataoutput) throws IOException { // Poweruser - added throws IOException
         dataoutput.writeByte(nbtbase.getTypeId());
         if (nbtbase.getTypeId() != 0) {
             dataoutput.writeUTF(s);
@@ -294,11 +294,11 @@ public class NBTTagCompound extends NBTBase {
         }
     }
 
-    private static byte a(DataInput datainput) {
+    private static byte a(DataInput datainput) throws IOException { // Poweruser - added throws IOException
         return datainput.readByte();
     }
 
-    private static String b(DataInput datainput) {
+    private static String b(DataInput datainput) throws IOException { // Poweruser - added throws IOException
         return datainput.readUTF();
     }
 
