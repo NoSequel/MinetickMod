@@ -45,24 +45,21 @@ public class PBJobPlayOutMapChunk implements PacketBuilderJobInterface {
     }
 
     @Override
-    public void buildAndSendPacket(PacketBuilderBuffer pbb, Object checkAndSendLock) {
+    public void buildAndSendPacket(PacketBuilderBuffer pbb) {
         boolean packetSent = false;
         PacketPlayOutMapChunk packet = new PacketPlayOutMapChunk(pbb, this.chunk, this.flag, this.i);
         if(this.multipleConnections) {
-            ArrayList tileentities = null;
-            // TODO: Im currently not sure if synchronizing is still required here, needs to be checked
-            synchronized(checkAndSendLock) {
-                if(this.sendTileEntities) {
-                    tileentities = new ArrayList();
-                    tileentities.addAll(chunk.tileEntities.values());
-                }
-                for(int a = 0; a < this.connections.length; a++) {
-                    if(this.chunkQueues[a] != null && this.connections[a] != null) {
-                        if(this.chunkQueues[a].isOnServer(chunk.locX, chunk.locZ)) {
-                            this.validOnes.add(this.connections[a]);
-                            this.connections[a] = null;
-                            this.chunkQueues[a] = null;
-                        }
+            ArrayList<TileEntity> tileentities = null;
+            if(this.sendTileEntities) {
+                tileentities = new ArrayList<TileEntity>();
+                tileentities.addAll(chunk.tileEntities.values());
+            }
+            for(int a = 0; a < this.connections.length; a++) {
+                if(this.chunkQueues[a] != null && this.connections[a] != null) {
+                    if(this.chunkQueues[a].isOnServer(chunk.locX, chunk.locZ)) {
+                        this.validOnes.add(this.connections[a]);
+                        this.connections[a] = null;
+                        this.chunkQueues[a] = null;
                     }
                 }
             }
@@ -73,7 +70,7 @@ public class PBJobPlayOutMapChunk implements PacketBuilderJobInterface {
                     n.sendPacket(packet);
                     if(this.sendTileEntities) {
                         for(int i = 0; i < tileentities.size(); i++) {
-                            TileEntity te = (TileEntity) (tileentities.get(i));
+                            TileEntity te = tileentities.get(i);
                             Packet p = te.getUpdatePacket();
                             if(p != null) {
                                 n.sendPacket(p);
@@ -86,12 +83,10 @@ public class PBJobPlayOutMapChunk implements PacketBuilderJobInterface {
             this.chunkQueues = null;
         } else {
             if(this.chunkQueue != null &&  this.connection != null) {
-                synchronized(checkAndSendLock) {
-                    if(!this.chunkQueue.isOnServer(chunk.locX, chunk.locZ)) {
-                        packetSent = true;
-                        packet.setPendingUses(1);
-                        this.connection.sendPacket(packet);
-                    }
+                if(!this.chunkQueue.isOnServer(chunk.locX, chunk.locZ)) {
+                    packetSent = true;
+                    packet.setPendingUses(1);
+                    this.connection.sendPacket(packet);
                 }
             }
             this.connection = null;
