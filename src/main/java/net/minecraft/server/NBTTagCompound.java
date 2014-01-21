@@ -41,7 +41,8 @@ public class NBTTagCompound extends NBTBase {
             byte b0;
 
             while ((b0 = a(datainput)) != 0) {
-                String s = b(datainput);
+                //String s = b(datainput);
+                String s = getStoredString(b(datainput), true); // Poweruser
                 NBTBase nbtbase = a(b0, s, datainput, i + 1);
 
                 this.map.put(s, nbtbase);
