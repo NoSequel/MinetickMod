@@ -20,39 +20,36 @@ public class PacketPlayOutMapChunk extends Packet {
     private boolean inflatedBuffer;
     private int size;
     //private static byte[] buildBuffer = new byte[196864];
-    private byte[] buildBuffer; // Poweruser - removed static
-
     // Poweruser start
+    private static final ThreadLocal<byte[]> localBuildBuffer = new ThreadLocal<byte[]>() {
+        @Override
+        protected byte[] initialValue() {
+            return new byte[196864];
+        }
+    };
+
     private AtomicInteger pendingUses;
-    public static int targetCompressionLevel = MinetickMod.defaultPacketCompression;
+    private static int targetCompressionLevel = MinetickMod.defaultPacketCompression;
+
+    public static void changeCompressionLevel(int level) {
+        if(level < Deflater.BEST_SPEED || level > Deflater.BEST_COMPRESSION) {
+            targetCompressionLevel = Deflater.DEFAULT_COMPRESSION;
+        } else {
+            targetCompressionLevel = level;
+        }
+    }
 
     public void setPendingUses(int uses) {
         this.pendingUses = new AtomicInteger(uses);
     }
 
     private PacketBuilderBuffer pbb;
-    private static final ThreadLocal<Integer> currentCompressionLevel = new ThreadLocal<Integer>() {
-        @Override
-        protected Integer initialValue() {
-            return new Integer(targetCompressionLevel);
-        }
-    };
-
-    private static final ThreadLocal<Deflater> localDef = new ThreadLocal<Deflater>() {
-        @Override
-        protected Deflater initialValue() {
-            /*
-             * Default was 6, but as compression is run in seperate threads now
-             * a higher compression can be afforded
-             */
-            return new Deflater(7);
-        }
-    };
 
     public void discard() {
-        if(this.pbb != null && this.e != null) {
-            this.pbb.offerSendBuffer(this.e);
-            this.e = null;
+        if(this.pbb != null) {
+            if(this.e != null) {
+                this.pbb.offerSendBuffer(this.e);
+            }
             this.pbb = null;
         }
     }
@@ -65,39 +62,23 @@ public class PacketPlayOutMapChunk extends Packet {
         this.a = chunk.locX;
         this.b = chunk.locZ;
         this.inflatedBuffer = flag;
-        //ChunkMap chunkmap = a(chunk, flag, i);
-        ChunkMap chunkmap = a(pbb, chunk, flag, i); // Poweruser
+        ChunkMap chunkmap = a(chunk, flag, i);
         //Deflater deflater = new Deflater(-1);
-        // Poweruser start - going to use a thread local one
-        Integer currComp = currentCompressionLevel.get();
-        Deflater deflater = localDef.get();
-        if(!currComp.equals(targetCompressionLevel)) {
-            deflater.end();
-            deflater = new Deflater(targetCompressionLevel);
-            localDef.set(deflater);
-            currentCompressionLevel.set(new Integer(targetCompressionLevel));
-        }
-        // Poweruser end
+        Deflater deflater = new Deflater(targetCompressionLevel); // Poweruser
 
         this.d = chunkmap.c;
         this.c = chunkmap.b;
 
         try {
             this.buffer = chunkmap.a;
-            //deflater.setInput(chunkmap.a, 0, chunkmap.a.length);
-            deflater.reset(); // Poweruser
-            deflater.setInput(chunkmap.a, 0, chunkmap.dataSize); // Poweruser - the array chunkmap.a might be larger, than the data it holds
+            deflater.setInput(chunkmap.a, 0, chunkmap.a.length);
             deflater.finish();
             //this.e = new byte[chunkmap.a.length];
-            this.e = this.pbb.requestSendBuffer(chunkmap.dataSize); // Poweruser
+            this.e = this.pbb.requestSendBuffer(chunkmap.a.length); // Poweruser
             this.size = deflater.deflate(this.e);
         } finally {
-            //deflater.end();  // Poweruser - this deflater is going to be reused
+            deflater.end();
         }
-        // Poweruser start
-        pbb.offerBuildBuffer(chunkmap.a);
-        chunkmap.a = null;
-        // Poweruser end
     }
 
     public static int c() {
@@ -111,12 +92,17 @@ public class PacketPlayOutMapChunk extends Packet {
         this.c = packetdataserializer.readShort();
         this.d = packetdataserializer.readShort();
         this.size = packetdataserializer.readInt();
+        /*
         if (buildBuffer.length < this.size) {
-            //buildBuffer = new byte[this.size];
-            buildBuffer = this.pbb.requestBuildBuffer(this.size); // Poweruser
+            buildBuffer = new byte[this.size];
+        }
+        */
+        if(localBuildBuffer.get().length < this.size) {
+            localBuildBuffer.set(new byte[this.size]);
         }
 
-        packetdataserializer.readBytes(buildBuffer, 0, this.size);
+        //packetdataserializer.readBytes(buildBuffer, 0, this.size);
+        packetdataserializer.readBytes(localBuildBuffer.get(), 0, this.size); // Poweruser
         int i = 0;
 
         int j;
@@ -133,7 +119,8 @@ public class PacketPlayOutMapChunk extends Packet {
         this.buffer = new byte[j];
         Inflater inflater = new Inflater();
 
-        inflater.setInput(buildBuffer, 0, this.size);
+        //inflater.setInput(buildBuffer, 0, this.size);
+        inflater.setInput(localBuildBuffer.get(), 0, this.size); // Poweruser
 
         try {
             inflater.inflate(this.buffer);
@@ -142,10 +129,6 @@ public class PacketPlayOutMapChunk extends Packet {
         } finally {
             inflater.end();
         }
-        // Poweruser start
-        this.pbb.offerBuildBuffer(this.buildBuffer);
-        this.buildBuffer = null;
-        // Poweruser end
     }
 
     public void b(PacketDataSerializer packetdataserializer) {
@@ -172,13 +155,13 @@ public class PacketPlayOutMapChunk extends Packet {
         return String.format("x=%d, z=%d, full=%b, sects=%d, add=%d, size=%d", new Object[] { Integer.valueOf(this.a), Integer.valueOf(this.b), Boolean.valueOf(this.inflatedBuffer), Integer.valueOf(this.c), Integer.valueOf(this.d), Integer.valueOf(this.size)});
     }
 
-    public static ChunkMap a(PacketBuilderBuffer pbb, Chunk chunk, boolean flag, int i) {
+    public static ChunkMap a(Chunk chunk, boolean flag, int i) {
         int j = 0;
         ChunkSection[] achunksection = chunk.i();
         int k = 0;
         ChunkMap chunkmap = new ChunkMap();
         //byte[] abyte = buildBuffer;
-        byte[] abyte = pbb.requestBuildBuffer(196864); // Poweruser
+        byte[] abyte = localBuildBuffer.get(); // Poweruser
 
         if (flag) {
             chunk.q = true;
@@ -250,15 +233,9 @@ public class PacketPlayOutMapChunk extends Packet {
             j += abyte2.length;
         }
 
-        //chunkmap.a = new byte[j];
-        //System.arraycopy(abyte, 0, chunkmap.a, 0, j);
-        // Poweruser start
-        chunkmap.dataSize = j;
-        chunkmap.a = pbb.requestBuildBufferAndCopy(j, j, abyte);
-        chunk.world.antiXRay.orebfuscate(chunkmap.a, chunkmap.dataSize, chunk, chunkmap.b);
-        pbb.offerBuildBuffer(abyte);
-        abyte = null;
-        // Poweruser end
+        chunkmap.a = new byte[j];
+        System.arraycopy(abyte, 0, chunkmap.a, 0, j);
+        chunk.world.antiXRay.orebfuscate(chunkmap.a, chunkmap.a.length, chunk, chunkmap.b); // Poweruser
         return chunkmap;
     }
 

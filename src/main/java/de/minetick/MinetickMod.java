@@ -107,8 +107,8 @@ public class MinetickMod {
             if(level < 1 || level > 9) {
                 level = defaultPacketCompression;
             }
-            PacketPlayOutMapChunk.targetCompressionLevel = level;
-            PacketPlayOutMapChunkBulk.targetCompressionLevel = level;
+            PacketPlayOutMapChunk.changeCompressionLevel(level);
+            PacketPlayOutMapChunkBulk.changeCompressionLevel(level);
             int packets = craftserver.getMinetickModPacketsPerTick();
             if(packets < 1 || packets > 20) {
                 packets = 1;
