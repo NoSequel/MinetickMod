@@ -1,5 +1,6 @@
 package de.minetick.antixray;
 
+import java.lang.ref.WeakReference;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
@@ -223,13 +224,13 @@ public class AntiXRay {
 
         private int sectionID;
         private int sectionStart;
-        private byte[] buildBuffer;
+        private WeakReference<byte[]> buildBuffer;
         private int dataLength;
         private Chunk chunk;
 
         public SectionChecker(int sectionID, byte[] buildBuffer, int dataLength, Chunk chunk, int sectionStart) {
             this.sectionID = sectionID;
-            this.buildBuffer = buildBuffer;
+            this.buildBuffer = new WeakReference<byte[]>(buildBuffer);
             this.sectionStart = sectionStart;
             this.dataLength = dataLength;
             this.chunk = chunk;
@@ -244,6 +245,7 @@ public class AntiXRay {
         @Override
         public Boolean call() throws Exception {
             int index = this.sectionStart;
+            byte[] buildBuffer = this.buildBuffer.get();
             for(int y = 0; y < 16; y++) {
                 for(int z = 0; z < 16; z++) {
                     for(int x = 0; x < 16; x++) {
