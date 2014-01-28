@@ -17,6 +17,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bukkit.craftbukkit.CraftServer;
+import org.bukkit.entity.EntityType;
 
 import de.minetick.antixray.AntiXRay;
 import de.minetick.modcommands.AntiXRayCommand;
@@ -34,6 +35,7 @@ import net.minecraft.server.EntityEnderCrystal;
 import net.minecraft.server.EntityEnderDragon;
 import net.minecraft.server.EntityFireball;
 import net.minecraft.server.EntityHuman;
+import net.minecraft.server.EntityLiving;
 import net.minecraft.server.EntityPlayer;
 import net.minecraft.server.EntityProjectile;
 import net.minecraft.server.EntityWither;
@@ -64,6 +66,8 @@ public class MinetickMod {
     private int packetbuilderPoolSize;
     private int antixrayPoolSize;
     private HashSet<String> notGeneratingWorlds;
+    private int maxEntityLifeTime = 10;
+    private HashSet<EntityType> entitiesToDelete;
     private final Logger log = LogManager.getLogger();
 
     public MinetickMod() {
@@ -73,6 +77,7 @@ public class MinetickMod {
         this.ticksPerSecond = Collections.synchronizedList(new LinkedList<Integer>());
         this.timerService.scheduleAtFixedRate(this.tickCounterObject, 1, 1, TimeUnit.SECONDS);
         this.notGeneratingWorlds = new HashSet<String>();
+        this.entitiesToDelete = new HashSet<EntityType>();
         instance = this;
     }
     
@@ -117,6 +122,16 @@ public class MinetickMod {
             List<String> worlds = craftserver.getMinetickModNotGeneratingWorlds();
             for(String w: worlds) {
                 this.notGeneratingWorlds.add(w.toLowerCase());
+            }
+            this.maxEntityLifeTime = craftserver.getMinetickModMaxEntityLifeTime();
+            List<String> entitiesToDelete = craftserver.getMinetickModEntitiesWithLimitedLifeTime();
+            for(String name: entitiesToDelete) {
+                try {
+                    EntityType type = EntityType.valueOf(name.toUpperCase());
+                    this.entitiesToDelete.add(type);
+                } catch (IllegalArgumentException e) {
+                    log.warn("[MinetickMod] Settings: Skipping \"" + name + "\", as it is not a constant in org.bukkit.entity.EntityType!");
+                }
             }
         }
     }
@@ -239,5 +254,13 @@ public class MinetickMod {
             this.file = null;
             return null;
         }
+    }
+
+    public static int getMaxEntityLifeTime() {
+        return instance.maxEntityLifeTime;
+    }
+
+    public static boolean isEntityAllowedToBeDeleted(EntityLiving entity) {
+        return !isImportantEntity(entity) && instance.entitiesToDelete.contains(entity.getBukkitEntity().getType());
     }
 }
