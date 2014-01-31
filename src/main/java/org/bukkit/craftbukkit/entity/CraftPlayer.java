@@ -152,7 +152,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
     }
 
     public void setDisplayName(final String name) {
-        getHandle().displayName = name;
+        getHandle().displayName = name == null ? getName() : name;
     }
 
     public String getPlayerListName() {
