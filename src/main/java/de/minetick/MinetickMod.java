@@ -50,8 +50,8 @@ public class MinetickMod {
 
     private TickTimer tickTimerObject;
     private int timerDelay = 45;
-    private ScheduledExecutorService timerService = Executors.newScheduledThreadPool(2);
-    private ExecutorService nbtFileService = Executors.newCachedThreadPool(new MinetickThreadFactory(Thread.NORM_PRIORITY - 2));
+    private ScheduledExecutorService timerService = Executors.newScheduledThreadPool(2, new MinetickThreadFactory("MinetickMod_TimerService"));
+    private ExecutorService nbtFileService = Executors.newCachedThreadPool(new MinetickThreadFactory(Thread.NORM_PRIORITY - 2, "MinetickMod_NBTFileSaver"));
     private ScheduledFuture<Object> tickTimerTask;
     private static MinetickMod instance;
     private Profiler profiler;
