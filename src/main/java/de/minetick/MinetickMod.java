@@ -24,6 +24,7 @@ import de.minetick.modcommands.AntiXRayCommand;
 import de.minetick.modcommands.PacketCompressionCommand;
 import de.minetick.modcommands.PacketsPerTickCommand;
 import de.minetick.modcommands.TPSCommand;
+import de.minetick.modcommands.ThreadListCommand;
 import de.minetick.modcommands.ThreadPoolsCommand;
 import de.minetick.modcommands.WorldStatsCommand;
 import de.minetick.packetbuilder.PacketBuilderThreadPool;
@@ -91,6 +92,7 @@ public class MinetickMod {
             craftserver.getCommandMap().register("antixray", "MinetickMod", new AntiXRayCommand("antixray"));
             craftserver.getCommandMap().register("threadpools", "MinetickMod", new ThreadPoolsCommand("threadpools"));
             craftserver.getCommandMap().register("worldstats", "MinetickMod", new WorldStatsCommand("worldstats"));
+            craftserver.getCommandMap().register("threadlist", "MinetickMod", new ThreadListCommand("threadlist"));
             this.profiler = new Profiler(craftserver.getMinetickModProfilerLogInterval(),
                     craftserver.getMinetickModProfilerWriteEnabled(),
                     craftserver.getMinetickModProfilerWriteInterval());
