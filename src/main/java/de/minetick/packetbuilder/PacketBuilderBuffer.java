@@ -1,18 +1,17 @@
 package de.minetick.packetbuilder;
 
-import java.util.Iterator;
-import java.util.LinkedList;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 
 public class PacketBuilderBuffer {
 
-    private LinkedList<byte[]> sendBufferCache = new LinkedList<byte[]>();
-    private int notUsedSendBuffers = Integer.MAX_VALUE;
+    private ArrayList<WeakReference<byte[]>> sendBufferCache = new ArrayList<WeakReference<byte[]>>();
 
     public PacketBuilderBuffer() {}
 
     public void offerSendBuffer(byte[] array) {
         synchronized(this.sendBufferCache) {
-            this.sendBufferCache.add(array);
+            this.sendBufferCache.add(new WeakReference<byte[]>(array));
         }
     }
 
@@ -28,38 +27,20 @@ public class PacketBuilderBuffer {
         }
     }
 
-    private void checkSendBufferUsage(int newSize) {
-        if(newSize < this.notUsedSendBuffers) {
-            this.notUsedSendBuffers = newSize;
-        }
-    }
-
-    public void releaseUnusedBuffers() {
-        if(this.notUsedSendBuffers <= this.sendBufferCache.size()) {
-            synchronized(this.sendBufferCache) {
-                for(int i = 0; i < this.notUsedSendBuffers; i++) {
-                    this.sendBufferCache.removeFirst();
-                }
-            }
-            this.notUsedSendBuffers = Integer.MAX_VALUE;
-        }
-    }
-
-    private byte[] checkInList(LinkedList<byte[]> list, int length) {
-        Iterator<byte[]> iter = list.descendingIterator();
-        byte[] tmp;
+    private byte[] checkInList(ArrayList<WeakReference<byte[]>> list, int length) {
+        WeakReference<byte[]> ref;
+        byte[] array;
         int size = list.size();
-        while(iter.hasNext()) {
-            tmp = iter.next();
-            if(tmp.length >= length) {
-                iter.remove();
-                if(list == this.sendBufferCache) {
-                    this.checkSendBufferUsage(size - 1);
-                }
-                return tmp;
+        for(int i = size - 1; i >= 0; i--) {
+            ref = list.get(i);
+            array = ref.get();
+            if(array == null) {
+                list.remove(i);
+            } else if(array.length >= length) {
+                list.remove(i);
+                return array;
             }
         }
-        tmp = null;
         return new byte[length];
     }
 }
