@@ -43,6 +43,7 @@ public class PacketPlayOutMapChunkBulk extends Packet {
         if(this.pbb != null) {
             if(this.buffer != null) {
                 this.pbb.offerSendBuffer(this.buffer);
+                this.buffer = null;
             }
             this.pbb = null;
         }
@@ -109,6 +110,7 @@ public class PacketPlayOutMapChunkBulk extends Packet {
         for(int a = 0; a < i; a++) {
             System.arraycopy(this.inflatedBuffers[a], 0, completeBuildBuffer, startIndex, this.inflatedBuffers[a].length);
             startIndex += this.inflatedBuffers[a].length;
+            this.inflatedBuffers[a] = null;
         }
         Deflater deflater = new Deflater(targetCompressionLevel);
         try {

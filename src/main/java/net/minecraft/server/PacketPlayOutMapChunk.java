@@ -49,6 +49,7 @@ public class PacketPlayOutMapChunk extends Packet {
         if(this.pbb != null) {
             if(this.e != null) {
                 this.pbb.offerSendBuffer(this.e);
+                this.e = null;
             }
             this.pbb = null;
         }
