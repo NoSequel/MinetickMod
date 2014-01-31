@@ -18,12 +18,12 @@ import de.minetick.MinetickThreadFactory;
 import net.minecraft.server.Block;
 import net.minecraft.server.Blocks;
 import net.minecraft.server.Chunk;
+import net.minecraft.server.World;
 import net.minecraft.server.WorldServer;
 
 public class AntiXRay {
     
     private boolean enabled = false;
-    private WorldServer worldServer;
     private static boolean blocksToHide[] = new boolean[65536];
     private static int[][] additionalUpdatePositions = new int[][]{ { 2,0, 0},{ 2,0, 1},{ 2,0,-1},
                                                                   {-2,0, 0},{-2,0, 1},{-2,0,-1},
@@ -50,23 +50,22 @@ public class AntiXRay {
         }
     }
 
-    public boolean isNether() {
-        return this.worldServer.getWorld().getEnvironment().equals(Environment.NETHER);
+    public boolean isNether(WorldServer world) {
+        return world.getWorld().getEnvironment().equals(Environment.NETHER);
     }
 
-    public boolean isOverworld() {
-        return this.worldServer.getWorld().getEnvironment().equals(Environment.NORMAL);
+    public boolean isOverworld(WorldServer world) {
+        return world.getWorld().getEnvironment().equals(Environment.NORMAL);
     }
 
-    public AntiXRay(WorldServer world) {
-        this.worldServer = world;
+    public AntiXRay(WorldServer worldServer) {
         this.enabled = false;
         for(String w: configWorlds) {
-            if(w.equalsIgnoreCase(this.worldServer.getWorld().getName())) {
+            if(w.equalsIgnoreCase(worldServer.getWorld().getName())) {
                 this.enabled = true;
             }
         }
-        if(this.isOverworld()) {
+        if(this.isOverworld(worldServer)) {
             blocksToHide[7] = true;
             blocksToHide[13] = true;
             blocksToHide[14] = true;
@@ -76,17 +75,17 @@ public class AntiXRay {
             blocksToHide[56] = true;
             blocksToHide[73] = true;
             blocksToHide[129] = true;
-        } else if(this.isNether()) {
+        } else if(this.isNether(worldServer)) {
             blocksToHide[153] = true;
         }
     }
 
-    public void issueBlockUpdates(int x, int y, int z) {
+    public void issueBlockUpdates(World world, int x, int y, int z) {
         for(int i = x - 1; i <= x + 1; i++) {
             for(int j = y - 1; j <= y + 1; j++) {
                 for(int k = z - 1; k <= z + 1; k++) {
                     if(j >= 0 &&  j < 256 && !(i == x && j == y && k == z)) {
-                        this.worldServer.notify(i, j, k);
+                        world.notify(i, j, k);
                     }
                 }
             }
@@ -97,7 +96,7 @@ public class AntiXRay {
             yp = additionalUpdatePositions[i][1] + y;
             zp = additionalUpdatePositions[i][2] + z; 
             if(yp >= 0 && yp < 256) {
-                this.worldServer.notify(xp, yp, zp);
+                world.notify(xp, yp, zp);
             }
         }
     }
@@ -199,8 +198,9 @@ public class AntiXRay {
         if(ox == c.locX && oz == c.locZ) {
             block = c.getTypeIdWithinSection(section, newX, y, newZ);
         } else {
-            if(this.worldServer.isLoaded(absX, y, absZ)) {
-                block = Block.e(this.worldServer.getTypeId(absX, section*16 + y, absZ));
+            WorldServer worldServer = (WorldServer) c.world;
+            if(worldServer.isLoaded(absX, y, absZ)) {
+                block = Block.e(worldServer.getTypeId(absX, section*16 + y, absZ));
             } else {
                 return false;
             }
@@ -246,6 +246,7 @@ public class AntiXRay {
         public Boolean call() throws Exception {
             int index = this.sectionStart;
             byte[] buildBuffer = this.buildBuffer.get();
+            WorldServer worldServer = (WorldServer) this.chunk.world;
             for(int y = 0; y < 16; y++) {
                 for(int z = 0; z < 16; z++) {
                     for(int x = 0; x < 16; x++) {
@@ -254,14 +255,14 @@ public class AntiXRay {
                             return this.cleanup();
                         }
                         int blockID = buildBuffer[index] & 255;
-                        if(isOverworld()) {
+                        if(isOverworld(worldServer)) {
                             if(blocksToHide[blockID]) {
                                 if(hasOnlySolidBlockNeighbours(chunk, sectionID, x, y, z, 1)) {
                                     buildBuffer[index] = 1; // stone
                                 }
                             } else if(isEnabled()) {
                                 
-                                if(isOverworld() && blockID == Block.b(Blocks.STONE)) {
+                                if(isOverworld(worldServer) && blockID == Block.b(Blocks.STONE)) {
                                     double r = random.nextDouble();
                                     if(r < 0.15D) {
                                         if(hasOnlySolidBlockNeighbours(chunk, sectionID, x, y, z, 2)) {
@@ -280,7 +281,7 @@ public class AntiXRay {
                                     }
                                 }
                             }
-                        } else if(isNether()) {
+                        } else if(isNether(worldServer)) {
                             if(blocksToHide[blockID]) {
                                 buildBuffer[index] = 87; // nether rack
                             }

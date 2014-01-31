@@ -145,7 +145,7 @@ public class PlayerInteractManager {
                     if (f > 1.0f) {
                         ((EntityPlayer) this.player).playerConnection.sendPacket(new PacketPlayOutBlockChange(i, j, k, this.world));
                     }
-                    this.world.antiXRay.issueBlockUpdates(i, j, k); // Poweruser
+                    this.world.antiXRay.issueBlockUpdates(this.world, i, j, k); // Poweruser
                     return;
                 }
                 org.bukkit.event.block.BlockDamageEvent blockEvent = CraftEventFactory.callBlockDamageEvent(this.player, i, j, k, this.player.inventory.getItemInHand(), f >= 1.0f);
@@ -153,7 +153,7 @@ public class PlayerInteractManager {
                 if (blockEvent.isCancelled()) {
                     // Let the client know the block still exists
                     ((EntityPlayer) this.player).playerConnection.sendPacket(new PacketPlayOutBlockChange(i, j, k, this.world));
-                    this.world.antiXRay.issueBlockUpdates(i, j, k); // Poweruser
+                    this.world.antiXRay.issueBlockUpdates(this.world, i, j, k); // Poweruser
                     return;
                 }
 
@@ -175,7 +175,7 @@ public class PlayerInteractManager {
                     this.o = i1;
                 }
             }
-            this.world.antiXRay.issueBlockUpdates(i, j, k); // Poweruser
+            this.world.antiXRay.issueBlockUpdates(this.world, i, j, k); // Poweruser
         }
     }
 
@@ -264,7 +264,7 @@ public class PlayerInteractManager {
             }
 
             this.world.getServer().getPluginManager().callEvent(event);
-            this.world.antiXRay.issueBlockUpdates(i, j, k); // Poweruser
+            this.world.antiXRay.issueBlockUpdates(this.world, i, j, k); // Poweruser
 
             if (event.isCancelled()) {
                 // Let the client know the block still exists
@@ -321,7 +321,7 @@ public class PlayerInteractManager {
                 block.dropExperience(this.world, i, j, k, event.getExpToDrop());
             }
             // CraftBukkit end
-            this.world.antiXRay.issueBlockUpdates(i, j, k); // Poweruser
+            this.world.antiXRay.issueBlockUpdates(this.world, i, j, k); // Poweruser
             return flag;
         }
     }
