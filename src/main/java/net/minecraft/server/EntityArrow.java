@@ -3,6 +3,7 @@ package net.minecraft.server;
 import java.util.List;
 
 // CraftBukkit start
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.entity.EntityCombustByEntityEvent;
 import org.bukkit.event.player.PlayerPickupItemEvent;
 // CraftBukkit end
@@ -21,7 +22,7 @@ public class EntityArrow extends Entity implements IProjectile {
     private int j;
     private int au;
     private double damage = 2.0D;
-    private int aw;
+    public int aw; // CraftBukkit - private -> public
 
     public EntityArrow(World world) {
         super(world);
@@ -49,6 +50,7 @@ public class EntityArrow extends Entity implements IProjectile {
         super(world);
         this.k = 10.0D;
         this.shooter = entityliving;
+        this.projectileSource = (LivingEntity) entityliving.getBukkitEntity(); // CraftBukkit
         if (entityliving instanceof EntityHuman) {
             this.fromPlayer = 1;
         }
@@ -81,6 +83,7 @@ public class EntityArrow extends Entity implements IProjectile {
         super(world);
         this.k = 10.0D;
         this.shooter = entityliving;
+        this.projectileSource = (LivingEntity) entityliving.getBukkitEntity(); // CraftBukkit
         if (entityliving instanceof EntityHuman) {
             this.fromPlayer = 1;
         }
@@ -293,7 +296,7 @@ public class EntityArrow extends Entity implements IProjectile {
                     this.d = movingobjectposition.b;
                     this.e = movingobjectposition.c;
                     this.f = movingobjectposition.d;
-                    this.g = block;
+                    this.g = this.world.getType(d, e, f); // CraftBukkit - Get correct block for storage
                     this.h = this.world.getData(this.d, this.e, this.f);
                     this.motX = (double) ((float) (movingobjectposition.pos.c - this.locX));
                     this.motY = (double) ((float) (movingobjectposition.pos.d - this.locY));
