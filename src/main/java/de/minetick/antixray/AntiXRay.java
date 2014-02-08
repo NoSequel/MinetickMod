@@ -282,7 +282,7 @@ public class AntiXRay {
                                 }
                             }
                         } else if(isNether(worldServer)) {
-                            if(blocksToHide[blockID]) {
+                            if(blocksToHide[blockID] && hasOnlySolidBlockNeighbours(chunk, sectionID, x, y, z, 1)) {
                                 buildBuffer[index] = 87; // nether rack
                             }
                         }
