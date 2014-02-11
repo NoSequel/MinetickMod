@@ -6,6 +6,8 @@ import net.minecraft.server.WorldServer;
 
 import de.minetick.profiler.Profile;
 import de.minetick.profiler.Profiler;
+import de.minetick.profiler.WorldProfile;
+import de.minetick.profiler.WorldProfile.WorldProfileSection;
 
 public class WorldTicker extends Observable implements Runnable {
     private boolean active;
@@ -34,26 +36,29 @@ public class WorldTicker extends Observable implements Runnable {
                     } catch (InterruptedException e) {}
                 }
             } else {
-                this.profiler.start(this.worldName + "_thread");
+                WorldProfile worldProfile = this.profiler.getWorldProfile(this.worldName);
+                worldProfile.start();
                 try {
                     this.worldToTick.tickEntities();
                 } catch (Throwable throwable1) {
                     System.out.println(throwable1.getMessage());
                     throwable1.printStackTrace();
                 }
+                worldProfile.start(WorldProfileSection.UPDATE_PLAYERS);
                 synchronized(this.lock.updatePlayersLock) {
                     this.worldToTick.getTracker().updatePlayers();
                 }
+                worldProfile.stop(WorldProfileSection.UPDATE_PLAYERS);
 
+                worldProfile.start(WorldProfileSection.CHUNK_LOADING);
                 this.worldToTick.loadAndGenerateChunks();
-
-                Profile profile = this.profiler.stop(this.worldName + "_thread");
-                if(profile != null) {
-                    this.worldToTick.setLastTickAvg(profile.getLastAvg());
-                    profile.setCurrentPlayerNumber(this.worldToTick.players.size());
-                }
+                worldProfile.stop(WorldProfileSection.CHUNK_LOADING);
+                worldProfile.stop();
+                worldProfile.setCurrentPlayerNumber(this.worldToTick.players.size());
+                this.worldToTick.setLastTickAvg(worldProfile.getLastAvg());
 
                 this.worldToTick = null;
+                this.worldName = "None";
                 this.setChanged();
                 this.notifyObservers();
             }

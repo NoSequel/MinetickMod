@@ -34,6 +34,20 @@ public class Profiler {
         return this.map.get(ident);		
     }
 
+    public WorldProfile getWorldProfile(String ident) {
+        ident = "World_" + ident;
+        Profile p = this.map.get(ident);
+        if(p == null) {
+            int writeSteps = this.writeInterval * 60 / this.logInterval;
+            p = new WorldProfile(this.logInterval, ident, this.avgsTickInterval, this.writeToFile, this.writeInterval, writeSteps);
+            this.map.put(ident, p);
+        }
+        if(p instanceof WorldProfile) {
+            return (WorldProfile) p;
+        }
+        return null;
+    }
+
     public void start(String ident) {
         Profile p = this.map.get(ident);
         if(p == null) {

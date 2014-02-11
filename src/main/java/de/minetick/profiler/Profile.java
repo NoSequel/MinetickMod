@@ -8,9 +8,10 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 
 public class Profile {
 
@@ -24,7 +25,7 @@ public class Profile {
     private SimpleDateFormat currentTime;
     private long startTime;
     private long endTime;
-    private ArrayList<String> output = new ArrayList<String>();
+    protected ArrayList<String> output = new ArrayList<String>();
 
     private long avgSum = 0L;
     private int avgCount = 0, avgMaxCount;
@@ -33,11 +34,12 @@ public class Profile {
 
     private boolean errorShown = false;
 
-    private int counter;
-    private boolean writeEnabled;
+    protected int counter;
+    protected boolean writeEnabled;
     private int writeInterval;
-    private int writeStep;
+    protected int writeStep;
     private int logInterval;
+    private int avgPlayers;
 
     public Profile(int size, String ident, int avgMaxCount, boolean writeToFile, int writeInterval, int writeSteps) {
         this.avgTickEntitiesTime = 0L;
@@ -79,6 +81,14 @@ public class Profile {
 
     public long getLastAvg() {
         return this.avgTickEntitiesTime;
+    }
+
+    public float getLastAvgFloat() {
+        return ((float)(this.getLastAvg() / 100000L)) / 10.0F;
+    }
+
+    public int getPlayerAvg() {
+        return this.avgPlayers;
     }
 
     public long getRecord(int i) {
@@ -144,7 +154,7 @@ public class Profile {
         if(cnt > this.counter) {
             this.counter = cnt;
 
-            this.calcRecord();
+            this.calcRecord(this.writeEnabled);
             if(this.writeEnabled) {
                 if((this.counter % this.writeStep) == 0) {
                     this.writeToFile();
@@ -153,11 +163,11 @@ public class Profile {
         }
     }
 
-    private String currentTime() {
+    protected String currentTime() {
         return this.currentTime.format(new Date());
     }
 
-    private void calcRecord() {
+    protected void calcRecord(boolean writeEnabled) {
         long avg = 0L, max = Long.MIN_VALUE, calls = 0L;
         int i = 0, playerAvg = 0, chunks = 0;
         for(i = 0; i < this.records.length && i <= this.lastIndex; i++) {
@@ -183,18 +193,36 @@ public class Profile {
             calls = 0L;
         }
         this.avgTickEntitiesTime = avg;
-        if(this.writeEnabled) {
-            float favg = ((float)(avg / 1000L)) / 1000.0F;
-            float fmax = ((float)(max / 1000L)) / 1000.0F;
-            String tmp = (" Avg: " + favg + "  Max: "+ fmax + " AvgCalls: " + calls + " Players: " + playerAvg);
+        this.avgPlayers = playerAvg;
+        if(writeEnabled) {
+            float favg = ((float)(avg / 100000L)) / 10.0F;
+            float fmax = ((float)(max / 100000L)) / 10.0F;
+            List<String> data = new LinkedList<String>();
+            data.add("Avg: " + favg);
+            data.add("Max: " + fmax);
+            data.add("AvgCalls: " + calls);
+            data.add("Players: " + playerAvg);
             if(chunks > 0) {
-                tmp += (" GeneratedChunks: " + chunks);
+                data.add("GeneratedChunks: " + chunks);
             }
-            this.output.add("" + this.counter + "  " + this.currentTime() + tmp.replace(".", ","));
+            this.addToOutput(this.counter, this.currentTime(), data);
         }
     }
 
-    private void writeToFile() {
+    protected void addToOutput(int counter, String time, List<String> data) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(counter).append(" ");
+        sb.append(time).append(" ");
+        for(String s: data) {
+            if(s != null) {
+                sb.append(s.replace(".", ","));
+                sb.append("  ");
+            }
+        }
+        this.output.add(sb.toString());
+    }
+
+    protected void writeToFile() {
         boolean exists = this.file.exists();
         if(!exists) {
             try {

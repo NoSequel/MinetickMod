@@ -44,7 +44,9 @@ import org.bukkit.event.world.WorldSaveEvent;
 // CraftBukkit end
 
 import de.minetick.MinetickMod;
+import de.minetick.profiler.Profile;
 import de.minetick.profiler.ProfilingComperator;
+import de.minetick.profiler.WorldProfile.WorldProfileSection;
 
 public abstract class MinecraftServer implements ICommandListener, Runnable, IMojangStatistics {
 
@@ -472,7 +474,8 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
                         // Poweruser start
                         this.minetickMod.getProfiler().start("GameLogicLoop");
                         this.t();
-                        this.minetickMod.getProfiler().stop("GameLogicLoop");
+                        Profile p = this.minetickMod.getProfiler().stop("GameLogicLoop");
+                        p.setCurrentPlayerNumber(this.B());
                         this.minetickMod.getProfiler().newTick();
                         // Poweruser end
                         j = 0L;
@@ -483,7 +486,8 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
                             // Poweruser start
                             this.minetickMod.getProfiler().start("GameLogicLoop");
                             this.t();
-                            this.minetickMod.getProfiler().stop("GameLogicLoop");
+                            Profile p = this.minetickMod.getProfiler().stop("GameLogicLoop");
+                            p.setCurrentPlayerNumber(this.B());
                             this.minetickMod.getProfiler().newTick();
                             // Poweruser end
                         }
@@ -716,6 +720,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
             WorldServer worldserver = this.sortedWorldsArray[i];
             worldserver.cancelHeavyCalculations(false);
             worldserver.getVec3DPool().a();
+            this.minetickMod.getProfiler().getWorldProfile(worldserver.getWorld().getName()).start(WorldProfileSection.DO_TICK);
             try {
                 worldserver.doTick();
             } catch (Throwable throwable) {
@@ -723,6 +728,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
                 worldserver.a(crashreport);
                 throw new ReportedException(crashreport);
             }
+            this.minetickMod.getProfiler().getWorldProfile(worldserver.getWorld().getName()).stop(WorldProfileSection.DO_TICK);
             this.minetickMod.getThreadPool().tickWorld(worldserver);
         }
         this.minetickMod.getThreadPool().waitUntilDone();

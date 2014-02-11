@@ -32,7 +32,10 @@ import org.bukkit.event.weather.ThunderChangeEvent;
 import org.bukkit.craftbukkit.util.LongHash; // Poweruser
 
 import de.minetick.LockObject;
+import de.minetick.MinetickMod;
 import de.minetick.antixray.AntiXRay;
+import de.minetick.profiler.WorldProfile;
+import de.minetick.profiler.WorldProfile.WorldProfileSection;
 
 public abstract class World implements IBlockAccess {
 
@@ -1221,6 +1224,11 @@ public abstract class World implements IBlockAccess {
         this.methodProfiler.a("entities");
         this.methodProfiler.a("global");
 
+        // Poweruser start
+        WorldProfile worldProfile = MinetickMod.getProfilerStatic().getWorldProfile(this.getWorld().getName());
+        worldProfile.start(WorldProfileSection.TICK_ENTITIES);
+        // Poweruser end
+
         int i;
         Entity entity;
         CrashReport crashreport;
@@ -1380,6 +1388,11 @@ public abstract class World implements IBlockAccess {
             this.methodProfiler.b();
         }
 
+        // Poweruser start
+        worldProfile.stop(WorldProfileSection.TICK_ENTITIES);
+        worldProfile.start(WorldProfileSection.TICK_TILEENTITIES);
+        // Poweruser end
+
         this.methodProfiler.c("blockEntities");
         this.N = true;
         Iterator iterator = this.tileEntityList.iterator();
@@ -1453,6 +1466,8 @@ public abstract class World implements IBlockAccess {
 
             this.a.clear();
         }
+
+        worldProfile.stop(WorldProfileSection.TICK_TILEENTITIES); // Poweruser
 
         this.methodProfiler.b();
         this.methodProfiler.b();
