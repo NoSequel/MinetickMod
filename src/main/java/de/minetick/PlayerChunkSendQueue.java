@@ -176,8 +176,10 @@ public class PlayerChunkSendQueue {
     
     public void clear() {
         synchronized(this.lock) {
+            this.serverData.clear();
             this.clientData.clear();
             this.queue.clear();
+            this.skippedChunks.clear();
             this.player.chunkCoordIntPairQueue.clear();
         }
     }
