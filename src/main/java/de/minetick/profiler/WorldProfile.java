@@ -22,7 +22,12 @@ public class WorldProfile extends Profile {
 
     @Override
     public long getLastAvg() {
-        return this.tickEntities.getLastAvg() + this.tickTileEntities.getLastAvg() + 
+        return this.doTick.getLastAvg() + this.tickEntities.getLastAvg() + this.tickTileEntities.getLastAvg() +
+               this.updatePlayers.getLastAvg() + this.chunkLoading.getLastAvg();
+    }
+
+    public long getLastThreadAvg() {
+        return this.tickEntities.getLastAvg() + this.tickTileEntities.getLastAvg() +
                this.updatePlayers.getLastAvg() + this.chunkLoading.getLastAvg();
     }
 

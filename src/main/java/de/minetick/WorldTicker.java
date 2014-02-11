@@ -55,7 +55,7 @@ public class WorldTicker extends Observable implements Runnable {
                 worldProfile.stop(WorldProfileSection.CHUNK_LOADING);
                 worldProfile.stop();
                 worldProfile.setCurrentPlayerNumber(this.worldToTick.players.size());
-                this.worldToTick.setLastTickAvg(worldProfile.getLastAvg());
+                this.worldToTick.setLastTickAvg(worldProfile.getLastThreadAvg());
 
                 this.worldToTick = null;
                 this.worldName = "None";
