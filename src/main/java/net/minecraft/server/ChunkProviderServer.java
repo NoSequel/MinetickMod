@@ -133,15 +133,8 @@ public class ChunkProviderServer implements IChunkProvider {
             loader = (ChunkRegionLoader) this.f;
         }
 
-<<<<<<< HEAD
-        // If the chunk exists but isn't loaded do it async
-        //if (chunk == null && runnable != null && loader != null && loader.chunkExists(this.world, i, j)) {
-        if (chunk == null && runnable != null && loader != null && this.doesChunkExist(i, j)) { // Poweruser
-            org.bukkit.craftbukkit.chunkio.ChunkIOExecutor.queueChunkLoad(this.world, loader, this, i, j, runnable);
-            return null;
-=======
         // We can only use the queue for already generated chunks
-        if (chunk == null && loader != null && loader.chunkExists(this.world, i, j)) {
+        if (chunk == null && loader != null && this.doesChunkExist(i, j)) {
             if (runnable != null) {
                 ChunkIOExecutor.queueChunkLoad(this.world, loader, this, i, j, runnable);
                 return null;
@@ -150,7 +143,6 @@ public class ChunkProviderServer implements IChunkProvider {
             }
         } else if (chunk == null) {
             chunk = this.originalGetChunkAt(i, j);
->>>>>>> 98fffc8e7a
         }
 
         // If we didn't load the chunk async and have a callback run it now
