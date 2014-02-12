@@ -77,7 +77,7 @@ public class PathfinderGoalMeleeAttack extends PathfinderGoal {
                     if(this.failedChecks >= 20) {
                         this.failedChecks = 0;
                     }
-                    this.skipChecks = (10 * this.failedChecks) + 4 + this.b.aI().nextInt(7);
+                    this.skipChecks = 2 + (6 * this.failedChecks);
                     out = this.f != null;
                 }
             } else {
@@ -123,13 +123,13 @@ public class PathfinderGoalMeleeAttack extends PathfinderGoal {
             this.j = entityliving.boundingBox.b;
             this.k = entityliving.locZ;
             this.h = 4 + this.b.aI().nextInt(7);
-            /*
+
             if (d0 > 1024.0D) {
                 this.h += 10;
             } else if (d0 > 256.0D) {
                 this.h += 5;
             }
-
+            /*
             if (!this.b.getNavigation().a((Entity) entityliving, this.d)) {
                 this.h += 15;
             }
@@ -162,7 +162,7 @@ public class PathfinderGoalMeleeAttack extends PathfinderGoal {
                 this.failedSearches = 0;
             }
 
-            this.h += (15 + 10 * this.failedSearches);
+            this.h += (10 * this.failedSearches);
             // Poweruser end
         }
 
