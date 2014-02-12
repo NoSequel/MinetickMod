@@ -81,7 +81,7 @@ public abstract class World implements IBlockAccess {
     public long ticksPerAnimalSpawns;
     public long ticksPerMonsterSpawns;
     public boolean populating;
-    private int tickPosition;
+    //private int tickPosition;
     // CraftBukkit end
     //private ArrayList M; // Poweruser - replaced by two ThreadLocal lists
     private boolean N;
@@ -1055,6 +1055,11 @@ public abstract class World implements IBlockAccess {
             this.everyoneSleeping();
         }
 
+        /* Poweruser - This code is also executed in tickEntities(), when an entity is found to be dead there.
+         * Lets handle removing of entities in tickEntities(), to not make it more complicated than it already is.
+         * The entity that is removed here, stays one tick longer in the entityList than it did before, and is then
+         * removed from the list, but it is not ticked in the following tick, as tickEntities() does not tick dead entities.
+
         int i = entity.ai;
         int j = entity.ak;
 
@@ -1073,6 +1078,7 @@ public abstract class World implements IBlockAccess {
         // CraftBukkit end
 
         this.b(entity);
+        */
     }
 
     public void addIWorldAccess(IWorldAccess iworldaccess) {
@@ -1298,7 +1304,6 @@ public abstract class World implements IBlockAccess {
         this.f.clear();
         this.methodProfiler.c("regular");
 
-<<<<<<< HEAD
         // Poweruser start
         /*
          * Instead of running through the list from 0 to size-1 everytime, I'm going to
@@ -1310,8 +1315,9 @@ public abstract class World implements IBlockAccess {
 
         this.alreadyCheckedChunks.clear(); // Poweruser - Maybe clear less frequent
         /*
-        for (i = 0; i < this.entityList.size(); ++i) {
-            entity = (Entity) this.entityList.get(i);
+        // CraftBukkit start - Use field for loop variable
+        for (this.tickPosition = 0; this.tickPosition < this.entityList.size(); ++this.tickPosition) {
+            entity = (Entity) this.entityList.get(this.tickPosition);
         */
         int count = 0, size = this.entityList.size();
         int countI = this.nextTickEntityIndex;
@@ -1324,14 +1330,7 @@ public abstract class World implements IBlockAccess {
                 this.nextTickEntityIndex = countI + 1;
             }
         // Poweruser end
-            // CraftBukkit start - Don't tick entities in chunks queued for unload
-=======
-        // CraftBukkit start - Use field for loop variable
-        for (this.tickPosition = 0; this.tickPosition < this.entityList.size(); ++this.tickPosition) {
-            entity = (Entity) this.entityList.get(this.tickPosition);
-
             // Don't tick entities in chunks queued for unload
->>>>>>> 98fffc8e7a
             ChunkProviderServer chunkProviderServer = ((WorldServer) this).chunkProviderServer;
             if (chunkProviderServer.unloadQueue.contains(MathHelper.floor(entity.locX) >> 4, MathHelper.floor(entity.locZ) >> 4)) {
                 // Poweruser start - Increasing the counters, as this entity wasnt skipped by me
@@ -1391,12 +1390,10 @@ public abstract class World implements IBlockAccess {
                     this.getChunkAt(j, k).b(entity);
                 }
 
-<<<<<<< HEAD
                 //this.entityList.remove(i--);
                 this.entityList.remove(countI); // Poweruser
-=======
-                this.entityList.remove(this.tickPosition--); // CraftBukkit - Use field for loop variable
->>>>>>> 98fffc8e7a
+                //this.entityList.remove(this.tickPosition--); // CraftBukkit - Use field for loop variable
+
                 this.b(entity);
             }
             // Poweruser start
