@@ -3,14 +3,8 @@
   <modelVersion>4.0.0</modelVersion>
   <artifactId>minetickmod</artifactId>
   <packaging>jar</packaging>
-<<<<<<< HEAD
-  <version>1.7.2-R0.3-SNAPSHOT</version>
-  <name>MinetickMod</name>
-=======
   <version>1.7.2-R0.3</version>
-  <name>CraftBukkit</name>
-  <url>http://www.bukkit.org</url>
->>>>>>> 98fffc8e7a
+  <name>MinetickMod</name>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
