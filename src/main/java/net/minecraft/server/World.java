@@ -17,7 +17,6 @@ import java.util.concurrent.Callable;
 import org.bukkit.Bukkit;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 import org.bukkit.craftbukkit.util.LongHashSet;
-import org.bukkit.craftbukkit.util.UnsafeList;
 import org.bukkit.generator.ChunkGenerator;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.CraftWorld;
@@ -82,6 +81,7 @@ public abstract class World implements IBlockAccess {
     public long ticksPerAnimalSpawns;
     public long ticksPerMonsterSpawns;
     public boolean populating;
+    private int tickPosition;
     // CraftBukkit end
     //private ArrayList M; // Poweruser - replaced by two ThreadLocal lists
     private boolean N;
@@ -1062,7 +1062,16 @@ public abstract class World implements IBlockAccess {
             this.getChunkAt(i, j).b(entity);
         }
 
-        this.entityList.remove(entity);
+        // CraftBukkit start - Decrement loop variable field if we've already ticked this entity
+        int index = this.entityList.indexOf(entity);
+        if (index != -1) {
+            if (index <= this.tickPosition) {
+                this.tickPosition--;
+            }
+            this.entityList.remove(index);
+        }
+        // CraftBukkit end
+
         this.b(entity);
     }
 
@@ -1289,6 +1298,7 @@ public abstract class World implements IBlockAccess {
         this.f.clear();
         this.methodProfiler.c("regular");
 
+<<<<<<< HEAD
         // Poweruser start
         /*
          * Instead of running through the list from 0 to size-1 everytime, I'm going to
@@ -1315,6 +1325,13 @@ public abstract class World implements IBlockAccess {
             }
         // Poweruser end
             // CraftBukkit start - Don't tick entities in chunks queued for unload
+=======
+        // CraftBukkit start - Use field for loop variable
+        for (this.tickPosition = 0; this.tickPosition < this.entityList.size(); ++this.tickPosition) {
+            entity = (Entity) this.entityList.get(this.tickPosition);
+
+            // Don't tick entities in chunks queued for unload
+>>>>>>> 98fffc8e7a
             ChunkProviderServer chunkProviderServer = ((WorldServer) this).chunkProviderServer;
             if (chunkProviderServer.unloadQueue.contains(MathHelper.floor(entity.locX) >> 4, MathHelper.floor(entity.locZ) >> 4)) {
                 // Poweruser start - Increasing the counters, as this entity wasnt skipped by me
@@ -1374,8 +1391,12 @@ public abstract class World implements IBlockAccess {
                     this.getChunkAt(j, k).b(entity);
                 }
 
+<<<<<<< HEAD
                 //this.entityList.remove(i--);
                 this.entityList.remove(countI); // Poweruser
+=======
+                this.entityList.remove(this.tickPosition--); // CraftBukkit - Use field for loop variable
+>>>>>>> 98fffc8e7a
                 this.b(entity);
             }
             // Poweruser start
