@@ -170,8 +170,8 @@ public class PlayerChunkManager {
             ArrayList<Chunk> arraylist = new ArrayList<Chunk>();
             ArrayList arraylist1 = new ArrayList();
             int skipped = 0;
-            int previouslySkipped = chunkQueue.requeuePreviouslySkipped();
-            while(chunkQueue.hasChunksQueued() && arraylist.size() < PacketPlayOutMapChunkBulk.c() && skipped < previouslySkipped + 10) {
+            chunkQueue.requeuePreviouslySkipped();
+            while(chunkQueue.hasChunksQueued() && arraylist.size() < PacketPlayOutMapChunkBulk.c() && skipped < 20) {
                 ChunkCoordIntPair chunkcoordintpair = chunkQueue.peekFirst(); // Poweruser
                 if (chunkcoordintpair != null) {
                     if(this.world.isLoaded(chunkcoordintpair.x << 4, 0, chunkcoordintpair.z << 4)) {
@@ -184,13 +184,11 @@ public class PlayerChunkManager {
                         }
                         // CraftBukkit end
                         else {
-                            ChunkPosEnum pos = this.isWithinRadius(chunkcoordintpair.x, chunkcoordintpair.z, playerChunkPosX, playerChunkPosZ, 2);
-                            chunkQueue.skipFirst(pos.equals(ChunkPosEnum.INSIDE));
+                            chunkQueue.skipFirst();
                             skipped++;
                         }
                     } else {
-                        ChunkPosEnum pos = this.isWithinRadius(chunkcoordintpair.x, chunkcoordintpair.z, playerChunkPosX, playerChunkPosZ, 2);
-                        chunkQueue.skipFirst(pos.equals(ChunkPosEnum.INSIDE));
+                        chunkQueue.skipFirst();
                         skipped++;
                     }
                 } else {

@@ -138,22 +138,21 @@ public class PlayerChunkSendQueue {
     
     public void removeFirst() {
         synchronized(this.lock) {
-            ChunkCoordIntPair ccip = this.queue.removeFirst();
-            this.clientData.add(ccip);
-            this.player.chunkCoordIntPairQueue.remove(ccip);
+            if(!this.queue.isEmpty()) {
+                ChunkCoordIntPair ccip = this.queue.removeFirst();
+                this.clientData.add(ccip);
+                this.player.chunkCoordIntPairQueue.remove(ccip);
+            }
         }
     }
     
-    public void skipFirst(boolean importantChunk) {
+    public void skipFirst() {
         synchronized(this.lock) {
-            ChunkCoordIntPair ccip = this.queue.removeFirst();
-            this.player.chunkCoordIntPairQueue.remove(ccip);
-            if(this.isOnServer(ccip) && !this.isChunkSent(ccip)) {
-                if(importantChunk) {
-                    this.skippedChunks.addLast(ccip);
-                } else {
-                    this.queue.addLast(ccip);
-                    this.player.chunkCoordIntPairQueue.add(ccip);
+            if(!this.queue.isEmpty()) {
+                ChunkCoordIntPair ccip = this.queue.removeFirst();
+                this.player.chunkCoordIntPairQueue.remove(ccip);
+                if(this.isOnServer(ccip) && !this.isChunkSent(ccip)) {
+                     this.skippedChunks.addLast(ccip);
                 }
             }
         }
