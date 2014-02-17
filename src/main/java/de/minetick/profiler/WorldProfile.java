@@ -86,8 +86,8 @@ public class WorldProfile extends Profile {
             this.counter = cnt;
 
             this.calcRecord(false);
-            this.gatherRecords();
             if(this.writeEnabled) {
+                this.gatherRecords();
                 if((this.counter % this.writeStep) == 0) {
                     this.writeToFile();
                 }

@@ -48,8 +48,8 @@ public class Profile {
         this.writeEnabled = writeToFile;
         this.writeInterval = writeInterval;
         this.writeStep = writeSteps;
+        this.currentTime = new SimpleDateFormat ("HH:mm:ss");
         if(writeToFile) {
-            this.currentTime = new SimpleDateFormat ("HH:mm:ss");
             SimpleDateFormat df = new SimpleDateFormat ("yyyy.MM.dd_HH-mm-ss");
             Calendar c = Calendar.getInstance();
             int day = c.get(Calendar.DAY_OF_MONTH);
