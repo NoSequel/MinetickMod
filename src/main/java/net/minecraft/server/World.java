@@ -81,7 +81,7 @@ public abstract class World implements IBlockAccess {
     public long ticksPerAnimalSpawns;
     public long ticksPerMonsterSpawns;
     public boolean populating;
-    //private int tickPosition;
+    private int tickPosition;
     // CraftBukkit end
     //private ArrayList M; // Poweruser - replaced by two ThreadLocal lists
     private boolean N;
@@ -1055,11 +1055,6 @@ public abstract class World implements IBlockAccess {
             this.everyoneSleeping();
         }
 
-        /* Poweruser - This code is also executed in tickEntities(), when an entity is found to be dead there.
-         * Lets handle removing of entities in tickEntities(), to not make it more complicated than it already is.
-         * The entity that is removed here, stays one tick longer in the entityList than it did before, and is then
-         * removed from the list, but it is not ticked in the following tick, as tickEntities() does not tick dead entities.
-
         int i = entity.ai;
         int j = entity.ak;
 
@@ -1073,12 +1068,16 @@ public abstract class World implements IBlockAccess {
             if (index <= this.tickPosition) {
                 this.tickPosition--;
             }
+            // Poweruser start
+            if (this.cancelHeavyCalculations && index < this.nextTickEntityIndex) {
+                this.nextTickEntityIndex--;
+            }
+            // Poweruser end
             this.entityList.remove(index);
         }
         // CraftBukkit end
 
         this.b(entity);
-        */
     }
 
     public void addIWorldAccess(IWorldAccess iworldaccess) {
@@ -1319,22 +1318,22 @@ public abstract class World implements IBlockAccess {
         for (this.tickPosition = 0; this.tickPosition < this.entityList.size(); ++this.tickPosition) {
             entity = (Entity) this.entityList.get(this.tickPosition);
         */
-        int count = 0, size = this.entityList.size();
-        int countI = this.nextTickEntityIndex;
-        while(count < size ) {
-            if(countI >= this.entityList.size()) {
-                countI = countI % this.entityList.size();
+        int count = 0, size;
+        this.tickPosition = this.nextTickEntityIndex;
+        while(count < (size = this.entityList.size()) ) {
+            if(this.tickPosition >= size) {
+                this.tickPosition = 0;
             }
-            entity = (Entity) this.entityList.get(countI);
+            entity = (Entity) this.entityList.get(this.tickPosition);
             if(!this.cancelHeavyCalculations) {
-                this.nextTickEntityIndex = countI + 1;
+                this.nextTickEntityIndex = this.tickPosition + 1;
             }
         // Poweruser end
             // Don't tick entities in chunks queued for unload
             ChunkProviderServer chunkProviderServer = ((WorldServer) this).chunkProviderServer;
             if (chunkProviderServer.unloadQueue.contains(MathHelper.floor(entity.locX) >> 4, MathHelper.floor(entity.locZ) >> 4)) {
                 // Poweruser start - Increasing the counters, as this entity wasnt skipped by me
-                countI++;
+                this.tickPosition++;
                 count++;
                 // Poweruser end
                 continue;
@@ -1344,7 +1343,7 @@ public abstract class World implements IBlockAccess {
             if (entity.vehicle != null) {
                 if (!entity.vehicle.dead && entity.vehicle.passenger == entity) {
                     // Poweruser start - Increasing the counters, as this entity wasnt skipped by me
-                    countI++;
+                    this.tickPosition++;
                     count++;
                     // Poweruser end
                     continue;
@@ -1391,14 +1390,14 @@ public abstract class World implements IBlockAccess {
                 }
 
                 //this.entityList.remove(i--);
-                this.entityList.remove(countI); // Poweruser
+                this.entityList.remove(this.tickPosition); // Poweruser
                 //this.entityList.remove(this.tickPosition--); // CraftBukkit - Use field for loop variable
 
                 this.b(entity);
             }
             // Poweruser start
             else {
-                countI++; // Increasing the counter to the index of the next entity
+                this.tickPosition++; // Increasing the counter to the index of the next entity
             }
             count++;
             // Poweruser end
