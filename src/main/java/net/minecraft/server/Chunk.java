@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -72,7 +73,8 @@ public class Chunk {
         this.v = new byte[256];
         this.b = new int[256];
         this.c = new boolean[256];
-        this.tileEntities = new HashMap();
+        //this.tileEntities = new HashMap();
+        this.tileEntities = new ConcurrentHashMap(16, 0.75F, 1); // Poweruser
         this.x = 4096;
         this.entitySlices = new List[16];
         this.world = world;
