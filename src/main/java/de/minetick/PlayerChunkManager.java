@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
 
+import de.minetick.packetbuilder.PacketBuilderChunkDataBulk;
 import de.minetick.packetbuilder.PacketBuilderThreadPool;
 import de.minetick.packetbuilder.jobs.PBJobPlayOutMapChunkBulk;
 
@@ -167,19 +168,17 @@ public class PlayerChunkManager {
             PlayerChunkSendQueue chunkQueue = buff.getPlayerChunkSendQueue();
             // Poweruser start - moved here from EntityPlayer.h()
             for(int w = 0; w < packetsPerTick; w++) {
-            ArrayList<Chunk> arraylist = new ArrayList<Chunk>();
-            ArrayList arraylist1 = new ArrayList();
+            PacketBuilderChunkDataBulk chunkData = new PacketBuilderChunkDataBulk();
             int skipped = 0;
             chunkQueue.requeuePreviouslySkipped();
-            while(chunkQueue.hasChunksQueued() && arraylist.size() < PacketPlayOutMapChunkBulk.c() && skipped < 20) {
+            while(chunkQueue.hasChunksQueued() && chunkData.size() < PacketPlayOutMapChunkBulk.c() && skipped < 20) {
                 ChunkCoordIntPair chunkcoordintpair = chunkQueue.peekFirst(); // Poweruser
                 if (chunkcoordintpair != null) {
                     if(this.world.isLoaded(chunkcoordintpair.x << 4, 0, chunkcoordintpair.z << 4)) {
                         // CraftBukkit start - Get tile entities directly from the chunk instead of the world
                         Chunk chunk = this.world.getChunkAt(chunkcoordintpair.x, chunkcoordintpair.z);
                         if(chunk.k()) {
-                            arraylist.add(chunk);
-                            arraylist1.addAll(chunk.tileEntities.values());
+                            chunkData.addChunk(chunk);
                             chunkQueue.removeFirst(); // Poweruser
                         }
                         // CraftBukkit end
@@ -195,9 +194,9 @@ public class PlayerChunkManager {
                     chunkQueue.removeFirst();
                 }
             }
-            if (!arraylist.isEmpty()) {
+            if (!chunkData.isEmpty()) {
                 //entityplayer.playerConnection.sendPacket(new PacketPlayOutMapChunkBulk(arraylist));
-                PacketBuilderThreadPool.addJobStatic(new PBJobPlayOutMapChunkBulk(entityplayer.playerConnection, arraylist, chunkQueue)); // Poweruser
+                PacketBuilderThreadPool.addJobStatic(new PBJobPlayOutMapChunkBulk(entityplayer.playerConnection, chunkData, chunkQueue)); // Poweruser
             }
             }
             // Poweruser end
