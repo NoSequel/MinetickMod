@@ -188,7 +188,7 @@ public class PlayerChunkSendQueue {
     }
 
     public boolean isAboutToSend(ChunkCoordIntPair location) {
-            return this.queue.contains(location);
+            return this.skippedChunks.contains(location) || this.queue.contains(location);
     }
     
     public boolean alreadyLoaded(ChunkCoordIntPair ccip) {
