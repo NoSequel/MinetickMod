@@ -3,12 +3,11 @@ package de.minetick.packetbuilder.jobs;
 import java.util.ArrayList;
 
 import net.minecraft.server.Chunk;
-import net.minecraft.server.Packet;
 import net.minecraft.server.PacketPlayOutMapChunk;
 import net.minecraft.server.PlayerConnection;
-import net.minecraft.server.TileEntity;
 import de.minetick.PlayerChunkSendQueue;
 import de.minetick.packetbuilder.PacketBuilderBuffer;
+import de.minetick.packetbuilder.PacketBuilderChunkData;
 import de.minetick.packetbuilder.PacketBuilderJobInterface;
 
 public class PBJobPlayOutMapChunk implements PacketBuilderJobInterface {
@@ -17,43 +16,30 @@ public class PBJobPlayOutMapChunk implements PacketBuilderJobInterface {
     private PlayerChunkSendQueue chunkQueue;
     private PlayerConnection[] connections;
     private PlayerChunkSendQueue[] chunkQueues;
-    private Chunk chunk;
-    private boolean flag;
-    private int i;
-    private boolean sendTileEntities;
+    private PacketBuilderChunkData chunkData;
     ArrayList<PlayerConnection> validOnes = new ArrayList<PlayerConnection>();
     private boolean multipleConnections;
 
-    public PBJobPlayOutMapChunk(PlayerConnection connection, PlayerChunkSendQueue chunkQueue, Chunk chunk, boolean flag, int i) {
+    public PBJobPlayOutMapChunk(PlayerConnection connection, PlayerChunkSendQueue chunkQueue, PacketBuilderChunkData chunkData) {
         this.multipleConnections = false;
         this.connection = connection;
         this.chunkQueue = chunkQueue;
-        this.chunk = chunk;
-        this.flag = flag;
-        this.i = i;
-        this.sendTileEntities = false;
+        this.chunkData = chunkData;
     }
 
-    public PBJobPlayOutMapChunk(PlayerConnection[] connections, PlayerChunkSendQueue[] chunkQueues, Chunk chunk, boolean flag, int i, boolean sendTileEntities) {
+    public PBJobPlayOutMapChunk(PlayerConnection[] connections, PlayerChunkSendQueue[] chunkQueues, PacketBuilderChunkData chunkData) {
         this.multipleConnections = true;
         this.connections = connections;
         this.chunkQueues = chunkQueues;
-        this.chunk = chunk;
-        this.flag = flag;
-        this.i = i;
-        this.sendTileEntities = sendTileEntities;
+        this.chunkData = chunkData;
     }
 
     @Override
     public void buildAndSendPacket(PacketBuilderBuffer pbb) {
         boolean packetSent = false;
-        PacketPlayOutMapChunk packet = new PacketPlayOutMapChunk(pbb, this.chunk, this.flag, this.i);
+        Chunk chunk = this.chunkData.getChunk();
+        PacketPlayOutMapChunk packet = new PacketPlayOutMapChunk(pbb, chunk, this.chunkData.getSendAllFlag(), this.chunkData.getSectionBitmask());
         if(this.multipleConnections) {
-            ArrayList<TileEntity> tileentities = null;
-            if(this.sendTileEntities) {
-                tileentities = new ArrayList<TileEntity>();
-                tileentities.addAll(chunk.tileEntities.values());
-            }
             for(int a = 0; a < this.connections.length; a++) {
                 if(this.chunkQueues[a] != null && this.connections[a] != null) {
                     if(this.chunkQueues[a].isOnServer(chunk.locX, chunk.locZ)) {
@@ -68,15 +54,7 @@ public class PBJobPlayOutMapChunk implements PacketBuilderJobInterface {
                 packetSent = true;
                 for(PlayerConnection n: this.validOnes) {
                     n.sendPacket(packet);
-                    if(this.sendTileEntities) {
-                        for(int i = 0; i < tileentities.size(); i++) {
-                            TileEntity te = tileentities.get(i);
-                            Packet p = te.getUpdatePacket();
-                            if(p != null) {
-                                n.sendPacket(p);
-                            }
-                        }
-                    }
+                    this.chunkData.sendTileEntities(n);
                 }
             }
             this.connections = null;
@@ -101,7 +79,7 @@ public class PBJobPlayOutMapChunk implements PacketBuilderJobInterface {
     public void clear() {
         this.validOnes.clear();
         this.validOnes = null;
-        chunk = null;
+        this.chunkData.clear();
         if(this.connections != null) {
             for(int i = 0; i < this.connections.length; i++) {
                 this.connections[i] = null;

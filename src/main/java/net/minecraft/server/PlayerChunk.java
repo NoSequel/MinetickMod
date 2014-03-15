@@ -6,6 +6,7 @@ import java.util.List;
 import de.minetick.PlayerChunkManager;
 import de.minetick.PlayerChunkManager.ChunkPosEnum;
 import de.minetick.PlayerChunkSendQueue;
+import de.minetick.packetbuilder.PacketBuilderChunkData;
 import de.minetick.packetbuilder.PacketBuilderThreadPool;
 import de.minetick.packetbuilder.jobs.PBJobPlayOutMapChunk;
 
@@ -82,7 +83,7 @@ public class PlayerChunk { // Poweruser
 
             if (chunk.k()) {
                 //entityplayer.playerConnection.sendPacket(new PacketPlayOutMapChunk(chunk, true, 0));
-                PacketBuilderThreadPool.addJobStatic(new PBJobPlayOutMapChunk(entityplayer.playerConnection, entityplayer.chunkQueue, chunk, true, 0)); // Poweruser
+                PacketBuilderThreadPool.addJobStatic(new PBJobPlayOutMapChunk(entityplayer.playerConnection, entityplayer.chunkQueue, new PacketBuilderChunkData(chunk, true, 0))); // Poweruser
             }
 
             //this.b.remove(entityplayer);
@@ -187,7 +188,7 @@ public class PlayerChunk { // Poweruser
                             }
                         }
                     }
-                    PacketBuilderThreadPool.addJobStatic(new PBJobPlayOutMapChunk(players, queues, PlayerChunkMap.a(this.playerChunkMap).getChunkAt(this.location.x, this.location.z), (this.f == 0xFFFF), this.f, true));
+                    PacketBuilderThreadPool.addJobStatic(new PBJobPlayOutMapChunk(players, queues, new PacketBuilderChunkData(PlayerChunkMap.a(this.playerChunkMap).getChunkAt(this.location.x, this.location.z), (this.f == 0xFFFF), this.f)));
                     // Poweruser end
                     /*
                     for (k = 0; k < 16; ++k) {
