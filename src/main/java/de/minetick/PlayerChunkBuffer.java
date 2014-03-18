@@ -25,7 +25,6 @@ public class PlayerChunkBuffer {
     public int enlistedChunks = 0;
     private PlayerChunkManager playerChunkManager;
     private PlayerChunkSendQueue sendQueue;
-    private boolean playerHasMoved = false;
     private int[] playerRegionCenter;
     private int[] lastMovement;
     private ArrayDeque<PlayerMovement> movement;
@@ -105,7 +104,7 @@ public class PlayerChunkBuffer {
         this.highPriorityBuffer.clear();
         this.pq.clear();
         this.sendQueue.clear();
-        this.playerHasMoved = false;
+        this.movement.clear();
     }
 
     public boolean isEmpty() {
