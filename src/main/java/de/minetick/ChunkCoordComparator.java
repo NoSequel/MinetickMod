@@ -4,14 +4,15 @@ import java.util.Comparator;
 
 import net.minecraft.server.EntityPlayer;
 import net.minecraft.server.ChunkCoordIntPair;
+import net.minecraft.server.MathHelper;
 
 public class ChunkCoordComparator implements Comparator<ChunkCoordIntPair> {
     private int x;
     private int z;
 
     public void setPos(EntityPlayer entityplayer) {
-        x = (int) entityplayer.locX >> 4;
-        z = (int) entityplayer.locZ >> 4;
+        x = MathHelper.floor(entityplayer.locX) >> 4;
+        z = MathHelper.floor(entityplayer.locZ) >> 4;
     }
 
     public ChunkCoordComparator (EntityPlayer entityplayer) {
