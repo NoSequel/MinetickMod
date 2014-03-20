@@ -221,7 +221,8 @@ public class ChunkProviderServer implements IChunkProvider {
         Chunk chunk = (Chunk) this.chunks.get(LongHash.toLong(i, j));
 
         chunk = chunk == null ? (!this.world.isLoading && !this.forceChunkLoad ? this.emptyChunk : this.getChunkAt(i, j)) : chunk;
-        if (chunk == this.emptyChunk) return chunk;
+        //if (chunk == this.emptyChunk) return chunk;
+        if (chunk == this.emptyChunk || chunk == this.mtmEmptyChunk) return chunk; // Poweruser
         if (i != chunk.locX || j != chunk.locZ) {
             b.error("Chunk (" + chunk.locX + ", " + chunk.locZ + ") stored at  (" + i + ", " + j + ") in world '" + world.getWorld().getName() + "'");
             b.error(chunk.getClass().getName());
