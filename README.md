@@ -1,18 +1,23 @@
-CraftBukkit
+MinetickMod
 ===========
 
-A Bukkit (Minecraft Server API) implementation
+This is my mod of the popular [Craftbukkit Minecraft server](https://github.com/Bukkit/CraftBukkit).
+Its main purpose is to increase the server's processing speed, by introducing multithreading and other optimizations. And while I'm at it, fixing bugs that I found. 
 
-Website: [http://bukkit.org](http://bukkit.org)  
-Bugs/Suggestions: [http://leaky.bukkit.org](http://leaky.bukkit.org)  
-Contributing Guidelines: [CONTRIBUTING.md](https://github.com/Bukkit/CraftBukkit/blob/master/CONTRIBUTING.md)
+Developement started privately back in April of 2013. Since May 1st (Minecraft version 1.5.1 at that time) this mod is powering the server [Minetick](http://www.minetick.de) every day.
 
-Compilation
------------
+The main achievements so far:
 
-We use maven to handle our dependencies.
+- Prioritized parallel processing of the entities of different worlds
+- Queued, limited and parallel chunk generation in different worlds
+- Main thread independent creation, orebfuscation and compression of chunk packets
 
-* Install [Maven 3](http://maven.apache.org/download.html)
-* Check out and install [Bukkit](http://github.com/Bukkit/Bukkit)
-    * *Note*: this is not needed as the repository we use has Bukkit too, but you might have a newer one (with your own changes :D)
-* Check out this repo and: `mvn clean package`
+Parts of the changes are pretty well tested already (like parallel ticking of entities), other parts that I added recently (like offloaded packet creation) still require lots of testing. 
+
+Here is a (very abstract) graphical overview on what changed:
+
+![](https://raw.github.com/wiki/Poweruser/MinetickMod/MinetickMod_Dez2013_1stRelease_EN.png)
+
+
+As you probably notice: I'm using 4 worlds in this example here and by default a server only has 3 worlds (Overworld, nether and the end). This is a hint to you, that your gain from this mod is greater the more you spread the players on your server, and therefore the load on the worlds, equally among several worlds.
+To load up additional worlds, I can recommend the plugin [Multiverse](http://dev.bukkit.org/bukkit-plugins/multiverse-core/)
