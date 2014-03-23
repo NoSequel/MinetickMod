@@ -9,7 +9,8 @@ public class GenLayerRegionHills extends GenLayer {
 
     public int[] a(int i, int j, int k, int l) {
         int[] aint = this.a.a(i - 1, j - 1, k + 2, l + 2);
-        int[] aint1 = IntCache.a(k * l);
+        //int[] aint1 = IntCache.a(k * l);
+        int[] aint1 = this.intCache.a(k * l); // Poweruser
 
         for (int i1 = 0; i1 < l; ++i1) {
             for (int j1 = 0; j1 < k; ++j1) {
@@ -19,6 +20,7 @@ public class GenLayerRegionHills extends GenLayer {
                 if (this.a(3) == 0) {
                     int l1 = k1;
 
+                    /*
                     if (k1 == BiomeBase.DESERT.id) {
                         l1 = BiomeBase.DESERT_HILLS.id;
                     } else if (k1 == BiomeBase.FOREST.id) {
@@ -32,6 +34,23 @@ public class GenLayerRegionHills extends GenLayer {
                     } else if (k1 == BiomeBase.JUNGLE.id) {
                         l1 = BiomeBase.JUNGLE_HILLS.id;
                     }
+
+                    */
+                    // Poweruser start
+                    if (k1 == this.biomeBaseDB.DESERT.id) {
+                        l1 = this.biomeBaseDB.DESERT_HILLS.id;
+                    } else if (k1 == this.biomeBaseDB.FOREST.id) {
+                        l1 = this.biomeBaseDB.FOREST_HILLS.id;
+                    } else if (k1 == this.biomeBaseDB.TAIGA.id) {
+                        l1 = this.biomeBaseDB.TAIGA_HILLS.id;
+                    } else if (k1 == this.biomeBaseDB.PLAINS.id) {
+                        l1 = this.biomeBaseDB.FOREST.id;
+                    } else if (k1 == this.biomeBaseDB.ICE_PLAINS.id) {
+                        l1 = this.biomeBaseDB.ICE_MOUNTAINS.id;
+                    } else if (k1 == this.biomeBaseDB.JUNGLE.id) {
+                        l1 = this.biomeBaseDB.JUNGLE_HILLS.id;
+                    }
+                    // Poweruser end
 
                     if (l1 == k1) {
                         aint1[j1 + i1 * k] = k1;

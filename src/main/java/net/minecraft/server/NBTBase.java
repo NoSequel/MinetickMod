@@ -3,15 +3,31 @@ package net.minecraft.server;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.HashMap;
 
 public abstract class NBTBase {
+
+    // Poweruser start
+    protected static HashMap<String, String> storedStrings = new HashMap<String, String>();
+
+    public static String getStoredString(String name, boolean store) {
+        String str = storedStrings.get(name);
+        if(str == null) {
+            if(store) {
+                storedStrings.put(name, name);
+            }
+            str = name;
+        }
+        return str;
+    }
+    // Poweruser end
 
     public static final String[] b = new String[] { "END", "BYTE", "SHORT", "INT", "LONG", "FLOAT", "DOUBLE", "BYTE[]", "STRING", "LIST", "COMPOUND", "INT[]"};
     private String name;
 
-    abstract void write(DataOutput dataoutput);
+    abstract void write(DataOutput dataoutput) throws IOException; // Poweruser - added throws IOException
 
-    abstract void load(DataInput datainput, int i);
+    abstract void load(DataInput datainput, int i) throws IOException; // Poweruser - added throws IOException
 
     public abstract byte getTypeId();
 
@@ -37,17 +53,18 @@ public abstract class NBTBase {
         return this.name == null ? "" : this.name;
     }
 
-    public static NBTBase a(DataInput datainput) {
+    public static NBTBase a(DataInput datainput) throws IOException { // Poweruser - added throws IOException
         return b(datainput, 0);
     }
 
-    public static NBTBase b(DataInput datainput, int i) {
+    public static NBTBase b(DataInput datainput, int i) throws IOException { // Poweruser - added throws IOException
         byte b0 = datainput.readByte();
 
         if (b0 == 0) {
             return new NBTTagEnd();
         } else {
-            String s = datainput.readUTF();
+            //String s = datainput.readUTF();
+            String s = getStoredString(datainput.readUTF(), true); // Poweruser
             NBTBase nbtbase = createTag(b0, s);
 
             try {
@@ -64,7 +81,7 @@ public abstract class NBTBase {
         }
     }
 
-    public static void a(NBTBase nbtbase, DataOutput dataoutput) {
+    public static void a(NBTBase nbtbase, DataOutput dataoutput) throws IOException { // Poweruser - added throws IOException
         dataoutput.writeByte(nbtbase.getTypeId());
         if (nbtbase.getTypeId() != 0) {
             dataoutput.writeUTF(nbtbase.getName());

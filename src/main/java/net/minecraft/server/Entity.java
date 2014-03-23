@@ -110,6 +110,28 @@ public abstract class Entity {
     public EnumEntitySize at;
     public boolean valid; // CraftBukkit
 
+    // Poweruser start
+    protected boolean isImportantEntity = false;
+    public boolean isImportantEntity() {
+        return this.isImportantEntity;
+    }
+
+    protected boolean allowedToTeleport = true;
+    public boolean allowedToTeleport() {
+        return this.allowedToTeleport;
+    }
+
+    private int targetDimension;
+    public int getTargetDimension() {
+        return this.targetDimension;
+    }
+
+    protected boolean isPlayer = false;
+    public boolean isPlayer() {
+        return this.isPlayer;
+    }
+    // Poweruser end
+
     public Entity(World world) {
         this.id = entityCount++;
         this.l = 1.0D;
@@ -128,6 +150,7 @@ public abstract class Entity {
         this.setPosition(0.0D, 0.0D, 0.0D);
         if (world != null) {
             this.dimension = world.worldProvider.dimension;
+            this.targetDimension = this.dimension; // Poweruser
         }
 
         this.datawatcher.a(0, Byte.valueOf((byte) 0));
@@ -244,7 +267,8 @@ public abstract class Entity {
         this.lastYaw = this.yaw;
         int i;
 
-        if (!this.world.isStatic && this.world instanceof WorldServer) {
+        //if (!this.world.isStatic && this.world instanceof WorldServer) {
+        if (!this.world.isStatic && this.world instanceof WorldServer && this.allowedToTeleport()) { // Poweruser
             this.world.methodProfiler.a("portal");
             MinecraftServer minecraftserver = ((WorldServer) this.world).getMinecraftServer();
 
@@ -1418,7 +1442,8 @@ public abstract class Entity {
             this.vehicle = null;
         } else {
             // CraftBukkit start
-            if ((this.bukkitEntity instanceof LivingEntity) && (entity.getBukkitEntity() instanceof Vehicle) && entity.world.isChunkLoaded((int) entity.locX >> 4, (int) entity.locZ >> 4)) {
+            //if ((this.bukkitEntity instanceof LivingEntity) && (entity.getBukkitEntity() instanceof Vehicle) && entity.world.isChunkLoaded((int) entity.locX >> 4, (int) entity.locZ >> 4)) {
+            if ((this.bukkitEntity instanceof LivingEntity) && (entity.getBukkitEntity() instanceof Vehicle) && entity.world.isChunkLoaded(MathHelper.floor(entity.locX) >> 4, MathHelper.floor(entity.locZ) >> 4)) { // Poweruser
                 // It's possible to move from one vehicle to another.  We need to check if they're already in a vehicle, and fire an exit event if they are.
                 VehicleExitEvent exitEvent = null;
                 if (this.vehicle != null && this.vehicle.getBukkitEntity() instanceof Vehicle) {
@@ -1716,6 +1741,15 @@ public abstract class Entity {
     }
 
     public void b(int i) {
+    // Poweruser start - Entities will be queued and teleported after all worlds have been ticked
+        if(i != this.dimension) {
+            this.targetDimension = i;
+            this.world.queueEntityForDimensionChange(this);
+        }
+    }
+
+    public void changeDimension(int i) {
+    // Poweruser end
         if (!this.world.isStatic && !this.dead) {
             this.world.methodProfiler.a("changeDimension");
             MinecraftServer minecraftserver = MinecraftServer.getServer();
@@ -1743,7 +1777,12 @@ public abstract class Entity {
                 return;
             }
             exit = event.useTravelAgent() ? event.getPortalTravelAgent().findOrCreate(event.getTo()) : event.getTo();
-            this.teleportTo(exit, true);
+            //this.teleportTo(exit, true);
+            // Poweruser start - If there's no exit location, where is this entity supposed to be teleported to?
+            if(exit != null) {
+                this.teleportTo(exit, true);
+            }
+            // Poweruser end
         }
     }
 

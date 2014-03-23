@@ -13,7 +13,8 @@ public class GenLayerIcePlains extends GenLayer {
         int k1 = k + 2;
         int l1 = l + 2;
         int[] aint = this.a.a(i1, j1, k1, l1);
-        int[] aint1 = IntCache.a(k * l);
+        //int[] aint1 = IntCache.a(k * l);
+        int[] aint1 = this.intCache.a(k * l); // Poweruser
 
         for (int i2 = 0; i2 < l; ++i2) {
             for (int j2 = 0; j2 < k; ++j2) {
@@ -26,7 +27,8 @@ public class GenLayerIcePlains extends GenLayer {
                     int l2 = this.a(5);
 
                     if (l2 == 0) {
-                        l2 = BiomeBase.ICE_PLAINS.id;
+                        //l2 = BiomeBase.ICE_PLAINS.id;
+                        l2 = this.biomeBaseDB.ICE_PLAINS.id; // Poweruser
                     } else {
                         l2 = 1;
                     }

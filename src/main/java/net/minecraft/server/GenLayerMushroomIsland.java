@@ -13,7 +13,8 @@ public class GenLayerMushroomIsland extends GenLayer {
         int k1 = k + 2;
         int l1 = l + 2;
         int[] aint = this.a.a(i1, j1, k1, l1);
-        int[] aint1 = IntCache.a(k * l);
+        //int[] aint1 = IntCache.a(k * l);
+        int[] aint1 = this.intCache.a(k * l); // Poweruser
 
         for (int i2 = 0; i2 < l; ++i2) {
             for (int j2 = 0; j2 < k; ++j2) {
@@ -25,7 +26,8 @@ public class GenLayerMushroomIsland extends GenLayer {
 
                 this.a((long) (j2 + i), (long) (i2 + j));
                 if (k3 == 0 && k2 == 0 && l2 == 0 && i3 == 0 && j3 == 0 && this.a(100) == 0) {
-                    aint1[j2 + i2 * k] = BiomeBase.MUSHROOM_ISLAND.id;
+                    //aint1[j2 + i2 * k] = BiomeBase.MUSHROOM_ISLAND.id;
+                    aint1[j2 + i2 * k] = this.biomeBaseDB.MUSHROOM_ISLAND.id; // Poweruser
                 } else {
                     aint1[j2 + i2 * k] = k3;
                 }
