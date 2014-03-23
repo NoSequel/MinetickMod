@@ -17,9 +17,9 @@
   </properties>
 
   <scm>
-    <connection>scm:git:git://github.com/Poweruser/MinetickMod-1.7.2.git</connection>
-    <developerConnection>scm:git:ssh://git@github.com/Poweruser/MinetickMod-1.7.2.git</developerConnection>
-    <url>https://github.com/Poweruser/MinetickMod-1.7.2.git</url>
+    <connection>scm:git:git://github.com/Poweruser/MinetickMod.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com/Poweruser/MinetickMod.git</developerConnection>
+    <url>https://github.com/Poweruser/MinetickMod</url>
   </scm>
 
   <distributionManagement>
