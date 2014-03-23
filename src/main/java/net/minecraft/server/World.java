@@ -3,8 +3,10 @@ package net.minecraft.server;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
@@ -12,6 +14,7 @@ import java.util.concurrent.Callable;
 
 // CraftBukkit start
 import org.bukkit.Bukkit;
+import org.bukkit.craftbukkit.util.LongHash;
 import org.bukkit.craftbukkit.util.LongHashSet;
 import org.bukkit.craftbukkit.util.UnsafeList;
 import org.bukkit.generator.ChunkGenerator;
@@ -24,6 +27,11 @@ import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.bukkit.event.weather.WeatherChangeEvent;
 import org.bukkit.event.weather.ThunderChangeEvent;
 // CraftBukkit end
+
+import de.minetick.LockObject;
+import de.minetick.antixray.AntiXRay;
+
+
 
 public abstract class World implements IBlockAccess {
 
@@ -61,7 +69,7 @@ public abstract class World implements IBlockAccess {
     private final Calendar K = Calendar.getInstance();
     public Scoreboard scoreboard = new Scoreboard(); // CraftBukkit - protected -> public
     private final IConsoleLogManager logAgent;
-    private UnsafeList M = new UnsafeList(); // CraftBukkit - ArrayList -> UnsafeList
+    //private UnsafeList M = new UnsafeList(); // CraftBukkit - ArrayList -> UnsafeList
     private boolean N;
     // CraftBukkit start - public, longhashset
     public boolean allowMonsters = true;
@@ -90,12 +98,54 @@ public abstract class World implements IBlockAccess {
         return this.worldProvider.e;
     }
 
+    // Poweruser start
+    private HashSet<Long> alreadyCheckedChunks = new HashSet<Long>();
+    public AntiXRay antiXRay = null;
+    protected boolean cancelHeavyCalculations = false;
+    private int nextTickEntityIndex = 0;
+
+    public BiomeBaseDB getBiomeBaseDB() {
+        return this.worldProvider.e.getBiomeBaseObj();
+    }
+    public ChunkProviderServer chunkProviderServer; // moved here from the class WorldServer
+
+    private static ThreadLocal<List> getCubesList = new ThreadLocal<List>() {
+        @Override
+        public List initialValue() {
+            return new ArrayList();
+        }
+    };
+    private static ThreadLocal<List> getBoundingBoxList = new ThreadLocal<List>() {
+        @Override
+        public List initialValue() {
+            return new ArrayList();
+        }
+    };
+
+    private List<Entity> dimensionChangeQueue = Collections.synchronizedList(new LinkedList<Entity>());
+
+    public void queueEntityForDimensionChange(Entity entity) {
+        this.dimensionChangeQueue.add(entity);
+    }
+
+    public void processDimensionChangeQueue() {
+        Iterator<Entity> iter = this.dimensionChangeQueue.iterator();
+        while(iter.hasNext()) {
+            Entity entity = iter.next();
+            entity.changeDimension(entity.getTargetDimension());
+        }
+    }
+    // Poweruser end
+
     // CraftBukkit start
     private final CraftWorld world;
     public boolean pvpMode;
     public boolean keepSpawnInMemory = true;
     public ChunkGenerator generator;
-    Chunk lastChunkAccessed;
+    //Chunk lastChunkAccessed;
+    // Poweruser
+    // Setting a valid start value, so we can get rid of the check for null in getChunkAt(..)
+    private Chunk lastChunkAccessed = new EmptyChunk(this, Integer.MIN_VALUE, Integer.MIN_VALUE);
     int lastXAccessed = Integer.MIN_VALUE;
     int lastZAccessed = Integer.MIN_VALUE;
     final Object chunkLock = new Object();
@@ -272,6 +322,34 @@ public abstract class World implements IBlockAccess {
     // CraftBukkit start
     public Chunk getChunkAt(int i, int j) {
         Chunk result = null;
+        // Poweruser start
+        Chunk last = this.lastChunkAccessed;
+        if(last.x == i && last.z == j) {
+            result = last;
+        } else {
+            // Synchronizing shouldnt be necessary for getting loaded chunks
+            if(this.chunkProviderServer.isChunkLoaded(i, j)) {
+                result = this.chunkProviderServer.getChunkAt(i, j);
+                this.lastChunkAccessed = result;
+            } else {
+                synchronized (this.chunkLock) {
+                    result = this.chunkProvider.getOrCreateChunk(i, j);
+                    this.lastChunkAccessed = result;
+                }
+            }
+        }
+        // A backup, in case my assumption above was wrong and some other chunk was delivered
+        if(result.x != i || result.z != j) {
+            if(!result.isEmpty()) {
+                synchronized(this.chunkLock) {
+                    result = this.chunkProvider.getOrCreateChunk(i, j);
+                    this.lastChunkAccessed = result;
+                }
+            }
+        }
+        // Poweruser end
+
+        /*
         synchronized (this.chunkLock) {
             if (this.lastChunkAccessed == null || this.lastXAccessed != i || this.lastZAccessed != j) {
                 this.lastChunkAccessed = this.chunkProvider.getOrCreateChunk(i, j);
@@ -280,6 +358,7 @@ public abstract class World implements IBlockAccess {
             }
             result = this.lastChunkAccessed;
         }
+        */
         return result;
     }
     // CraftBukkit end
@@ -1007,7 +1086,11 @@ public abstract class World implements IBlockAccess {
     }
 
     public List getCubes(Entity entity, AxisAlignedBB axisalignedbb) {
-        this.M.clear();
+        //this.M.clear();
+        // Poweruser start
+        List threadlocalList = getCubesList.get();
+        threadlocalList.clear();
+        // Poweruser end
         int i = MathHelper.floor(axisalignedbb.a);
         int j = MathHelper.floor(axisalignedbb.d + 1.0D);
         int k = MathHelper.floor(axisalignedbb.b);
@@ -1022,7 +1105,8 @@ public abstract class World implements IBlockAccess {
                         Block block = Block.byId[this.getTypeId(k1, i2, l1)];
 
                         if (block != null) {
-                            block.a(this, k1, i2, l1, axisalignedbb, this.M, entity);
+                            //block.a(this, k1, i2, l1, axisalignedbb, this.M, entity);
+                            block.a(this, k1, i2, l1, axisalignedbb, threadlocalList, entity); // Poweruser
                         }
                     }
                 }
@@ -1036,20 +1120,26 @@ public abstract class World implements IBlockAccess {
             AxisAlignedBB axisalignedbb1 = ((Entity) list.get(j2)).D();
 
             if (axisalignedbb1 != null && axisalignedbb1.b(axisalignedbb)) {
-                this.M.add(axisalignedbb1);
+                //this.M.add(axisalignedbb1);
+                threadlocalList.add(axisalignedbb1); // Poweruser
             }
 
             axisalignedbb1 = entity.g((Entity) list.get(j2));
             if (axisalignedbb1 != null && axisalignedbb1.b(axisalignedbb)) {
-                this.M.add(axisalignedbb1);
+                //this.M.add(axisalignedbb1);
+                threadlocalList.add(axisalignedbb1); // Poweruser
             }
         }
 
-        return this.M;
+        return threadlocalList;
     }
 
     public List a(AxisAlignedBB axisalignedbb) {
-        this.M.clear();
+        //this.M.clear();
+        // Poweruser start
+        List threadLocalList = getBoundingBoxList.get();
+        threadLocalList.clear();
+        // Poweruser end
         int i = MathHelper.floor(axisalignedbb.a);
         int j = MathHelper.floor(axisalignedbb.d + 1.0D);
         int k = MathHelper.floor(axisalignedbb.b);
@@ -1064,14 +1154,14 @@ public abstract class World implements IBlockAccess {
                         Block block = Block.byId[this.getTypeId(k1, i2, l1)];
 
                         if (block != null) {
-                            block.a(this, k1, i2, l1, axisalignedbb, this.M, (Entity) null);
+                            block.a(this, k1, i2, l1, axisalignedbb, threadLocalList, (Entity) null);
                         }
                     }
                 }
             }
         }
 
-        return this.M;
+        return threadLocalList;
     }
 
     public int a(float f) {
@@ -1198,18 +1288,47 @@ public abstract class World implements IBlockAccess {
         this.f.clear();
         this.methodProfiler.c("regular");
 
+        // Poweruser start
+        /*
+         * Instead of running through the list from 0 to size-1 everytime, I'm going to
+         * rotate through it, by remembering the index of the last ticked entity and resuming there
+         * on the next tick. This is crucial with the just added skipping of entities when the server
+         * is overloaded. If it wasn't done, the entities at the end of the list would eventually miss
+         * several seconds or minutes.
+         */
+        this.alreadyCheckedChunks.clear(); // Maybe clear less frequent
+        /*
         for (i = 0; i < this.entityList.size(); ++i) {
             entity = (Entity) this.entityList.get(i);
-
+        */
+        int count = 0, size = this.entityList.size();
+        int countI = this.nextTickEntityIndex;
+        while(count < size ) {
+            if(countI >= this.entityList.size()) {
+                countI = countI % this.entityList.size();
+            }
+            entity = (Entity) this.entityList.get(countI);
+            if(!this.cancelHeavyCalculations) {
+                this.nextTickEntityIndex = countI + 1;
+            }
+        // Poweruser end
             // CraftBukkit start - Don't tick entities in chunks queued for unload
             ChunkProviderServer chunkProviderServer = ((WorldServer) this).chunkProviderServer;
             if (chunkProviderServer.unloadQueue.contains(MathHelper.floor(entity.locX) >> 4, MathHelper.floor(entity.locZ) >> 4)) {
+                // Poweruser start - Increasing the counters, as this entity wasnt skipped by me
+                countI++;
+                count++;
+                // Poweruser end
                 continue;
             }
             // CraftBukkit end
 
             if (entity.vehicle != null) {
                 if (!entity.vehicle.dead && entity.vehicle.passenger == entity) {
+                    // Poweruser start - Increasing the counters, as this entity wasnt skipped by me
+                    countI++;
+                    count++;
+                    // Poweruser end
                     continue;
                 }
 
@@ -1220,7 +1339,22 @@ public abstract class World implements IBlockAccess {
             this.methodProfiler.a("tick");
             if (!entity.dead) {
                 try {
-                    this.playerJoinedWorld(entity);
+                    //this.playerJoinedWorld(entity);
+                    // Poweruser start
+                    boolean playerIsPassenger = false;
+                    if(entity.passenger != null) {
+                        playerIsPassenger = entity.passenger.isImportantEntity();
+                    }
+                    if(entity.isImportantEntity() || playerIsPassenger || !this.cancelHeavyCalculations) {
+                        if(entity.isPlayer() || playerIsPassenger) {
+                            synchronized(LockObject.playerTickLock) {
+                                this.playerJoinedWorld(entity);
+                            }
+                        } else {
+                            this.playerJoinedWorld(entity);
+                        }
+                    }
+                    // Poweruser end
                 } catch (Throwable throwable1) {
                     crashreport = CrashReport.a(throwable1, "Ticking entity");
                     crashreportsystemdetails = crashreport.a("Entity being ticked");
@@ -1238,9 +1372,16 @@ public abstract class World implements IBlockAccess {
                     this.getChunkAt(j, k).b(entity);
                 }
 
-                this.entityList.remove(i--);
+                //this.entityList.remove(i--);
+                this.entityList.remove(countI); // Poweruser
                 this.b(entity);
             }
+            // Poweruser start
+            else {
+                countI++; // Increasing the counter to the index of the next entity
+            }
+            count++;
+            // Poweruser end
 
             this.methodProfiler.b();
         }
@@ -1338,9 +1479,20 @@ public abstract class World implements IBlockAccess {
     public void entityJoinedWorld(Entity entity, boolean flag) {
         int i = MathHelper.floor(entity.locX);
         int j = MathHelper.floor(entity.locZ);
-        byte b0 = 32;
+        //byte b0 = 32;
+        // Poweruser start
+        byte b0 = 4; // It should be enough to check the chunks within a range of 4 blocks, instead of always 25 chunks
+        long hash = LongHash.toLong(i, j);
+        boolean isChunkLoaded = this.alreadyCheckedChunks.contains(hash);
+        if(!isChunkLoaded) {
+            isChunkLoaded = this.e(i - b0, 0, j - b0, i + b0, 0, j + b0);
+            if(isChunkLoaded) {
+                this.alreadyCheckedChunks.add(hash);
+            }
+        }
+        // Poweruser end
 
-        if (!flag || this.e(i - b0, 0, j - b0, i + b0, 0, j + b0)) {
+        if (!flag || isChunkLoaded) {
             entity.U = entity.locX;
             entity.V = entity.locY;
             entity.W = entity.locZ;
@@ -1967,8 +2119,9 @@ public abstract class World implements IBlockAccess {
                         continue;
                     }
                     // CraftBukkit end
-
-                    this.chunkTickList.add(org.bukkit.craftbukkit.util.LongHash.toLong(l + j, i1 + k)); // CraftBukkit
+                    if(chunkProviderServer.isChunkLoaded(l + j, i1 + k)) { // Poweruser
+                        this.chunkTickList.add(org.bukkit.craftbukkit.util.LongHash.toLong(l + j, i1 + k)); // CraftBukkit
+                    }
                 }
             }
         }

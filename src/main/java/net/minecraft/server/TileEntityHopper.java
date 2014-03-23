@@ -42,6 +42,35 @@ public class TileEntityHopper extends TileEntity implements IHopper {
     }
     // CraftBukkit end
 
+    // Poweruser start
+    private static int doesInventoryHaveEnoughSpaceForItem(IInventory iinventory, ItemStack itemstack, int facing) {
+        if (iinventory instanceof IWorldInventory && facing > -1) {
+            IWorldInventory iworldinventory = (IWorldInventory) iinventory;
+            int[] possibleSlots = iworldinventory.getSlotsForFace(facing);
+            for(int i = 0; i < possibleSlots.length; i++) {
+                int slotId = possibleSlots[i];
+                if(canPlaceItemInInventory(iinventory, itemstack, slotId, facing)) {
+                    ItemStack slot = iinventory.getItem(slotId);
+                    if(slot == null || canMergeItems(slot, itemstack)) {
+                        return slotId;
+                    }
+                }
+            }
+        } else {
+            int size = iinventory.getSize();
+            for(int i = 0; i < size; i++) {
+                if(canPlaceItemInInventory(iinventory, itemstack, i, facing)) {
+                    ItemStack slot = iinventory.getItem(i);
+                    if(slot == null || canMergeItems(slot, itemstack)) {
+                        return i;
+                    }
+                }
+            }
+        }
+        return -1;
+    }
+    // Poweruser end
+
     public TileEntityHopper() {}
 
     public void a(NBTTagCompound nbttagcompound) {
@@ -203,6 +232,17 @@ public class TileEntityHopper extends TileEntity implements IHopper {
             for (int i = 0; i < this.getSize(); ++i) {
                 if (this.getItem(i) != null) {
                     ItemStack itemstack = this.getItem(i).cloneItemStack();
+
+                    // Poweruser start
+                    ItemStack copyOfItemBeingPushed = itemstack.cloneItemStack();
+                    copyOfItemBeingPushed.count = 1;
+                    int facing = Facing.OPPOSITE_FACING[BlockHopper.c(this.p())];
+                    int possibleInventorySlot = doesInventoryHaveEnoughSpaceForItem(iinventory, copyOfItemBeingPushed, facing);
+                    if(possibleInventorySlot < 0) {
+                        continue;
+                    }
+                    // Poweruser end
+
                     // CraftBukkit start - Call event when pushing items into other inventories
                     CraftItemStack oitemstack = CraftItemStack.asCraftMirror(this.splitStack(i, 1));
 
@@ -221,7 +261,8 @@ public class TileEntityHopper extends TileEntity implements IHopper {
                         this.c(8); // Delay hopper checks
                         return false;
                     }
-                    ItemStack itemstack1 = addItem(iinventory, CraftItemStack.asNMSCopy(event.getItem()), Facing.OPPOSITE_FACING[BlockHopper.c(this.p())]);
+                    //ItemStack itemstack1 = addItem(iinventory, CraftItemStack.asNMSCopy(event.getItem()), Facing.OPPOSITE_FACING[BlockHopper.c(this.p())]);
+                    ItemStack itemstack1 = addItem(iinventory, possibleInventorySlot, CraftItemStack.asNMSCopy(event.getItem()), facing); // Poweruser
 
                     if (itemstack1 == null || itemstack1.count == 0) {
                         if (event.getItem().equals(oitemstack)) {
@@ -281,6 +322,17 @@ public class TileEntityHopper extends TileEntity implements IHopper {
 
         if (itemstack != null && canTakeItemFromInventory(iinventory, itemstack, i, j)) {
             ItemStack itemstack1 = itemstack.cloneItemStack();
+
+            // Poweruser start
+            ItemStack copyOfItemBeingSuck = iinventory.getItem(i).cloneItemStack();
+            copyOfItemBeingSuck.count = 1;
+            int facing = -1;
+            int possibleInventorySlot = doesInventoryHaveEnoughSpaceForItem(ihopper, copyOfItemBeingSuck, facing);
+            if(possibleInventorySlot < 0) {
+                return false;
+            }
+            // Poweruser end
+
             // CraftBukkit start - Call event on collection of items from inventories into the hopper
             CraftItemStack oitemstack = CraftItemStack.asCraftMirror(iinventory.splitStack(i, 1));
 
@@ -306,7 +358,8 @@ public class TileEntityHopper extends TileEntity implements IHopper {
 
                 return false;
             }
-            ItemStack itemstack2 = addItem(ihopper, CraftItemStack.asNMSCopy(event.getItem()), -1);
+            //ItemStack itemstack2 = addItem(ihopper, CraftItemStack.asNMSCopy(event.getItem()), -1);
+            ItemStack itemstack2 = addItem(ihopper, possibleInventorySlot, CraftItemStack.asNMSCopy(event.getItem()), facing); // Poweruser
 
             if (itemstack2 == null || itemstack2.count == 0) {
                 if (event.getItem().equals(oitemstack)) {
@@ -331,6 +384,15 @@ public class TileEntityHopper extends TileEntity implements IHopper {
         if (entityitem == null) {
             return false;
         } else {
+            // Poweruser start
+            ItemStack copyOfItemBeingAdded = entityitem.getItemStack().cloneItemStack();
+            int facing = -1;
+            int possibleInventorySlot = doesInventoryHaveEnoughSpaceForItem(iinventory, copyOfItemBeingAdded, facing);
+            if(possibleInventorySlot < 0) {
+                return false;
+            }
+            // Poweruser end
+
             // CraftBukkit start
             InventoryPickupItemEvent event = new InventoryPickupItemEvent(iinventory.getOwner().getInventory(), (org.bukkit.entity.Item) entityitem.getBukkitEntity());
             entityitem.world.getServer().getPluginManager().callEvent(event);
@@ -340,7 +402,8 @@ public class TileEntityHopper extends TileEntity implements IHopper {
             // CraftBukkit end
 
             ItemStack itemstack = entityitem.getItemStack().cloneItemStack();
-            ItemStack itemstack1 = addItem(iinventory, itemstack, -1);
+            //ItemStack itemstack1 = addItem(iinventory, itemstack, -1);
+            ItemStack itemstack1 = addItem(iinventory, possibleInventorySlot, itemstack, facing); // Poweruser
 
             if (itemstack1 != null && itemstack1.count != 0) {
                 entityitem.setItemStack(itemstack1);
@@ -354,15 +417,33 @@ public class TileEntityHopper extends TileEntity implements IHopper {
     }
 
     public static ItemStack addItem(IInventory iinventory, ItemStack itemstack, int i) {
+    // Poweruser start
+        return addItem(iinventory, -1, itemstack, i);
+    }
+
+    public static ItemStack addItem(IInventory iinventory, int possibleInventorySlot, ItemStack itemstack, int i) {
+    // Poweruser end
         if (iinventory instanceof IWorldInventory && i > -1) {
             IWorldInventory iworldinventory = (IWorldInventory) iinventory;
             int[] aint = iworldinventory.getSlotsForFace(i);
+
+            // Poweruser start
+            if(possibleInventorySlot >= 0 && possibleInventorySlot < aint.length) {
+                itemstack = tryMoveInItem(iinventory, itemstack, possibleInventorySlot, i);
+            }
+            // Poweruser end
 
             for (int j = 0; j < aint.length && itemstack != null && itemstack.count > 0; ++j) {
                 itemstack = tryMoveInItem(iinventory, itemstack, aint[j], i);
             }
         } else {
             int k = iinventory.getSize();
+
+            // Poweruser start
+            if(possibleInventorySlot >= 0 && possibleInventorySlot < k) {
+                itemstack = tryMoveInItem(iinventory, itemstack, possibleInventorySlot, i);
+            }
+            // Poweruser end
 
             for (int l = 0; l < k && itemstack != null && itemstack.count > 0; ++l) {
                 itemstack = tryMoveInItem(iinventory, itemstack, l, i);
@@ -463,7 +544,8 @@ public class TileEntityHopper extends TileEntity implements IHopper {
     }
 
     private static boolean canMergeItems(ItemStack itemstack, ItemStack itemstack1) {
-        return itemstack.id != itemstack1.id ? false : (itemstack.getData() != itemstack1.getData() ? false : (itemstack.count > itemstack.getMaxStackSize() ? false : ItemStack.equals(itemstack, itemstack1)));
+        //return itemstack.id != itemstack1.id ? false : (itemstack.getData() != itemstack1.getData() ? false : (itemstack.count > itemstack.getMaxStackSize() ? false : ItemStack.equals(itemstack, itemstack1)));
+        return itemstack.id != itemstack1.id ? false : (itemstack.getData() != itemstack1.getData() ? false : (itemstack.count > itemstack.getMaxStackSize() ? false : ItemStack.equals(itemstack, itemstack1))); // Poweruser - stacks cant merge when count >= maxStackSize
     }
 
     public double aA() {

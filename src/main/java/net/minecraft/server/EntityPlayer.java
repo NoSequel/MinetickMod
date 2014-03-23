@@ -5,9 +5,11 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 // CraftBukkit start
 import org.bukkit.Bukkit;
@@ -19,6 +21,10 @@ import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 // CraftBukkit end
+
+import de.minetick.PlayerChunkSendQueue;
+import de.minetick.packetbuilder.PacketBuilderThreadPool;
+import de.minetick.packetbuilder.jobs.PBJob56MapChunkBulk;
 
 public class EntityPlayer extends EntityHuman implements ICrafting {
 
@@ -54,6 +60,18 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
     public double maxHealthCache;
     // CraftBukkit end
 
+    // Poweruser start
+    public PlayerChunkSendQueue chunkQueue;
+    public ConcurrentLinkedQueue<Chunk> chunksForTracking = new ConcurrentLinkedQueue<Chunk>();
+
+    public void setPlayerChunkSendQueue(PlayerChunkSendQueue pcsq) {
+        if(this.chunkQueue != null) {
+            this.chunkQueue.clear();
+        }
+        this.chunkQueue = pcsq;
+    }
+    // Poweruser end
+
     public EntityPlayer(MinecraftServer minecraftserver, World world, String s, PlayerInteractManager playerinteractmanager) {
         super(world, s);
         playerinteractmanager.player = this;
@@ -87,6 +105,10 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
         // this.canPickUpLoot = true; TODO
         this.maxHealthCache = this.getMaxHealth();
         // CraftBukkit end
+
+        // Poweruser
+        this.isImportantEntity = true;
+        this.isPlayer = true;
     }
 
     public void a(NBTTagCompound nbttagcompound) {
@@ -179,43 +201,12 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
             this.playerConnection.sendPacket(new Packet29DestroyEntity(aint));
         }
 
-        if (!this.chunkCoordIntPairQueue.isEmpty()) {
-            ArrayList arraylist = new ArrayList();
-            Iterator iterator1 = this.chunkCoordIntPairQueue.iterator();
-            ArrayList arraylist1 = new ArrayList();
-
-            while (iterator1.hasNext() && arraylist.size() < 5) {
-                ChunkCoordIntPair chunkcoordintpair = (ChunkCoordIntPair) iterator1.next();
-
-                iterator1.remove();
-                if (chunkcoordintpair != null && this.world.isLoaded(chunkcoordintpair.x << 4, 0, chunkcoordintpair.z << 4)) {
-                    // CraftBukkit start - Get tile entities directly from the chunk instead of the world
-                    Chunk chunk = this.world.getChunkAt(chunkcoordintpair.x, chunkcoordintpair.z);
-                    arraylist.add(chunk);
-                    arraylist1.addAll(chunk.tileEntities.values());
-                    // CraftBukkit end
-                }
-            }
-
-            if (!arraylist.isEmpty()) {
-                this.playerConnection.sendPacket(new Packet56MapChunkBulk(arraylist));
-                Iterator iterator2 = arraylist1.iterator();
-
-                while (iterator2.hasNext()) {
-                    TileEntity tileentity = (TileEntity) iterator2.next();
-
-                    this.b(tileentity);
-                }
-
-                iterator2 = arraylist.iterator();
-
-                while (iterator2.hasNext()) {
-                    Chunk chunk = (Chunk) iterator2.next();
-
-                    this.p().getTracker().a(this, chunk);
-                }
-            }
+        // Poweruser start
+        while(!this.chunksForTracking.isEmpty()) {
+            Chunk c = this.chunksForTracking.poll();
+            this.p().getTracker().a(this, c);
         }
+        // Poweruser end
     }
 
     public void h() {
@@ -419,7 +410,8 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
         }
     }
 
-    private void b(TileEntity tileentity) {
+    //private void b(TileEntity tileentity) {
+    public void b(TileEntity tileentity) { // Poweruser
         if (tileentity != null) {
             Packet packet = tileentity.getUpdatePacket();
 

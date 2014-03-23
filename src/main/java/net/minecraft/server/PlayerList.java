@@ -48,6 +48,7 @@ public abstract class PlayerList {
     private EnumGamemode l;
     private boolean m;
     private int n;
+    private int indexCounter = 0; // Poweruser
 
     // CraftBukkit start
     private CraftServer cserver;
@@ -170,7 +171,8 @@ public abstract class PlayerList {
         }
 
         worldserver1.getPlayerChunkMap().addPlayer(entityplayer);
-        worldserver1.chunkProviderServer.getChunkAt((int) entityplayer.locX >> 4, (int) entityplayer.locZ >> 4);
+        //worldserver1.chunkProviderServer.getChunkAt((int) entityplayer.locX >> 4, (int) entityplayer.locZ >> 4);
+        worldserver1.chunkProviderServer.getChunkAt(MathHelper.floor(entityplayer.locX) >> 4, MathHelper.floor(entityplayer.locZ) >> 4); // Poweruser
     }
 
     public int a() {
@@ -433,7 +435,8 @@ public abstract class PlayerList {
         entityplayer1.setLocation(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
         // CraftBukkit end
 
-        worldserver.chunkProviderServer.getChunkAt((int) entityplayer1.locX >> 4, (int) entityplayer1.locZ >> 4);
+        //worldserver.chunkProviderServer.getChunkAt((int) entityplayer1.locX >> 4, (int) entityplayer1.locZ >> 4);
+        worldserver.chunkProviderServer.getChunkAt(MathHelper.floor(entityplayer1.locX) >> 4, MathHelper.floor(entityplayer1.locZ) >> 4); // Poweruser
 
         while (avoidSuffocation && !worldserver.getCubes(entityplayer1, entityplayer1.boundingBox).isEmpty()) { // CraftBukkit
             entityplayer1.setPosition(entityplayer1.locX, entityplayer1.locY + 1.0D, entityplayer1.locZ);
@@ -709,8 +712,25 @@ public abstract class PlayerList {
     }
 
     public void tick() {
-        if (++this.n > 600) {
+        //if (++this.n > 600) {
+        if (++this.n > 100) { // Poweruser
             this.n = 0;
+            // Poweruser start - 1 player info is broadcasted every 5 seconds
+            if(this.players.size() > 0) {
+                this.indexCounter++;
+                if(this.indexCounter >= this.players.size()) {
+                    this.indexCounter = 0;
+                }
+                EntityPlayer entityplayer = (EntityPlayer) this.players.get(this.indexCounter);
+                Packet packet = new Packet201PlayerInfo(entityplayer.listName, true, entityplayer.ping);
+                for (int i = 0; i < this.players.size(); ++i) {
+                    EntityPlayer receiver = ((EntityPlayer) this.players.get(i));
+                    if (receiver.getBukkitEntity().canSee(entityplayer.getBukkitEntity())) {
+                        receiver.playerConnection.sendPacket(packet);
+                    }
+                }
+            }
+            // Poweruser
         }
 
         /* CraftBukkit start - Remove updating of lag to players -- it spams way to much on big servers.
@@ -774,7 +794,8 @@ public abstract class PlayerList {
         this.operators.add(s.toLowerCase());
 
         // CraftBukkit start
-        Player player = server.server.getPlayer(s);
+        //Player player = server.server.getPlayer(s);
+        Player player = server.server.getPlayerExact(s); // Aikar
         if (player != null) {
             player.recalculatePermissions();
         }
@@ -785,7 +806,8 @@ public abstract class PlayerList {
         this.operators.remove(s.toLowerCase());
 
         // CraftBukkit start
-        Player player = server.server.getPlayer(s);
+        //Player player = server.server.getPlayer(s);
+        Player player = server.server.getPlayerExact(s); // Aikar
         if (player != null) {
             player.recalculatePermissions();
         }

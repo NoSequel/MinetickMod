@@ -13,7 +13,8 @@ public class GenLayerIsland extends GenLayer {
         int k1 = k + 2;
         int l1 = l + 2;
         int[] aint = this.a.a(i1, j1, k1, l1);
-        int[] aint1 = IntCache.a(k * l);
+        //int[] aint1 = IntCache.a(k * l);
+        int[] aint1 = this.intCache.a(k * l); // Poweruser
 
         for (int i2 = 0; i2 < l; ++i2) {
             for (int j2 = 0; j2 < k; ++j2) {
@@ -46,15 +47,19 @@ public class GenLayerIsland extends GenLayer {
 
                     if (this.a(3) == 0) {
                         aint1[j2 + i2 * k] = i4;
-                    } else if (i4 == BiomeBase.ICE_PLAINS.id) {
-                        aint1[j2 + i2 * k] = BiomeBase.FROZEN_OCEAN.id;
+                    //} else if (i4 == BiomeBase.ICE_PLAINS.id) {
+                        //aint1[j2 + i2 * k] = BiomeBase.FROZEN_OCEAN.id;
+                    } else if (i4 == this.biomeBaseDB.ICE_PLAINS.id) { // Poweruser
+                        aint1[j2 + i2 * k] = this.biomeBaseDB.FROZEN_OCEAN.id; // Poweruser
                     } else {
                         aint1[j2 + i2 * k] = 0;
                     }
                 } else if (k3 > 0 && (k2 == 0 || l2 == 0 || i3 == 0 || j3 == 0)) {
                     if (this.a(5) == 0) {
-                        if (k3 == BiomeBase.ICE_PLAINS.id) {
-                            aint1[j2 + i2 * k] = BiomeBase.FROZEN_OCEAN.id;
+                        //if (k3 == BiomeBase.ICE_PLAINS.id) {
+                            //aint1[j2 + i2 * k] = BiomeBase.FROZEN_OCEAN.id;
+                        if (k3 == this.biomeBaseDB.ICE_PLAINS.id) { // Poweruser
+                            aint1[j2 + i2 * k] = this.biomeBaseDB.FROZEN_OCEAN.id; // Poweruser
                         } else {
                             aint1[j2 + i2 * k] = 0;
                         }

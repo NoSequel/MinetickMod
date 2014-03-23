@@ -1374,4 +1374,50 @@ public final class CraftServer implements Server {
     public CraftScoreboardManager getScoreboardManager() {
         return scoreboardManager;
     }
+
+    // Poweruser start
+    public boolean getMinetickModProfilerWriteEnabled() {
+        return configuration.getBoolean("minetickmod.profiler-write-log");
+    }
+
+    public int getMinetickModProfilerWriteInterval() {
+        return configuration.getInt("minetickmod.profiler-write-interval");
+    }
+
+    public int getMinetickModProfilerLogInterval() {
+        return configuration.getInt("minetickmod.profiler-log-interval");
+    }
+
+    public List<String> getMinetickModOrebfuscatedWorlds() {
+        return configuration.getStringList("minetickmod.orebfuscatedWorlds");
+    }
+
+    public int getMinetickModAntiXRayPoolSize() {
+        return configuration.getInt("minetickmod.antixrayThreadPoolSize");
+    }
+
+    public int getMinetickModPacketBuilderPoolSize() {
+        return configuration.getInt("minetickmod.packetBuilderThreadPoolSize");
+    }
+
+    public int getMinetickModCompressionLevel() {
+        return configuration.getInt("minetickmod.packetCompressionLevel");
+    }
+
+    public int getMinetickModPacketsPerTick() {
+        return configuration.getInt("minetickmod.packetsPerTick");
+    }
+
+    public List<String> getMinetickModNotGeneratingWorlds() {
+        return configuration.getStringList("minetickmod.notGeneratingWorlds");
+    }
+
+    public int getMinetickModMaxEntityLifeTime() {
+        return configuration.getInt("minetickmod.maxEntityLifeTime");
+    }
+
+    public List<String> getMinetickModEntitiesWithLimitedLifeTime() {
+        return configuration.getStringList("minetickmod.entitiesWithLimitedLifeTime");
+    }
+    // Poweruser end
 }

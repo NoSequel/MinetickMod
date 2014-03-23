@@ -18,6 +18,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.crypto.SecretKey;
 
+import de.minetick.PacketFilter;
+
 import java.io.IOException; // CraftBukkit
 
 public class NetworkManager implements INetworkManager {
@@ -42,7 +44,8 @@ public class NetworkManager implements INetworkManager {
     private String w = "";
     private Object[] x;
     private int y;
-    private int z;
+    //private int z;
+    private AtomicInteger z = new AtomicInteger(0); // Poweruser
     public static int[] c = new int[256];
     public static int[] d = new int[256];
     public int e;
@@ -50,7 +53,11 @@ public class NetworkManager implements INetworkManager {
     boolean g;
     private SecretKey A;
     private PrivateKey B;
-    private int lowPriorityQueueDelay = 50;
+    //private int lowPriorityQueueDelay = 50;
+    private int lowPriorityQueueDelay = 10; // Poweruser
+
+    // Poweruser
+    private PacketFilter packetFilter;
 
     public NetworkManager(IConsoleLogManager iconsolelogmanager, Socket socket, String s, Connection connection, PrivateKey privatekey) throws IOException { // CraftBukkit - throws IOException
         this.B = privatekey;
@@ -58,6 +65,7 @@ public class NetworkManager implements INetworkManager {
         this.i = iconsolelogmanager;
         this.k = socket.getRemoteSocketAddress();
         this.connection = connection;
+        this.packetFilter = new PacketFilter(this.z); // Poweruser
 
         try {
             socket.setSoTimeout(30000);
@@ -70,6 +78,7 @@ public class NetworkManager implements INetworkManager {
         this.output = new DataOutputStream(new BufferedOutputStream(socket.getOutputStream(), 5120));
         this.v = new NetworkReaderThread(this, s + " read thread");
         this.u = new NetworkWriterThread(this, s + " write thread");
+        this.u.setPriority(Thread.NORM_PRIORITY + 2); // Poweruser
         this.v.start();
         this.u.start();
     }
@@ -80,14 +89,27 @@ public class NetworkManager implements INetworkManager {
 
     public void queue(Packet packet) {
         if (!this.t) {
-            Object object = this.h;
+            //Object object = this.h;
 
-            synchronized (this.h) {
-                this.z += packet.a() + 1;
-                this.highPriorityQueue.add(packet);
-            }
+            //synchronized (this.h) {
+                //this.z += packet.a() + 1;
+                //this.highPriorityQueue.add(packet);
+            // Poweruser start
+            this.z.addAndGet(packet.a() + 1); // Poweruser
+            this.packetFilter.addHighPriorityPacket(packet);
+            // Poweruser end
+            //}
         }
     }
+
+    // Poweruser start
+    public void queueChunks(Packet packet) {
+        if (!this.t) {
+            this.z.addAndGet(packet.a() + 1);
+            this.packetFilter.addLowPriorityPacket(packet);
+        }
+    }
+    // Poweruser end
 
     private boolean h() {
         boolean flag = false;
@@ -97,8 +119,10 @@ public class NetworkManager implements INetworkManager {
             int i;
             int[] aint;
 
-            if (this.e == 0 || !this.highPriorityQueue.isEmpty() && MinecraftServer.aq() - ((Packet) this.highPriorityQueue.get(0)).timestamp >= (long) this.e) {
-                packet = this.a(false);
+            //if (this.e == 0 || !this.highPriorityQueue.isEmpty() && MinecraftServer.aq() - ((Packet) this.highPriorityQueue.get(0)).timestamp >= (long) this.e) {
+            if(this.packetFilter.hasHighPriorityPackets()) { // Poweruser
+                //packet = this.a(false);
+                packet = this.packetFilter.getNextHighPriorityPacket(); // Poweruser
                 if (packet != null) {
                     Packet.a(packet, (DataOutput) this.output);
                     if (packet instanceof Packet252KeyResponse && !this.g) {
@@ -117,14 +141,17 @@ public class NetworkManager implements INetworkManager {
             }
 
             // CraftBukkit - don't allow low priority packet to be sent unless it was placed in the queue before the first packet on the high priority queue TODO: is this still right?
-            if ((flag || this.lowPriorityQueueDelay-- <= 0) && !this.lowPriorityQueue.isEmpty() && (this.highPriorityQueue.isEmpty() || ((Packet) this.highPriorityQueue.get(0)).timestamp > ((Packet) this.lowPriorityQueue.get(0)).timestamp)) {
-                packet = this.a(true);
+            //if ((flag || this.lowPriorityQueueDelay-- <= 0) && !this.lowPriorityQueue.isEmpty() && (this.highPriorityQueue.isEmpty() || ((Packet) this.highPriorityQueue.get(0)).timestamp > ((Packet) this.lowPriorityQueue.get(0)).timestamp)) {
+            if (this.packetFilter.hasLowPriorityPackets() && (this.lowPriorityQueueDelay-- <= 0 || !flag)) { // Poweruser
+                //packet = this.a(true);
+                packet = this.packetFilter.getNextLowPriorityPacket(); // Poweruser
                 if (packet != null) {
                     Packet.a(packet, (DataOutput) this.output);
                     aint = d;
                     i = packet.n();
                     aint[i] += packet.a() + 1;
-                    this.lowPriorityQueueDelay = 0;
+                    //this.lowPriorityQueueDelay = 0;
+                    this.lowPriorityQueueDelay = 4; // Poweruser
                     flag = true;
                 }
             }
@@ -144,13 +171,17 @@ public class NetworkManager implements INetworkManager {
         List list = flag ? this.lowPriorityQueue : this.highPriorityQueue;
         Object object = this.h;
 
-        synchronized (this.h) {
+        //synchronized (this.h) {
+        synchronized (list) { // Poweruser
             while (!list.isEmpty() && packet == null) {
                 packet = (Packet) list.remove(0);
-                this.z -= packet.a() + 1;
+                //this.z -= packet.a() + 1;
+                this.z.addAndGet((packet.a() + 1) * -1); // Poweruser
+                /*
                 if (this.a(packet, flag)) {
                     packet = null;
                 }
+                */
             }
 
             return packet;
@@ -269,7 +300,8 @@ public class NetworkManager implements INetworkManager {
     }
 
     public void b() {
-        if (this.z > 2097152) {
+        //if (this.z > 2097152) {
+        if (this.z.get() > 2097152) { // Poweruser
             this.a("disconnect.overflow", new Object[0]);
         }
 
@@ -374,4 +406,45 @@ public class NetworkManager implements INetworkManager {
     static Thread h(NetworkManager networkmanager) {
         return networkmanager.u;
     }
+
+    // Poweruser start
+    public SendQueueFillLevel getSendQueueFillLevel() {
+        if(this.z.get() < 131072) { // 128 KB
+            return SendQueueFillLevel.VERYLOW;
+        } else if(this.z.get() < 262144) { // 256 KB
+            return SendQueueFillLevel.LOW;
+        } else if(this.z.get() < 524288) { // 512 KB
+            return SendQueueFillLevel.MEDIUM;
+        } else if(this.z.get() < 1048576) { // 1 MB
+            return SendQueueFillLevel.HIGH;
+        } else { // up to 2 MB, then the client is disconnected with reason: overflow
+            return SendQueueFillLevel.FULL;
+        }
+    }
+
+    public enum SendQueueFillLevel {
+        VERYLOW(0),
+        LOW(1),
+        MEDIUM(2),
+        HIGH(3),
+        FULL(4);
+
+        private int value;
+        private SendQueueFillLevel(int value) {
+            this.value = value;
+        }
+
+        public boolean isLowerThan(SendQueueFillLevel sqfl) {
+            return this.value < sqfl.value;
+        }
+
+        public boolean isEqualOrLowerThan(SendQueueFillLevel sqfl) {
+            return this.value <= sqfl.value;
+        }
+
+        public boolean isEqualOrHigherThan(SendQueueFillLevel sqfl) {
+            return this.value >= sqfl.value;
+        }
+    }
+    // Poweruser end
 }

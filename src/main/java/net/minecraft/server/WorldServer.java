@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.PriorityQueue;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
@@ -19,15 +21,18 @@ import org.bukkit.event.weather.LightningStrikeEvent;
 import org.bukkit.event.weather.ThunderChangeEvent;
 import org.bukkit.event.weather.WeatherChangeEvent;
 
+import de.minetick.antixray.AntiXRay;
+
 public class WorldServer extends World implements org.bukkit.BlockChangeDelegate {
     // CraftBukkit end
 
     private final MinecraftServer server;
     public EntityTracker tracker; // CraftBukkit - private final -> public
     private final PlayerChunkMap manager;
-    private Set L;
-    private TreeSet M;
-    public ChunkProviderServer chunkProviderServer;
+    //private Set L;
+    private Set<NextTickListEntry> L; // Poweruser
+    //private TreeSet M; // Poweruser - replaced by an PriorityQueue
+    //public ChunkProviderServer chunkProviderServer; // Poweruser - moved this field to World
     public boolean savingDisabled;
     private boolean N;
     private int emptyTime;
@@ -38,6 +43,45 @@ public class WorldServer extends World implements org.bukkit.BlockChangeDelegate
     private static final StructurePieceTreasure[] T = new StructurePieceTreasure[] { new StructurePieceTreasure(Item.STICK.id, 0, 1, 3, 10), new StructurePieceTreasure(Block.WOOD.id, 0, 1, 3, 10), new StructurePieceTreasure(Block.LOG.id, 0, 1, 3, 10), new StructurePieceTreasure(Item.STONE_AXE.id, 0, 1, 1, 3), new StructurePieceTreasure(Item.WOOD_AXE.id, 0, 1, 1, 5), new StructurePieceTreasure(Item.STONE_PICKAXE.id, 0, 1, 1, 3), new StructurePieceTreasure(Item.WOOD_PICKAXE.id, 0, 1, 1, 5), new StructurePieceTreasure(Item.APPLE.id, 0, 2, 3, 5), new StructurePieceTreasure(Item.BREAD.id, 0, 2, 3, 3)};
     private List U = new ArrayList();
     private IntHashMap entitiesById;
+
+    // Poweruser start
+    private long lastTickAvg = 0L;
+    private PriorityQueue<NextTickListEntry> priorityQueue;
+
+    public void setLastTickAvg(long avg) {
+        this.lastTickAvg = avg;
+    }
+
+    public long getLastTickAvg() {
+        return this.lastTickAvg;
+    }
+
+    public void cancelHeavyCalculations(boolean cancel) {
+        this.cancelHeavyCalculations = cancel;
+    }
+
+    public boolean chunkExists(int x, int z) {
+        return this.chunkProviderServer.doesChunkExist(x, z);
+    }
+
+    public int loadAndGenerateChunks() {
+        if(this.players.size() > 0) {
+            return this.manager.updatePlayers(this.isChunkGenerationAllowed());
+        } else {
+            return 0;
+        }
+    }
+
+    boolean allowChunkGeneration = false;
+    public boolean isChunkGenerationAllowed() {
+        if(this.worldData.getType().equals(WorldType.FLAT)) {
+            return true;
+        } else {
+            this.allowChunkGeneration = !this.allowChunkGeneration;
+        }
+        return this.allowChunkGeneration;
+    }
+    // Poweruser end
 
     // CraftBukkit start
     public final int dimension;
@@ -54,6 +98,7 @@ public class WorldServer extends World implements org.bukkit.BlockChangeDelegate
             this.entitiesById = new IntHashMap();
         }
 
+        /*
         if (this.L == null) {
             this.L = new HashSet();
         }
@@ -61,7 +106,17 @@ public class WorldServer extends World implements org.bukkit.BlockChangeDelegate
         if (this.M == null) {
             this.M = new TreeSet();
         }
+        */
 
+        // Poweruser start
+        if (this.L == null) {
+            this.L = new LinkedHashSet<NextTickListEntry>();
+        }
+        if (this.priorityQueue == null) {
+            this.priorityQueue = new PriorityQueue<NextTickListEntry>(1500);
+        }
+        this.antiXRay = new AntiXRay(this);
+        // Poweruser end
         this.P = new org.bukkit.craftbukkit.CraftTravelAgent(this); // CraftBukkit
         this.scoreboard = new ScoreboardServer(minecraftserver);
         ScoreboardSaveData scoreboardsavedata = (ScoreboardSaveData) this.worldMaps.get(ScoreboardSaveData.class, "scoreboard");
@@ -449,7 +504,8 @@ public class WorldServer extends World implements org.bukkit.BlockChangeDelegate
 
             if (!this.L.contains(nextticklistentry)) {
                 this.L.add(nextticklistentry);
-                this.M.add(nextticklistentry);
+                //this.M.add(nextticklistentry);
+                this.priorityQueue.add(nextticklistentry); // Poweruser
             }
         }
     }
@@ -464,7 +520,8 @@ public class WorldServer extends World implements org.bukkit.BlockChangeDelegate
 
         if (!this.L.contains(nextticklistentry)) {
             this.L.add(nextticklistentry);
-            this.M.add(nextticklistentry);
+            //this.M.add(nextticklistentry);
+            this.priorityQueue.add(nextticklistentry); // Poweruser
         }
     }
 
@@ -485,11 +542,30 @@ public class WorldServer extends World implements org.bukkit.BlockChangeDelegate
     }
 
     public boolean a(boolean flag) {
+        /*
         int i = this.M.size();
 
         if (i != this.L.size()) {
             throw new IllegalStateException("TickNextTick list out of synch");
         } else {
+        */
+        // Poweruser start
+
+        int i = this.L.size();
+        int queueSize = this.priorityQueue.size();
+        if (i != queueSize) {
+            this.getServer().getServer().getLogger().warning("TickNextTick list out of synch - World: " + this.getWorld().getName() + ". Recovering...");
+            if(i > queueSize) {
+                this.priorityQueue.clear();
+                this.priorityQueue.addAll(this.L);
+            } else if(queueSize > i) {
+                this.L.clear();
+                this.L.addAll(this.priorityQueue);
+            }
+            //throw new IllegalStateException("TickNextTick list out of synch - World: " + this.getWorld().getName());
+        }
+        // Poweruser end
+
             if (i > 1000) {
                 // CraftBukkit start - If the server has too much to process over time, try to alleviate that
                 if (i > 20 * 1000) {
@@ -504,6 +580,7 @@ public class WorldServer extends World implements org.bukkit.BlockChangeDelegate
 
             NextTickListEntry nextticklistentry;
 
+            /*
             for (int j = 0; j < i; ++j) {
                 nextticklistentry = (NextTickListEntry) this.M.first();
                 if (!flag && nextticklistentry.e > this.worldData.getTime()) {
@@ -514,6 +591,18 @@ public class WorldServer extends World implements org.bukkit.BlockChangeDelegate
                 this.L.remove(nextticklistentry);
                 this.U.add(nextticklistentry);
             }
+            */
+            // Poweruser start
+            for (int j = 0; j < i && !this.priorityQueue.isEmpty(); ++j) {
+                nextticklistentry = (NextTickListEntry) this.priorityQueue.peek();
+                if (!flag && nextticklistentry.e > this.worldData.getTime()) {
+                    break;
+                }
+                this.priorityQueue.poll();
+                this.L.remove(nextticklistentry);
+                this.U.add(nextticklistentry);
+            }
+            // Poweruser end
 
             this.methodProfiler.b();
             this.methodProfiler.a("ticking");
@@ -553,8 +642,9 @@ public class WorldServer extends World implements org.bukkit.BlockChangeDelegate
 
             this.methodProfiler.b();
             this.U.clear();
-            return !this.M.isEmpty();
-        }
+            //return !this.M.isEmpty();
+            return !this.priorityQueue.isEmpty(); // Poweruser
+        //}
     }
 
     public List a(Chunk chunk, boolean flag) {
@@ -569,7 +659,8 @@ public class WorldServer extends World implements org.bukkit.BlockChangeDelegate
             Iterator iterator;
 
             if (i1 == 0) {
-                iterator = this.M.iterator();
+                //iterator = this.M.iterator();
+                iterator = this.L.iterator(); // Poweruser
             } else {
                 iterator = this.U.iterator();
                 /* CraftBukkit start - Comment out debug spam
@@ -584,8 +675,20 @@ public class WorldServer extends World implements org.bukkit.BlockChangeDelegate
 
                 if (nextticklistentry.a >= i && nextticklistentry.a < j && nextticklistentry.c >= k && nextticklistentry.c < l) {
                     if (flag) {
+                        /*
                         this.L.remove(nextticklistentry);
                         iterator.remove();
+                        */
+                        // Poweruser start
+                        if(i1 == 0) {
+                            this.U.remove(nextticklistentry);
+                            this.priorityQueue.remove(nextticklistentry);
+                        } else if(i1 == 1) {
+                            this.L.remove(nextticklistentry);
+                            this.priorityQueue.remove(nextticklistentry);
+                        }
+                        iterator.remove();
+                        // Poweruser end
                     }
 
                     if (arraylist == null) {
@@ -669,6 +772,7 @@ public class WorldServer extends World implements org.bukkit.BlockChangeDelegate
             this.entitiesById = new IntHashMap();
         }
 
+        /*
         if (this.L == null) {
             this.L = new HashSet();
         }
@@ -676,7 +780,16 @@ public class WorldServer extends World implements org.bukkit.BlockChangeDelegate
         if (this.M == null) {
             this.M = new TreeSet();
         }
+        */
 
+        // Poweruser start
+        if (this.L == null) {
+            this.L = new LinkedHashSet<NextTickListEntry>();
+        }
+        if (this.priorityQueue == null) {
+            this.priorityQueue = new PriorityQueue<NextTickListEntry>(1500);
+        }
+        // Poweruser end
         this.b(worldsettings);
         super.a(worldsettings);
     }

@@ -2,13 +2,17 @@ package net.minecraft.server;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.bukkit.Bukkit; // CraftBukkit
+
+
 
 public class Chunk {
 
@@ -22,7 +26,8 @@ public class Chunk {
     public int[] heightMap;
     public final int x;
     public final int z;
-    private boolean t;
+    //private boolean t;
+    protected boolean t; // Poweruser
     public Map tileEntities;
     public List[] entitySlices;
     public boolean done;
@@ -34,12 +39,34 @@ public class Chunk {
     public long q;
     private int u;
 
+    // Poweruser start
+    public boolean newChunk = false;
+    public boolean isCorrupt = false;
+    public boolean isNew() {
+        boolean out = newChunk;
+        this.newChunk = false;
+        return out;
+    }
+
+    public void initCorruptChunk() {
+        this.isCorrupt = true;
+    }
+
+    public int getTypeIdWithinSection(int section, int x, int y, int z) {
+        if(this.sections[section] == null) {
+            return 0;
+        }
+        return this.sections[section].getTypeId(x, y, z);
+    }
+    // Poweruser end
+
     public Chunk(World world, int i, int j) {
         this.sections = new ChunkSection[16];
         this.s = new byte[256];
         this.b = new int[256];
         this.c = new boolean[256];
-        this.tileEntities = new HashMap();
+        //this.tileEntities = new HashMap();
+        this.tileEntities = new ConcurrentHashMap(16, 0.75F, 1); // Poweruser
         this.u = 4096;
         this.entitySlices = new List[16];
         this.world = world;
@@ -871,7 +898,11 @@ public class Chunk {
             this.s[j << 4 | i] = (byte) (k & 255);
         }
 
-        return BiomeBase.biomes[k] == null ? BiomeBase.PLAINS : BiomeBase.biomes[k];
+        //return BiomeBase.biomes[k] == null ? BiomeBase.PLAINS : BiomeBase.biomes[k];
+        // Poweruser start
+        BiomeBaseDB base = worldchunkmanager.getBiomeBaseObj();
+        return base.biomes[k] == null ? base.PLAINS : base.biomes[k];
+        // Poweruser end
     }
 
     public byte[] m() {

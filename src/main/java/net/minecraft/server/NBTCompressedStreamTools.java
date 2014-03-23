@@ -1,6 +1,7 @@
 package net.minecraft.server;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
@@ -15,7 +16,7 @@ import java.util.zip.GZIPOutputStream;
 
 public class NBTCompressedStreamTools {
 
-    public static NBTTagCompound a(InputStream inputstream) {
+    public static NBTTagCompound a(InputStream inputstream) throws IOException { // Poweruser - added throws IOException
         DataInputStream datainputstream = new DataInputStream(new BufferedInputStream(new GZIPInputStream(inputstream)));
 
         NBTTagCompound nbttagcompound;
@@ -29,8 +30,9 @@ public class NBTCompressedStreamTools {
         return nbttagcompound;
     }
 
-    public static void a(NBTTagCompound nbttagcompound, OutputStream outputstream) {
-        DataOutputStream dataoutputstream = new DataOutputStream(new GZIPOutputStream(outputstream));
+    public static void a(NBTTagCompound nbttagcompound, OutputStream outputstream) throws IOException { // Poweruser - added throws IOException
+        //DataOutputStream dataoutputstream = new DataOutputStream(new GZIPOutputStream(outputstream));
+        DataOutputStream dataoutputstream = new DataOutputStream(new BufferedOutputStream(new GZIPOutputStream(outputstream))); // Poweruser
 
         try {
             a(nbttagcompound, (DataOutput) dataoutputstream);
@@ -39,7 +41,7 @@ public class NBTCompressedStreamTools {
         }
     }
 
-    public static NBTTagCompound a(byte[] abyte) {
+    public static NBTTagCompound a(byte[] abyte) throws IOException { // Poweruser - added throws IOException
         DataInputStream datainputstream = new DataInputStream(new BufferedInputStream(new GZIPInputStream(new ByteArrayInputStream(abyte))));
 
         NBTTagCompound nbttagcompound;
@@ -53,9 +55,10 @@ public class NBTCompressedStreamTools {
         return nbttagcompound;
     }
 
-    public static byte[] a(NBTTagCompound nbttagcompound) {
+    public static byte[] a(NBTTagCompound nbttagcompound) throws IOException { // Poweruser - added throws IOException
         ByteArrayOutputStream bytearrayoutputstream = new ByteArrayOutputStream();
-        DataOutputStream dataoutputstream = new DataOutputStream(new GZIPOutputStream(bytearrayoutputstream));
+        //DataOutputStream dataoutputstream = new DataOutputStream(new GZIPOutputStream(bytearrayoutputstream));
+        DataOutputStream dataoutputstream = new DataOutputStream(new BufferedOutputStream(new GZIPOutputStream(bytearrayoutputstream))); // Poweruser
 
         try {
             a(nbttagcompound, (DataOutput) dataoutputstream);
@@ -66,7 +69,7 @@ public class NBTCompressedStreamTools {
         return bytearrayoutputstream.toByteArray();
     }
 
-    public static NBTTagCompound a(DataInput datainput) {
+    public static NBTTagCompound a(DataInput datainput) throws IOException { // Poweruser - added throws IOException
         NBTBase nbtbase = NBTBase.a(datainput);
 
         if (nbtbase instanceof NBTTagCompound) {

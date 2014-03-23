@@ -10,8 +10,10 @@ public class WorldChunkManagerHell extends WorldChunkManager {
     private float e;
     private float f;
 
-    public WorldChunkManagerHell(BiomeBase biomebase, float f, float f1) {
-        this.d = biomebase;
+    //public WorldChunkManagerHell(BiomeBase biomebase, float f, float f1) {
+    public WorldChunkManagerHell(int biomebaseId, float f, float f1) { // Poweruser
+        //this.d = biomebase;
+        this.d = this.biomeBaseObj.biomes[biomebaseId]; // Poweruser
         this.e = f;
         this.f = f1;
     }
@@ -29,7 +31,7 @@ public class WorldChunkManagerHell extends WorldChunkManager {
         return abiomebase;
     }
 
-    public float[] getTemperatures(float[] afloat, int i, int j, int k, int l) {
+    public float[] getWetness(float[] afloat, int i, int j, int k, int l) {
         if (afloat == null || afloat.length < k * l) {
             afloat = new float[k * l];
         }
@@ -38,7 +40,7 @@ public class WorldChunkManagerHell extends WorldChunkManager {
         return afloat;
     }
 
-    public float[] getWetness(float[] afloat, int i, int j, int k, int l) {
+    public float[] getTemperatures(float[] afloat, int i, int j, int k, int l) {
         if (afloat == null || afloat.length < k * l) {
             afloat = new float[k * l];
         }

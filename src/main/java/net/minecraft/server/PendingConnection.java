@@ -52,7 +52,10 @@ public class PendingConnection extends Connection {
 
     public void disconnect(String s) {
         try {
-            this.server.getLogger().info("Disconnecting " + this.getName() + ": " + s);
+            // Poweruser - dont show the protocol errors, the 1.7.x clients are spamming the v1.6.x server with
+            if(!s.equals("Protocol error") || this.g != null) {
+                this.server.getLogger().info("Disconnecting " + this.getName() + ": " + s);
+            }
             this.networkManager.queue(new Packet255KickDisconnect(s));
             this.networkManager.d();
             this.b = true;
@@ -108,11 +111,17 @@ public class PendingConnection extends Connection {
             }
 
             this.j = true;
+            /*
             if (this.server.getOnlineMode()) {
                 (new ThreadLoginVerifier(this, server.server)).start(); // CraftBukkit - add CraftServer
             } else {
                 this.h = true;
             }
+            */
+
+            // Poweruser start
+            (new ThreadLoginVerifier(this, server.server)).start();
+            // Poweruser end
         }
     }
 
@@ -138,7 +147,12 @@ public class PendingConnection extends Connection {
     }
 
     public void a(String s, Object[] aobject) {
-        this.server.getLogger().info(this.getName() + " lost connection");
+        // Poweruser start - show message only for players that were logged in and had a name
+        //this.server.getLogger().info(this.getName() + " lost connection");
+        if(this.g != null) {
+            this.server.getLogger().info(this.getName() + " lost connection");
+        }
+        // Poweruser end
         this.b = true;
     }
 

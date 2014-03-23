@@ -4,9 +4,14 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
+
+import de.minetick.MinetickMod;
+import de.minetick.packetbuilder.PacketBuilderBuffer;
 
 public class Packet56MapChunkBulk extends Packet {
 
@@ -18,20 +23,59 @@ public class Packet56MapChunkBulk extends Packet {
     private byte[][] inflatedBuffers;
     private int size;
     private boolean h;
-    private byte[] buildBuffer = new byte[0]; // CraftBukkit - remove static
+    //private byte[] buildBuffer = new byte[0]; // CraftBukkit - remove static
+    // Poweruser start
+    private byte[] buildBuffer;
+    private PacketBuilderBuffer pbb;
+    private AtomicInteger pendingUses;
+    public static int targetCompressionLevel = MinetickMod.defaultPacketCompression;
+
+    public static void changeCompressionLevel(int level) {
+        if(level < Deflater.BEST_SPEED || level > Deflater.BEST_COMPRESSION) {
+            targetCompressionLevel = Deflater.DEFAULT_COMPRESSION;
+        } else {
+            targetCompressionLevel = level;
+        }
+    }
+
+    public void setPendingUses(int uses) {
+        this.pendingUses = new AtomicInteger(uses);
+    }
+
+    public void discard() {
+        if(this.pbb != null) {
+            if(this.buffer != null) {
+                this.pbb.offerSendBuffer(this.buffer);
+                this.buffer = null;
+            }
+            this.pbb = null;
+        }
+    }
+    // Poweruser end
+
+    /*
     // CraftBukkit start
     static final ThreadLocal<Deflater> localDeflater = new ThreadLocal<Deflater>() {
         @Override
         protected Deflater initialValue() {
             // Don't use higher compression level, slows things down too much
-            return new Deflater(6);
+            /*
+             * Default was 6, but as compression is run in seperate threads now
+             * a higher compression can be afforded
+             * /
+            return new Deflater(9);
         }
     };
     // CraftBukkit end
+    */
 
     public Packet56MapChunkBulk() {}
 
-    public Packet56MapChunkBulk(List list) {
+    //public Packet56MapChunkBulk(List list) {
+    // Poweruser start
+    public Packet56MapChunkBulk(PacketBuilderBuffer pbb, List list) {
+        this.pbb = pbb;
+    // Poweruser end
         int i = list.size();
 
         this.c = new int[i];
@@ -46,6 +90,7 @@ public class Packet56MapChunkBulk extends Packet {
             Chunk chunk = (Chunk) list.get(k);
             ChunkMap chunkmap = Packet51MapChunk.a(chunk, true, '\uffff');
 
+            /*
             if (buildBuffer.length < j + chunkmap.a.length) {
                 byte[] abyte = new byte[j + chunkmap.a.length];
 
@@ -54,6 +99,8 @@ public class Packet56MapChunkBulk extends Packet {
             }
 
             System.arraycopy(chunkmap.a, 0, buildBuffer, j, chunkmap.a.length);
+            */
+
             j += chunkmap.a.length;
             this.c[k] = chunk.x;
             this.d[k] = chunk.z;
@@ -61,6 +108,25 @@ public class Packet56MapChunkBulk extends Packet {
             this.b[k] = chunkmap.c;
             this.inflatedBuffers[k] = chunkmap.a;
         }
+
+        // Poweruser start - we know the total size now (j), lets build the buffer and copy over the builderBuffers of each chunk
+        byte[] completeBuildBuffer = new byte[j];
+        int startIndex = 0;
+        for(int a = 0; a < i; a++) {
+            System.arraycopy(this.inflatedBuffers[a], 0, completeBuildBuffer, startIndex, this.inflatedBuffers[a].length);
+            startIndex += this.inflatedBuffers[a].length;
+            this.inflatedBuffers[a] = null;
+        }
+        Deflater deflater = new Deflater(targetCompressionLevel);
+        try {
+            deflater.setInput(completeBuildBuffer);
+            deflater.finish();
+            this.buffer = this.pbb.requestSendBuffer(completeBuildBuffer.length + 100);
+            this.size = deflater.deflate(this.buffer);
+        } finally {
+            deflater.end();
+        }
+        // Poweruser end
 
         /* CraftBukkit start - Moved to compress()
         Deflater deflater = new Deflater(-1);
@@ -76,6 +142,7 @@ public class Packet56MapChunkBulk extends Packet {
         */
     }
 
+    /*
     // Add compression method
     public void compress() {
         if (this.buffer != null) {
@@ -91,6 +158,7 @@ public class Packet56MapChunkBulk extends Packet {
         this.size = deflater.deflate(this.buffer);
     }
     // CraftBukkit end
+    */
 
     public void a(DataInput datainput) throws IOException { // CraftBukkit - throws IOException
         short short1 = datainput.readShort();
@@ -150,7 +218,7 @@ public class Packet56MapChunkBulk extends Packet {
     }
 
     public void a(DataOutput dataoutput) throws IOException { // CraftBukkit - throws IOException
-        compress(); // CraftBukkit
+        //compress(); // CraftBukkit  // Poweruser - moved back to the constructor
         dataoutput.writeShort(this.c.length);
         dataoutput.writeInt(this.size);
         dataoutput.writeBoolean(this.h);
@@ -162,6 +230,12 @@ public class Packet56MapChunkBulk extends Packet {
             dataoutput.writeShort((short) (this.a[i] & '\uffff'));
             dataoutput.writeShort((short) (this.b[i] & '\uffff'));
         }
+
+        // Poweruser start
+        if(this.pendingUses.decrementAndGet() == 0) {
+            this.discard();
+        }
+        // Poweruser end
     }
 
     public void handle(Connection connection) {
