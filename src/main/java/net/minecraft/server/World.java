@@ -102,9 +102,6 @@ public abstract class World implements IBlockAccess {
     protected boolean cancelHeavyCalculations = false;
     private int nextTickEntityIndex = 0;
 
-    public BiomeBaseDB getBiomeBaseDB() {
-        return this.worldProvider.e.getBiomeBaseObj();
-    }
     public ChunkProviderServer chunkProviderServer; // moved here from the class WorldServer
 
     private static ThreadLocal<List> getCubesList = new ThreadLocal<List>() {
