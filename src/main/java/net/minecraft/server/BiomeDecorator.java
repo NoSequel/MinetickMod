@@ -70,9 +70,59 @@ public class BiomeDecorator {
         this.e = biomebase;
     }
 
+    // Poweruser start
+    protected BiomeDecorator(BiomeDecorator decorator) {
+        this.a = decorator.a;
+        this.b = decorator.b;
+        this.c = decorator.c;
+        this.d = decorator.d;
+        this.e = decorator.e;
+        this.f = decorator.f;
+        this.g = decorator.g;
+        this.h = decorator.h;
+        this.i = decorator.i;
+        this.j = decorator.j;
+        this.k = decorator.k;
+        this.l = decorator.l;
+        this.m = decorator.m;
+        this.n = decorator.n;
+        this.o = decorator.o;
+        this.p = decorator.p;
+        this.q = decorator.q;
+        this.r = decorator.r;
+        this.s = decorator.s;
+        this.t = decorator.t;
+        this.u = decorator.u;
+        this.v = decorator.v;
+        this.w = decorator.w;
+        this.x = decorator.x;
+        this.A = decorator.A;
+        this.B = decorator.B;
+        this.C = decorator.C;
+        this.D = decorator.D;
+        this.E = decorator.E;
+        this.F = decorator.F;
+        this.G = decorator.G;
+        this.H = decorator.H;
+        this.I = decorator.I;
+        this.J = decorator.J;
+        this.K = decorator.K;
+    }
+    // Poweruser end
+
     public void a(World world, Random random, int i, int j) {
         if (this.a != null) {
-            throw new RuntimeException("Already decorating!!");
+            //throw new RuntimeException("Already decorating!!");
+            // Poweruser start
+            BiomeDecorator decorator = new BiomeDecorator(this);
+            decorator.a = world;
+            decorator.b = random;
+            decorator.c = i;
+            decorator.d = j;
+            decorator.a();
+            decorator.a = null;
+            decorator.b = null;
+            // Poweruser end
         } else {
             this.a = world;
             this.b = random;
