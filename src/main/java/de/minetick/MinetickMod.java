@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -30,6 +31,7 @@ import de.minetick.modcommands.WorldStatsCommand;
 import de.minetick.packetbuilder.PacketBuilderThreadPool;
 import de.minetick.profiler.Profiler;
 
+import net.minecraft.server.Block;
 import net.minecraft.server.Entity;
 import net.minecraft.server.EntityArrow;
 import net.minecraft.server.EntityEnderCrystal;
@@ -69,6 +71,7 @@ public class MinetickMod {
     private HashSet<String> notGeneratingWorlds;
     private int maxEntityLifeTime = 10;
     private HashSet<EntityType> entitiesToDelete;
+    private HashMap<Block, Integer> customOreRates;
     private final Logger log = LogManager.getLogger();
 
     public MinetickMod() {
@@ -79,6 +82,7 @@ public class MinetickMod {
         this.timerService.scheduleAtFixedRate(this.tickCounterObject, 1, 1, TimeUnit.SECONDS);
         this.notGeneratingWorlds = new HashSet<String>();
         this.entitiesToDelete = new HashSet<EntityType>();
+        this.customOreRates = new HashMap<Block, Integer>();
         instance = this;
     }
     
@@ -134,6 +138,32 @@ public class MinetickMod {
                 } catch (IllegalArgumentException e) {
                     log.warn("[MinetickMod] Settings: Skipping \"" + name + "\", as it is not a constant in org.bukkit.entity.EntityType!");
                 }
+            }
+            this.loadCustomOreRates(craftserver.getMinetickModCustomOreRates());
+        }
+    }
+
+    private void loadCustomOreRates(List<String> customOreRates) {
+        for(String str: customOreRates) {
+            String[] split = str.split(":");
+            if(split.length == 2) {
+                String block = split[0].trim().toLowerCase();
+                String value = split[1].trim();
+                int v = 0;
+                try {
+                    v = Integer.parseInt(value);
+                } catch (NumberFormatException nfe) {
+                    log.warn("[MinetickMod] Could not parse integer " + value + " of config entry: " + str);
+                    continue;
+                }
+                Block b = Block.b(block);
+                if(b != null) {
+                    this.customOreRates.put(b, v);
+                } else {
+                    log.warn("[MinetickMod] Block " + block + " not recognised of config entry: " + str);
+                }
+            } else {
+                log.warn("[MinetickMod] Config entry \"" + str + "\" doesnt have the expected format: Block:value");
             }
         }
     }
@@ -264,5 +294,13 @@ public class MinetickMod {
 
     public static boolean isEntityAllowedToBeDeleted(EntityLiving entity) {
         return !isImportantEntity(entity) && instance.entitiesToDelete.contains(entity.getBukkitEntity().getType());
+    }
+
+    public static int getCustomOreRates(Block block, int def) {
+        Integer out = null;
+        if(instance == null || instance.customOreRates == null || (out = instance.customOreRates.get(block)) == null) {
+            return def;
+        }
+        return out.intValue();
     }
 }

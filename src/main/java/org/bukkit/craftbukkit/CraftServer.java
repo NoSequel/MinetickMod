@@ -1666,5 +1666,9 @@ public final class CraftServer implements Server {
     public List<String> getMinetickModEntitiesWithLimitedLifeTime() {
         return configuration.getStringList("minetickmod.entitiesWithLimitedLifeTime");
     }
+
+    public List<String> getMinetickModCustomOreRates() {
+        return configuration.getStringList("minetickmod.customOreRates");
+    }
     // Poweruser end
 }

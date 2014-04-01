@@ -63,3 +63,4 @@ minetickmod:
     notGeneratingWorlds: []
     maxEntityLifeTime: 10
     entitiesWithLimitedLifeTime: []
+    customOreRates: []
