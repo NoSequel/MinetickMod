@@ -95,7 +95,7 @@ public class PlayerChunkSendQueue {
     public void removeFirst(boolean ok) {
         if(!this.queue.isEmpty()) {
             ChunkCoordIntPair ccip = this.queue.removeFirst();
-            if(ok) {
+            if(ok && ccip != null) {
                 this.clientData.add(LongHash.toLong(ccip.x, ccip.z));
                 this.player.chunkCoordIntPairQueue.remove(ccip);
             }
@@ -106,7 +106,7 @@ public class PlayerChunkSendQueue {
         if(!this.queue.isEmpty()) {
             ChunkCoordIntPair ccip = this.queue.removeFirst();
             this.player.chunkCoordIntPairQueue.remove(ccip);
-            if(this.isOnServer(ccip) && !this.isChunkSent(ccip)) {
+            if(ccip != null && this.isOnServer(ccip) && !this.isChunkSent(ccip)) {
                  this.skippedChunks.addLast(ccip);
             }
         }
@@ -116,7 +116,7 @@ public class PlayerChunkSendQueue {
         int count = 0;
         while(this.skippedChunks.size() > 0) {
             ChunkCoordIntPair ccip = this.skippedChunks.removeFirst();
-            if(this.isOnServer(ccip) && !this.alreadyLoaded(ccip)) {
+            if(ccip != null && this.isOnServer(ccip) && !this.alreadyLoaded(ccip)) {
                 count++;
                 this.queue.addFirst(ccip);
                 this.player.chunkCoordIntPairQueue.add(ccip);
