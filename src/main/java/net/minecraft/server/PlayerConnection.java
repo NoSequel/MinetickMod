@@ -809,8 +809,8 @@ public class PlayerConnection implements PacketPlayInListener {
                 }
             }
 
-            if (s.startsWith("/")) {
-                // CraftBukkit start
+            // CraftBukkit start
+            if (!packetplayinchat.a()) {
                 try {
                     this.minecraftServer.server.playerCommandState = true;
                     this.handleCommand(s);
@@ -827,7 +827,7 @@ public class PlayerConnection implements PacketPlayInListener {
                 chatmessage.b().setColor(EnumChatFormat.RED);
                 this.sendPacket(new PacketPlayOutChat(chatmessage));
             } else if (true) {
-                this.chat(s, packetplayinchat.a());
+                this.chat(s, true);
                 // CraftBukkit end - the below is for reference. :)
             } else {
                 ChatMessage chatmessage1 = new ChatMessage("chat.type.text", new Object[] { this.player.getScoreboardDisplayName(), s});
@@ -870,7 +870,7 @@ public class PlayerConnection implements PacketPlayInListener {
             return;
         }
 
-        if (s.startsWith("/")) {
+        if (!async && s.startsWith("/")) {
             this.handleCommand(s);
         } else if (this.player.getChatFlags() == EnumChatVisibility.SYSTEM) {
             // Do nothing, this is coming from a plugin
