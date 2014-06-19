@@ -79,6 +79,10 @@ public abstract class World implements IBlockAccess {
     private boolean M;
     int[] I;
 
+    // Poweruser start
+    private HashSet<Long> alreadyCheckedChunks = new HashSet<Long>();
+    // Poweruser end
+
     public BiomeBase getBiome(int i, int j) {
         if (this.isLoaded(i, 0, j)) {
             Chunk chunk = this.getChunkAtWorldCoords(i, j);
@@ -1264,6 +1268,8 @@ public abstract class World implements IBlockAccess {
         this.f.clear();
         this.methodProfiler.c("regular");
 
+        this.alreadyCheckedChunks.clear(); // Poweruser - Maybe clear less frequent
+
         // CraftBukkit start - Use field for loop variable
         for (this.tickPosition = 0; this.tickPosition < this.entityList.size(); ++this.tickPosition) {
             entity = (Entity) this.entityList.get(this.tickPosition);
@@ -1405,9 +1411,21 @@ public abstract class World implements IBlockAccess {
     public void entityJoinedWorld(Entity entity, boolean flag) {
         int i = MathHelper.floor(entity.locX);
         int j = MathHelper.floor(entity.locZ);
-        byte b0 = 32;
+        //byte b0 = 32;
+        // Poweruser start
+        byte b0 = 4; // It should be enough to check the chunks within a range of 4 blocks, instead of always 25 chunks
+        long hash = LongHash.toLong(i, j);
+        boolean isChunkLoaded = this.alreadyCheckedChunks.contains(hash);
+        if(!isChunkLoaded) {
+            isChunkLoaded = this.b(i - b0, 0, j - b0, i + b0, 0, j + b0);
+            if(isChunkLoaded) {
+                this.alreadyCheckedChunks.add(hash);
+            }
+        }
 
-        if (!flag || this.b(i - b0, 0, j - b0, i + b0, 0, j + b0)) {
+        //if (!flag || this.b(i - b0, 0, j - b0, i + b0, 0, j + b0)) {
+        if (!flag || isChunkLoaded) {
+        // Poweruser end
             entity.S = entity.locX;
             entity.T = entity.locY;
             entity.U = entity.locZ;
