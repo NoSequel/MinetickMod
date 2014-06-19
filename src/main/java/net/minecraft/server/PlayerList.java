@@ -64,6 +64,8 @@ public abstract class PlayerList {
     // CraftBukkit start
     private CraftServer cserver;
 
+    private int broadcastIndex = 0; // Poweruser
+
     public PlayerList(MinecraftServer minecraftserver) {
         minecraftserver.server = new CraftServer(minecraftserver, this);
         minecraftserver.console = org.bukkit.craftbukkit.command.ColouredConsoleSender.getInstance();
@@ -789,9 +791,24 @@ public abstract class PlayerList {
     }
 
     public void tick() {
+        /*
         if (++this.t > 600) {
             this.t = 0;
         }
+        */
+        // Poweruser start - broadcasting the info about another player every 3 seconds
+        if (++this.t > 60) {
+            this.t = 0;
+            if(this.players.size() > 0) {
+                this.broadcastIndex++;
+                if(this.broadcastIndex >= this.players.size()) {
+                    this.broadcastIndex = 0;
+                }
+                EntityPlayer entityplayer = (EntityPlayer) this.players.get(this.broadcastIndex);
+                this.sendAll(new PacketPlayOutPlayerInfo(entityplayer.getName(), true, entityplayer.ping));
+            }
+        }
+        // Poweruser end
 
         /* CraftBukkit start - Remove updating of lag to players -- it spams way to much on big servers.
         if (this.t < this.players.size()) {
