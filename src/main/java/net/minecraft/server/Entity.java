@@ -256,7 +256,11 @@ public abstract class Entity {
         this.lastYaw = this.yaw;
         int i;
 
-        if (!this.world.isStatic && this.world instanceof WorldServer) {
+        //if (!this.world.isStatic && this.world instanceof WorldServer) {
+        // Poweruser start
+        boolean isProjectile = (this instanceof IProjectile || this instanceof EntityFireball);
+        if (!this.world.isStatic && this.world instanceof WorldServer && !isProjectile) {
+        // Poweruser end
             this.world.methodProfiler.a("portal");
             MinecraftServer minecraftserver = ((WorldServer) this.world).getMinecraftServer();
 
