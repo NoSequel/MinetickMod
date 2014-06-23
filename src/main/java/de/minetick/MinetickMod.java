@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -55,10 +56,11 @@ public class MinetickMod {
     private int timerDelay = 45;
     private ScheduledExecutorService timerService = Executors.newScheduledThreadPool(2, new MinetickThreadFactory("MinetickMod_TimerService"));
     private ExecutorService nbtFileService = Executors.newCachedThreadPool(new MinetickThreadFactory(Thread.NORM_PRIORITY - 2, "MinetickMod_NBTFileSaver"));
+    private ExecutorService worldTickerService = Executors.newCachedThreadPool(new MinetickThreadFactory(Thread.NORM_PRIORITY + 1, "MinetickMod_WorldTicker"));
+    private LockObject worldTickerLock = new LockObject();
     private ScheduledFuture<Object> tickTimerTask;
     private static MinetickMod instance;
     private Profiler profiler;
-    private ThreadPool threadPool;
     private boolean initDone = false;
     private TickCounter tickCounterObject;
     private List<Integer> ticksPerSecond;
@@ -100,7 +102,6 @@ public class MinetickMod {
             this.profiler = new Profiler(craftserver.getMinetickModProfilerLogInterval(),
                     craftserver.getMinetickModProfilerWriteEnabled(),
                     craftserver.getMinetickModProfilerWriteInterval());
-            this.threadPool = new ThreadPool(this.profiler);
             AntiXRay.setWorldsFromConfig(craftserver.getMinetickModOrebfuscatedWorlds());
             int axrps = craftserver.getMinetickModAntiXRayPoolSize();
             if(axrps <= 0 || axrps > 64) {
@@ -176,10 +177,6 @@ public class MinetickMod {
         return instance.getProfiler();
     }
 
-    public ThreadPool getThreadPool() {
-        return this.threadPool;
-    }
-
     public static boolean isImportantEntity(Entity entity) {
         return (entity instanceof EntityArrow || entity instanceof EntityPlayer || 
                 entity instanceof EntityProjectile || entity instanceof EntityFireball ||
@@ -189,7 +186,6 @@ public class MinetickMod {
     
     public void shutdown() {
         this.timerService.shutdown();
-        this.threadPool.shutdown();
         PacketBuilderThreadPool.shutdownStatic();
         AntiXRay.shutdown();
         this.nbtFileService.shutdown();
@@ -302,5 +298,9 @@ public class MinetickMod {
             return def;
         }
         return out.intValue();
+    }
+
+    public Future<?> tickWorld(WorldServer worldServer) {
+        return this.worldTickerService.submit(new WorldTicker(worldServer, this.profiler, this.worldTickerLock));
     }
 }

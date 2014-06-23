@@ -17,6 +17,9 @@ import java.util.PriorityQueue;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+
 import javax.imageio.ImageIO;
 
 import net.minecraft.util.com.google.common.base.Charsets;
@@ -98,6 +101,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
 
     // CraftBukkit start
     public List<WorldServer> worlds = new ArrayList<WorldServer>();
+    public List<Future<?>> worldTickers = new ArrayList<Future<?>>();
     public org.bukkit.craftbukkit.CraftServer server;
     public OptionSet options;
     public org.bukkit.command.ConsoleCommandSender console;
@@ -715,7 +719,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
             }
         }
 
-        this.minetickMod.getThreadPool().prepareTick(worldCount);
+        this.worldTickers.clear();
         for(i = 0; i < worldCount; i++) {
             WorldServer worldserver = this.sortedWorldsArray[i];
             worldserver.cancelHeavyCalculations(false);
@@ -729,9 +733,19 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
                 throw new ReportedException(crashreport);
             }
             this.minetickMod.getProfiler().getWorldProfile(worldserver.getWorld().getName()).stop(WorldProfileSection.DO_TICK);
-            this.minetickMod.getThreadPool().tickWorld(worldserver);
+            this.worldTickers.add(this.minetickMod.tickWorld(worldserver));
         }
-        this.minetickMod.getThreadPool().waitUntilDone();
+        for(Future<?> f: this.worldTickers) {
+            try {
+                f.get();
+            } catch (InterruptedException e) {
+                this.h(e.toString());
+                e.printStackTrace();
+            } catch (ExecutionException e) {
+                this.h(e.toString());
+                e.printStackTrace();
+            }
+        }
         this.minetickMod.cancelTimerTask(false);
 
         for(i = 0; i < worldCount; i++) {
