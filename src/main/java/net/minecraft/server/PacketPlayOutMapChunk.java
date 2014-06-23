@@ -44,7 +44,8 @@ public class PacketPlayOutMapChunk extends Packet {
         return 196864;
     }
 
-    public void a(PacketDataSerializer packetdataserializer) {
+    //public void a(PacketDataSerializer packetdataserializer) {
+    public void a(PacketDataSerializer packetdataserializer) throws IOException { // Poweruser - added throws IOException
         this.a = packetdataserializer.readInt();
         this.b = packetdataserializer.readInt();
         this.inflatedBuffer = packetdataserializer.readBoolean();
