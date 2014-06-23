@@ -43,7 +43,8 @@ public class NBTTagCompound extends NBTBase {
             byte b0;
 
             while ((b0 = a(datainput, nbtreadlimiter)) != 0) {
-                String s = b(datainput, nbtreadlimiter);
+                //String s = b(datainput, nbtreadlimiter);
+                String s = getStoredString(b(datainput, nbtreadlimiter), true); // Poweruser
 
                 nbtreadlimiter.a((long) (16 * s.length()));
                 NBTBase nbtbase = a(b0, s, datainput, i + 1, nbtreadlimiter);
