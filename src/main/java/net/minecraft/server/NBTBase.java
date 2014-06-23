@@ -2,14 +2,17 @@ package net.minecraft.server;
 
 import java.io.DataInput;
 import java.io.DataOutput;
+import java.io.IOException;
 
 public abstract class NBTBase {
 
     public static final String[] a = new String[] { "END", "BYTE", "SHORT", "INT", "LONG", "FLOAT", "DOUBLE", "BYTE[]", "STRING", "LIST", "COMPOUND", "INT[]"};
 
-    abstract void write(DataOutput dataoutput);
+    //abstract void write(DataOutput dataoutput);
+    abstract void write(DataOutput dataoutput) throws IOException; // Poweruser
 
-    abstract void load(DataInput datainput, int i, NBTReadLimiter nbtreadlimiter);
+    //abstract void load(DataInput datainput, int i, NBTReadLimiter nbtreadlimiter);
+    abstract void load(DataInput datainput, int i, NBTReadLimiter nbtreadlimiter) throws IOException; // Poweruser
 
     public abstract String toString();
 

@@ -19,7 +19,8 @@ public class NBTTagCompound extends NBTBase {
 
     public NBTTagCompound() {}
 
-    void write(DataOutput dataoutput) {
+    //void write(DataOutput dataoutput) {
+    void write(DataOutput dataoutput) throws IOException { // Poweruser
         Iterator iterator = this.map.keySet().iterator();
 
         while (iterator.hasNext()) {
@@ -32,7 +33,8 @@ public class NBTTagCompound extends NBTBase {
         dataoutput.writeByte(0);
     }
 
-    void load(DataInput datainput, int i, NBTReadLimiter nbtreadlimiter) {
+    //void load(DataInput datainput, int i, NBTReadLimiter nbtreadlimiter) {
+    void load(DataInput datainput, int i, NBTReadLimiter nbtreadlimiter) throws IOException { // Poweruser
         if (i > 512) {
             throw new RuntimeException("Tried to read NBT tag with too high complexity, depth > 512");
         } else {
@@ -278,7 +280,8 @@ public class NBTTagCompound extends NBTBase {
         return super.hashCode() ^ this.map.hashCode();
     }
 
-    private static void a(String s, NBTBase nbtbase, DataOutput dataoutput) {
+    //private static void a(String s, NBTBase nbtbase, DataOutput dataoutput) {
+    private static void a(String s, NBTBase nbtbase, DataOutput dataoutput) throws IOException { // Poweruser
         dataoutput.writeByte(nbtbase.getTypeId());
         if (nbtbase.getTypeId() != 0) {
             dataoutput.writeUTF(s);
@@ -286,11 +289,13 @@ public class NBTTagCompound extends NBTBase {
         }
     }
 
-    private static byte a(DataInput datainput, NBTReadLimiter nbtreadlimiter) {
+    //private static byte a(DataInput datainput, NBTReadLimiter nbtreadlimiter) {
+    private static byte a(DataInput datainput, NBTReadLimiter nbtreadlimiter) throws IOException { // Poweruser
         return datainput.readByte();
     }
 
-    private static String b(DataInput datainput, NBTReadLimiter nbtreadlimiter) {
+    //private static String b(DataInput datainput, NBTReadLimiter nbtreadlimiter) {
+    private static String b(DataInput datainput, NBTReadLimiter nbtreadlimiter) throws IOException { // Poweruser
         return datainput.readUTF();
     }
 
