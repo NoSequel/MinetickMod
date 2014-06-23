@@ -133,6 +133,7 @@ public abstract class World implements IBlockAccess {
         while(iter.hasNext()) {
             Entity entity = iter.next();
             entity.changeDimension(entity.getTargetDimension());
+            iter.remove();
         }
     }
     // Poweruser end
