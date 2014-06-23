@@ -3,8 +3,10 @@ package net.minecraft.server;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
@@ -81,6 +83,20 @@ public abstract class World implements IBlockAccess {
 
     // Poweruser start
     private HashSet<Long> alreadyCheckedChunks = new HashSet<Long>();
+    private List<Entity> dimensionChangeQueue = Collections.synchronizedList(new LinkedList<Entity>());
+
+    public void queueEntityForDimensionChange(Entity entity) {
+        this.dimensionChangeQueue.add(entity);
+    }
+
+    public void processDimensionChangeQueue() {
+        Iterator<Entity> iter = this.dimensionChangeQueue.iterator();
+        while(iter.hasNext()) {
+            Entity entity = iter.next();
+            entity.changeDimension(entity.getTargetDimension());
+            iter.remove();
+        }
+    }
     // Poweruser end
 
     public BiomeBase getBiome(int i, int j) {

@@ -663,6 +663,13 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
             // this.h[i][this.ticks % 100] = System.nanoTime() - j; // CraftBukkit
         }
 
+        // Poweruser start
+        for (i = 0; i < this.worlds.size(); ++i) {
+            WorldServer worldserver = this.worlds.get(i);
+            worldserver.processDimensionChangeQueue();
+        }
+        // Poweruser end
+
         this.methodProfiler.c("connection");
         this.ai().c();
         this.methodProfiler.c("players");
