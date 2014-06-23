@@ -29,6 +29,10 @@ import org.bukkit.event.weather.WeatherChangeEvent;
 import org.bukkit.event.weather.ThunderChangeEvent;
 // CraftBukkit end
 
+//Poweruser start
+import org.bukkit.craftbukkit.util.LongHash;
+//Poweruser end
+
 public abstract class World implements IBlockAccess {
 
     public boolean d;
