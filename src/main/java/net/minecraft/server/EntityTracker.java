@@ -26,13 +26,15 @@ public class EntityTracker {
         if (entity instanceof EntityPlayer) {
             this.addEntity(entity, 512, 2);
             EntityPlayer entityplayer = (EntityPlayer) entity;
-            Iterator iterator = this.c.iterator();
+            synchronized(this.c) { // Poweruser
+                Iterator iterator = this.c.iterator();
 
-            while (iterator.hasNext()) {
-                EntityTrackerEntry entitytrackerentry = (EntityTrackerEntry) iterator.next();
+                while (iterator.hasNext()) {
+                    EntityTrackerEntry entitytrackerentry = (EntityTrackerEntry) iterator.next();
 
-                if (entitytrackerentry.tracker != entityplayer) {
-                    entitytrackerentry.updatePlayer(entityplayer);
+                    if (entitytrackerentry.tracker != entityplayer) {
+                        entitytrackerentry.updatePlayer(entityplayer);
+                    }
                 }
             }
         } else if (entity instanceof EntityFishingHook) {
@@ -102,7 +104,9 @@ public class EntityTracker {
 
             EntityTrackerEntry entitytrackerentry = new EntityTrackerEntry(entity, i, j, flag);
 
-            this.c.add(entitytrackerentry);
+            synchronized(this.c) { // Poweruser
+                this.c.add(entitytrackerentry);
+            }
             this.trackedEntities.a(entity.getId(), entitytrackerentry);
             entitytrackerentry.scanPlayers(this.world.players);
         } catch (Throwable throwable) {
@@ -127,45 +131,53 @@ public class EntityTracker {
     public void untrackEntity(Entity entity) {
         if (entity instanceof EntityPlayer) {
             EntityPlayer entityplayer = (EntityPlayer) entity;
-            Iterator iterator = this.c.iterator();
+            synchronized(this.c) { // Poweruser
+                Iterator iterator = this.c.iterator();
 
-            while (iterator.hasNext()) {
-                EntityTrackerEntry entitytrackerentry = (EntityTrackerEntry) iterator.next();
+                while (iterator.hasNext()) {
+                    EntityTrackerEntry entitytrackerentry = (EntityTrackerEntry) iterator.next();
 
-                entitytrackerentry.a(entityplayer);
+                    entitytrackerentry.a(entityplayer);
+                }
             }
         }
 
         EntityTrackerEntry entitytrackerentry1 = (EntityTrackerEntry) this.trackedEntities.d(entity.getId());
 
         if (entitytrackerentry1 != null) {
-            this.c.remove(entitytrackerentry1);
+            synchronized(this.c) {
+                this.c.remove(entitytrackerentry1);
+            }
             entitytrackerentry1.a();
         }
     }
 
     public void updatePlayers() {
         ArrayList arraylist = new ArrayList();
-        Iterator iterator = this.c.iterator();
+        synchronized(this.c) { // Poweruser
+            Iterator iterator = this.c.iterator();
 
-        while (iterator.hasNext()) {
-            EntityTrackerEntry entitytrackerentry = (EntityTrackerEntry) iterator.next();
+            while (iterator.hasNext()) {
+                EntityTrackerEntry entitytrackerentry = (EntityTrackerEntry) iterator.next();
 
-            entitytrackerentry.track(this.world.players);
-            if (entitytrackerentry.n && entitytrackerentry.tracker instanceof EntityPlayer) {
-                arraylist.add((EntityPlayer) entitytrackerentry.tracker);
+                entitytrackerentry.track(this.world.players);
+                if (entitytrackerentry.n && entitytrackerentry.tracker instanceof EntityPlayer) {
+                    arraylist.add((EntityPlayer) entitytrackerentry.tracker);
+                }
             }
         }
 
         for (int i = 0; i < arraylist.size(); ++i) {
             EntityPlayer entityplayer = (EntityPlayer) arraylist.get(i);
-            Iterator iterator1 = this.c.iterator();
+            synchronized(this.c) { // Poweruser
+                Iterator iterator1 = this.c.iterator();
 
-            while (iterator1.hasNext()) {
-                EntityTrackerEntry entitytrackerentry1 = (EntityTrackerEntry) iterator1.next();
+                while (iterator1.hasNext()) {
+                    EntityTrackerEntry entitytrackerentry1 = (EntityTrackerEntry) iterator1.next();
 
-                if (entitytrackerentry1.tracker != entityplayer) {
-                    entitytrackerentry1.updatePlayer(entityplayer);
+                    if (entitytrackerentry1.tracker != entityplayer) {
+                        entitytrackerentry1.updatePlayer(entityplayer);
+                    }
                 }
             }
         }
@@ -188,23 +200,27 @@ public class EntityTracker {
     }
 
     public void untrackPlayer(EntityPlayer entityplayer) {
-        Iterator iterator = this.c.iterator();
+        synchronized(this.c) { // Poweruser
+            Iterator iterator = this.c.iterator();
 
-        while (iterator.hasNext()) {
-            EntityTrackerEntry entitytrackerentry = (EntityTrackerEntry) iterator.next();
+            while (iterator.hasNext()) {
+                EntityTrackerEntry entitytrackerentry = (EntityTrackerEntry) iterator.next();
 
-            entitytrackerentry.clear(entityplayer);
+                entitytrackerentry.clear(entityplayer);
+            }
         }
     }
 
     public void a(EntityPlayer entityplayer, Chunk chunk) {
-        Iterator iterator = this.c.iterator();
+        synchronized(this.c) { // Poweruser
+            Iterator iterator = this.c.iterator();
 
-        while (iterator.hasNext()) {
-            EntityTrackerEntry entitytrackerentry = (EntityTrackerEntry) iterator.next();
+            while (iterator.hasNext()) {
+                EntityTrackerEntry entitytrackerentry = (EntityTrackerEntry) iterator.next();
 
-            if (entitytrackerentry.tracker != entityplayer && entitytrackerentry.tracker.ah == chunk.locX && entitytrackerentry.tracker.aj == chunk.locZ) {
-                entitytrackerentry.updatePlayer(entityplayer);
+                if (entitytrackerentry.tracker != entityplayer && entitytrackerentry.tracker.ah == chunk.locX && entitytrackerentry.tracker.aj == chunk.locZ) {
+                    entitytrackerentry.updatePlayer(entityplayer);
+                }
             }
         }
     }
