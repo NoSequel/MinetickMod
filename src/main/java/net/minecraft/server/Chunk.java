@@ -266,7 +266,8 @@ public class Chunk {
     private void c(int i, int j, int k, int l) {
         if (l > k && this.world.areChunksLoaded(i, 0, j, 16)) {
             for (int i1 = k; i1 < l; ++i1) {
-                this.world.c(EnumSkyBlock.SKY, i, i1, j);
+                //this.world.c(EnumSkyBlock.SKY, i, i1, j);
+                this.world.c(EnumSkyBlock.SKY, i, i1, j, true); // Poweruser
             }
 
             this.n = true;
@@ -986,7 +987,8 @@ public class Chunk {
             if (this.world.b(this.locX * 16 - 1, 0, this.locZ * 16 - 1, this.locX * 16 + 16, 63, this.locZ * 16 + 16)) { // Poweruser
                 for (int i = 0; i < 16; ++i) {
                     for (int j = 0; j < 16; ++j) {
-                        if (!this.f(i, j)) {
+                        //if (!this.f(i, j)) {
+                        if (!this.f(i, j, true)) { // Poweruser
                             this.lit = false;
                             break;
                         }
@@ -1034,7 +1036,14 @@ public class Chunk {
         }
     }
 
+    // Poweruser start
     private boolean f(int i, int j) {
+        return this.f(i, j, false);
+    }
+
+    private boolean f(int i, int j, boolean chunksAlreadyChecked) {
+    // Poweruser end
+    //private boolean f(int i, int j) {
         int k = this.h();
         boolean flag = false;
         boolean flag1 = false;
@@ -1050,14 +1059,16 @@ public class Chunk {
 
             if (!flag && i1 > 0) {
                 flag = true;
-            } else if (flag && i1 == 0 && !this.world.t(this.locX * 16 + i, l, this.locZ * 16 + j)) {
+            //} else if (flag && i1 == 0 && !this.world.t(this.locX * 16 + i, l, this.locZ * 16 + j)) {
+            } else if (flag && i1 == 0 && !this.world.t(this.locX * 16 + i, l, this.locZ * 16 + j, chunksAlreadyChecked)) { // Poweruser
                 return false;
             }
         }
 
         for (; l > 0; --l) {
             if (this.getType(i, l, j).m() > 0) {
-                this.world.t(this.locX * 16 + i, l, this.locZ * 16 + j);
+                //this.world.t(this.locX * 16 + i, l, this.locZ * 16 + j);
+                this.world.t(this.locX * 16 + i, l, this.locZ * 16 + j, chunksAlreadyChecked); // Poweruser
             }
         }
 

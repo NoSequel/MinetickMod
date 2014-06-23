@@ -502,7 +502,14 @@ public abstract class World implements IBlockAccess {
         this.applyPhysics(i, j, k, block);
     }
 
+    // Poweruser start
     public void b(int i, int j, int k, int l) {
+        this.b(i, j, k, l, false);
+    }
+
+    public void b(int i, int j, int k, int l, boolean chunksAlreadyChecked) {
+    // Poweruser end
+    //public void b(int i, int j, int k, int l) {
         int i1;
 
         if (k > l) {
@@ -513,7 +520,8 @@ public abstract class World implements IBlockAccess {
 
         if (!this.worldProvider.g) {
             for (i1 = k; i1 <= l; ++i1) {
-                this.c(EnumSkyBlock.SKY, i, i1, j);
+                //this.c(EnumSkyBlock.SKY, i, i1, j);
+                this.c(EnumSkyBlock.SKY, i, i1, j, chunksAlreadyChecked); // Poweruser
             }
         }
 
@@ -2164,14 +2172,23 @@ public abstract class World implements IBlockAccess {
         }
     }
 
+    // Poweruser start
     public boolean t(int i, int j, int k) {
+        return this.t(i, j, k, false);
+    }
+
+    public boolean t(int i, int j, int k, boolean chunksAlreadyChecked) {
+    // Poweruser end
+    //public boolean t(int i, int j, int k) {
         boolean flag = false;
 
         if (!this.worldProvider.g) {
-            flag |= this.c(EnumSkyBlock.SKY, i, j, k);
+            //flag |= this.c(EnumSkyBlock.SKY, i, j, k);
+            flag |= this.c(EnumSkyBlock.SKY, i, j, k, chunksAlreadyChecked); // Poweruser
         }
 
-        flag |= this.c(EnumSkyBlock.BLOCK, i, j, k);
+        //flag |= this.c(EnumSkyBlock.BLOCK, i, j, k);
+        flag |= this.c(EnumSkyBlock.BLOCK, i, j, k, chunksAlreadyChecked); // Poweruser
         return flag;
     }
 
@@ -2216,8 +2233,20 @@ public abstract class World implements IBlockAccess {
         }
     }
 
+    // Poweruser start
+    public boolean c(EnumSkyBlock enumskyblock, int i, int j, int k) {
+        return this.c(enumskyblock, i, j, k, false);
+    }
+
+    public boolean c(EnumSkyBlock enumskyblock, int i, int j, int k, boolean chunksAlreadyChecked) {
+        boolean chunksAreloaded = chunksAlreadyChecked || this.areChunksLoaded(i, j, k, 17);
+        if(!chunksAreloaded) {
+    // Poweruser end
+
+    /*
     public boolean c(EnumSkyBlock enumskyblock, int i, int j, int k) {
         if (!this.areChunksLoaded(i, j, k, 17)) {
+    */
             return false;
         } else {
             int l = 0;
