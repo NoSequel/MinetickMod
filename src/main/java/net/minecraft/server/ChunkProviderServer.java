@@ -248,7 +248,8 @@ public class ChunkProviderServer implements IChunkProvider {
                 this.chunkProvider.getChunkAt(ichunkprovider, i, j);
 
                 // CraftBukkit start
-                BlockSand.instaFall = true;
+                //BlockSand.instaFall = true;
+                BlockSand.enableInstantFall(this.world); // Poweruser
                 Random random = new Random();
                 random.setSeed(world.getSeed());
                 long xRand = random.nextLong() / 2L * 2L + 1L;
@@ -266,7 +267,8 @@ public class ChunkProviderServer implements IChunkProvider {
                         this.world.populating = false;
                     }
                 }
-                BlockSand.instaFall = false;
+                //BlockSand.instaFall = false;
+                BlockSand.disableInstantFall(this.world); // Poweruser
                 this.world.getServer().getPluginManager().callEvent(new org.bukkit.event.world.ChunkPopulateEvent(chunk.bukkitChunk));
                 // CraftBukkit end
 
