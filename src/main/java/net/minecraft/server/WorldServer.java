@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.PriorityQueue;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
@@ -31,7 +33,7 @@ public class WorldServer extends World {
     public EntityTracker tracker; // CraftBukkit - private final -> public
     private final PlayerChunkMap manager;
     private Set M;
-    private TreeSet N;
+    //private TreeSet N;
     public ChunkProviderServer chunkProviderServer;
     public boolean savingDisabled;
     private boolean O;
@@ -47,6 +49,10 @@ public class WorldServer extends World {
     // CraftBukkit start
     public final int dimension;
 
+    // Poweruser start
+    private PriorityQueue<NextTickListEntry> N;
+    // Poweruser end
+
     // Add env and gen to constructor
     public WorldServer(MinecraftServer minecraftserver, IDataManager idatamanager, String s, int i, WorldSettings worldsettings, MethodProfiler methodprofiler, org.bukkit.World.Environment env, org.bukkit.generator.ChunkGenerator gen) {
         super(idatamanager, s, worldsettings, WorldProvider.byDimension(env.getId()), methodprofiler, gen, env);
@@ -61,11 +67,13 @@ public class WorldServer extends World {
         }
 
         if (this.M == null) {
-            this.M = new HashSet();
+            //this.M = new HashSet();
+            this.M = new LinkedHashSet<NextTickListEntry>(); // Poweruser
         }
 
         if (this.N == null) {
-            this.N = new TreeSet();
+            //this.N = new TreeSet();
+            this.N = new PriorityQueue<NextTickListEntry>(1500); // Poweruser
         }
 
         this.Q = new org.bukkit.craftbukkit.CraftTravelAgent(this); // CraftBukkit
@@ -486,11 +494,28 @@ public class WorldServer extends World {
     }
 
     public boolean a(boolean flag) {
+        /*
         int i = this.N.size();
 
         if (i != this.M.size()) {
             throw new IllegalStateException("TickNextTick list out of synch");
         } else {
+        */
+        // Poweruser start
+        int i = this.M.size();
+        int queueSize = this.N.size();
+        if (i != queueSize) {
+            a.warn("TickNextTick list out of synch - World: " + this.getWorld().getName() + ". Recovering...");
+            if(i > queueSize) {
+                this.N.clear();
+                this.N.addAll(this.M);
+            } else if(queueSize > i) {
+                this.M.clear();
+                this.M.addAll(this.N);
+                i = queueSize;
+            }
+        }
+        // Poweruser end
             if (i > 1000) {
                 // CraftBukkit start - If the server has too much to process over time, try to alleviate that
                 if (i > 20 * 1000) {
@@ -505,6 +530,7 @@ public class WorldServer extends World {
 
             NextTickListEntry nextticklistentry;
 
+            /*
             for (int j = 0; j < i; ++j) {
                 nextticklistentry = (NextTickListEntry) this.N.first();
                 if (!flag && nextticklistentry.d > this.worldData.getTime()) {
@@ -515,6 +541,19 @@ public class WorldServer extends World {
                 this.M.remove(nextticklistentry);
                 this.V.add(nextticklistentry);
             }
+            */
+
+            // Poweruser start
+            for (int j = 0; j < i && !this.N.isEmpty(); j++) {
+                nextticklistentry = (NextTickListEntry) this.N.peek();
+                if (!flag && nextticklistentry.d > this.worldData.getTime()) {
+                    break;
+                }
+                this.N.poll();
+                this.M.remove(nextticklistentry);
+                this.V.add(nextticklistentry);
+            }
+            // Poweruser end
 
             this.methodProfiler.b();
             this.methodProfiler.a("ticking");
@@ -555,7 +594,7 @@ public class WorldServer extends World {
             this.methodProfiler.b();
             this.V.clear();
             return !this.N.isEmpty();
-        }
+        //}
     }
 
     public List a(Chunk chunk, boolean flag) {
@@ -570,12 +609,15 @@ public class WorldServer extends World {
             Iterator iterator;
 
             if (i1 == 0) {
-                iterator = this.N.iterator();
+                //iterator = this.N.iterator();
+                iterator = this.M.iterator(); // Poweruser
             } else {
                 iterator = this.V.iterator();
+                /* CraftBukkit start - Comment out debug spam
                 if (!this.V.isEmpty()) {
                     a.debug("toBeTicked = " + this.V.size());
                 }
+                */
             }
 
             while (iterator.hasNext()) {
@@ -583,8 +625,21 @@ public class WorldServer extends World {
 
                 if (nextticklistentry.a >= i && nextticklistentry.a < j && nextticklistentry.c >= k && nextticklistentry.c < l) {
                     if (flag) {
+                        /*
                         this.M.remove(nextticklistentry);
                         iterator.remove();
+                        */
+
+                        // Poweruser start
+                        if(i1 == 0) {
+                            this.V.remove(nextticklistentry);
+                            this.N.remove(nextticklistentry);
+                        } else {
+                            this.M.remove(nextticklistentry);
+                            this.N.remove(nextticklistentry);
+                        }
+                        iterator.remove();
+                        // Poweruser end
                     }
 
                     if (arraylist == null) {
@@ -669,11 +724,13 @@ public class WorldServer extends World {
         }
 
         if (this.M == null) {
-            this.M = new HashSet();
+            //this.M = new HashSet();
+            this.M = new LinkedHashSet<NextTickListEntry>(); // Poweruser
         }
 
         if (this.N == null) {
-            this.N = new TreeSet();
+            //this.N = new TreeSet();
+            this.N = new PriorityQueue<NextTickListEntry>(1500); // Poweruser
         }
 
         this.b(worldsettings);
