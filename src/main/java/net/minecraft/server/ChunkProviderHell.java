@@ -317,7 +317,8 @@ public class ChunkProviderHell implements IChunkProvider {
     }
 
     public void getChunkAt(IChunkProvider ichunkprovider, int i, int j) {
-        BlockFalling.instaFall = true;
+        //BlockFalling.instaFall = true;
+        BlockFalling.enableInstantFall(this.o); // Poweruser
         int k = i * 16;
         int l = j * 16;
 
@@ -394,7 +395,8 @@ public class ChunkProviderHell implements IChunkProvider {
             (new WorldGenHellLava(Blocks.LAVA, true)).a(this.o, this.i, l1, i2, j2);
         }
 
-        BlockFalling.instaFall = false;
+        //BlockFalling.instaFall = false;
+        BlockFalling.disableInstantFall(this.o); // Poweruser
     }
 
     public boolean saveChunks(boolean flag, IProgressUpdate iprogressupdate) {
