@@ -25,10 +25,23 @@ class ThreadPlayerLookupUUID extends Thread {
         GameProfile gameprofile = LoginListener.a(this.a);
 
         try {
-            String s = (new BigInteger(MinecraftEncryption.a(LoginListener.b(this.a), LoginListener.c(this.a).K().getPublic(), LoginListener.d(this.a)))).toString(16);
+            // Poweruser start
+            boolean isOnlineMode = LoginListener.c(this.a).getOnlineMode();
+            boolean allowedToEnter = !isOnlineMode;
+            if(isOnlineMode) {
+            // Poweruser end
+                String s = (new BigInteger(MinecraftEncryption.a(LoginListener.b(this.a), LoginListener.c(this.a).K().getPublic(), LoginListener.d(this.a)))).toString(16);
 
-            LoginListener.a(this.a, LoginListener.c(this.a).av().hasJoinedServer(new GameProfile((UUID) null, gameprofile.getName()), s));
-            if (LoginListener.a(this.a) != null) {
+                LoginListener.a(this.a, LoginListener.c(this.a).av().hasJoinedServer(new GameProfile((UUID) null, gameprofile.getName()), s));
+            //if (LoginListener.a(this.a) != null) {
+            // Poweruser start
+                allowedToEnter = (LoginListener.d(this.a) != null);
+            } else {
+                gameprofile = this.a.a(gameprofile);
+                LoginListener.a(this.a, gameprofile);
+            }
+            if(allowedToEnter) {
+            // Poweruser end
                 // CraftBukkit start - fire PlayerPreLoginEvent
                 if (!this.a.networkManager.isConnected()) {
                     return;

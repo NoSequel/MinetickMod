@@ -97,7 +97,8 @@ public class LoginListener implements PacketLoginInListener {
             this.g = EnumProtocolState.KEY;
             this.networkManager.handle(new PacketLoginOutEncryptionBegin(this.j, this.server.K().getPublic(), this.e), new GenericFutureListener[0]);
         } else {
-            this.g = EnumProtocolState.READY_TO_ACCEPT;
+            //this.g = EnumProtocolState.READY_TO_ACCEPT;
+            (new ThreadPlayerLookupUUID(this, "User Authenticator #" + b.incrementAndGet())).start(); // Poweruser
         }
     }
 
