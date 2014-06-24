@@ -2,6 +2,10 @@ package net.minecraft.server;
 
 import java.util.Random;
 
+// Poweruser start
+import de.minetick.MinetickMod;
+// Poweruser end
+
 public class BiomeDecorator {
 
     protected World a;
@@ -45,12 +49,22 @@ public class BiomeDecorator {
         this.g = new WorldGenSand(Blocks.GRAVEL, 6);
         this.h = new WorldGenMinable(Blocks.DIRT, 32);
         this.i = new WorldGenMinable(Blocks.GRAVEL, 32);
+        /*
         this.j = new WorldGenMinable(Blocks.COAL_ORE, 16);
         this.k = new WorldGenMinable(Blocks.IRON_ORE, 8);
         this.l = new WorldGenMinable(Blocks.GOLD_ORE, 8);
         this.m = new WorldGenMinable(Blocks.REDSTONE_ORE, 7);
         this.n = new WorldGenMinable(Blocks.DIAMOND_ORE, 7);
         this.o = new WorldGenMinable(Blocks.LAPIS_ORE, 6);
+        */
+        // Poweruser start
+        this.j = new WorldGenMinable(Blocks.COAL_ORE, MinetickMod.getCustomOreRates(Blocks.COAL_ORE, 16));
+        this.k = new WorldGenMinable(Blocks.IRON_ORE, MinetickMod.getCustomOreRates(Blocks.IRON_ORE, 8));
+        this.l = new WorldGenMinable(Blocks.GOLD_ORE, MinetickMod.getCustomOreRates(Blocks.GOLD_ORE, 8));
+        this.m = new WorldGenMinable(Blocks.REDSTONE_ORE, MinetickMod.getCustomOreRates(Blocks.REDSTONE_ORE, 7));
+        this.n = new WorldGenMinable(Blocks.DIAMOND_ORE, MinetickMod.getCustomOreRates(Blocks.DIAMOND_ORE, 7));
+        this.o = new WorldGenMinable(Blocks.LAPIS_ORE, MinetickMod.getCustomOreRates(Blocks.LAPIS_ORE, 6));
+        // Poweruser end
         this.p = new WorldGenFlowers(Blocks.YELLOW_FLOWER);
         this.q = new WorldGenFlowers(Blocks.BROWN_MUSHROOM);
         this.r = new WorldGenFlowers(Blocks.RED_MUSHROOM);
