@@ -26,6 +26,8 @@ import org.bukkit.event.weather.ThunderChangeEvent;
 import org.bukkit.event.weather.WeatherChangeEvent;
 // CraftBukkit end
 
+import de.minetick.antixray.AntiXRay;
+
 public class WorldServer extends World {
 
     private static final Logger a = LogManager.getLogger();
@@ -34,7 +36,7 @@ public class WorldServer extends World {
     private final PlayerChunkMap manager;
     private Set M;
     //private TreeSet N;
-    public ChunkProviderServer chunkProviderServer;
+    //public ChunkProviderServer chunkProviderServer; // Poweruser - moved to class World
     public boolean savingDisabled;
     private boolean O;
     private int emptyTime;
@@ -51,6 +53,32 @@ public class WorldServer extends World {
 
     // Poweruser start
     private PriorityQueue<NextTickListEntry> N;
+    public void cancelHeavyCalculations(boolean cancel) {
+        this.cancelHeavyCalculations = cancel;
+        this.manager.skipChunkGeneration(cancel);
+    }
+
+    public boolean chunkExists(int x, int z) {
+        return this.chunkProviderServer.doesChunkExist(x, z);
+    }
+
+    boolean allowChunkGeneration = false;
+    public boolean isChunkGenerationAllowed() {
+        if(this.worldData.getType().equals(WorldType.FLAT)) {
+            return true;
+        } else {
+            this.allowChunkGeneration = !this.allowChunkGeneration;
+        }
+        return this.allowChunkGeneration;
+    }
+
+    public int loadAndGenerateChunks() {
+        if(this.players.size() > 0) {
+            return this.manager.updatePlayers(this.isChunkGenerationAllowed());
+        } else {
+            return 0;
+        }
+    }
     // Poweruser end
 
     // Add env and gen to constructor
@@ -75,6 +103,7 @@ public class WorldServer extends World {
             //this.N = new TreeSet();
             this.N = new PriorityQueue<NextTickListEntry>(1500); // Poweruser
         }
+        this.antiXRay = new AntiXRay(this); // Poweruser
 
         this.Q = new org.bukkit.craftbukkit.CraftTravelAgent(this); // CraftBukkit
         this.scoreboard = new ScoreboardServer(minecraftserver);

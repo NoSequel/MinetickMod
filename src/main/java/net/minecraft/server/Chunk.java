@@ -41,6 +41,32 @@ public class Chunk {
     public long s;
     private int x;
 
+    // Poweruser start
+    private boolean isCorrupt = false;
+    public boolean newChunk = false;
+
+    public boolean isCorrupt() {
+        return this.isCorrupt;
+    }
+
+    public void markAsCorrupt() {
+        this.isCorrupt = true;
+    }
+
+    public boolean isNew() {
+        boolean out = newChunk;
+        this.newChunk = false;
+        return out;
+    }
+
+    public Block getTypeIdWithinSection(int section, int x, int y, int z) {
+        if(this.sections[section] == null) {
+            return Blocks.AIR;
+        }
+        return this.sections[section].getTypeId(x, y, z);
+    }
+    // Poweruser end
+
     public Chunk(World world, int i, int j) {
         this.sections = new ChunkSection[16];
         this.v = new byte[256];

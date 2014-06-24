@@ -2,9 +2,13 @@ package net.minecraft.server;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
+
+import de.minetick.MinetickMod;
+import de.minetick.packetbuilder.PacketBuilderBuffer;
 
 public class PacketPlayOutMapChunkBulk extends Packet {
 
@@ -16,7 +20,37 @@ public class PacketPlayOutMapChunkBulk extends Packet {
     private byte[][] inflatedBuffers;
     private int size;
     private boolean h;
-    private byte[] buildBuffer = new byte[0]; // CraftBukkit - remove static
+    //private byte[] buildBuffer = new byte[0]; // CraftBukkit - remove static
+    // Poweruser start
+    private byte[] buildBuffer;
+    private PacketBuilderBuffer pbb;
+    private AtomicInteger pendingUses;
+    public static int targetCompressionLevel = MinetickMod.defaultPacketCompression;
+
+    public static void changeCompressionLevel(int level) {
+        if(level < Deflater.BEST_SPEED || level > Deflater.BEST_COMPRESSION) {
+            targetCompressionLevel = Deflater.DEFAULT_COMPRESSION;
+        } else {
+            targetCompressionLevel = level;
+        }
+    }
+
+    public void setPendingUses(int uses) {
+        this.pendingUses = new AtomicInteger(uses);
+    }
+
+    public void discard() {
+        if(this.pbb != null) {
+            if(this.buffer != null) {
+                this.pbb.offerSendBuffer(this.buffer);
+                this.buffer = null;
+            }
+            this.pbb = null;
+        }
+    }
+    // Poweruser end
+
+    /*
     // CraftBukkit start
     static final ThreadLocal<Deflater> localDeflater = new ThreadLocal<Deflater>() {
         @Override
@@ -26,10 +60,15 @@ public class PacketPlayOutMapChunkBulk extends Packet {
         }
     };
     // CraftBukkit end
+    */
 
     public PacketPlayOutMapChunkBulk() {}
 
-    public PacketPlayOutMapChunkBulk(List list) {
+    //public PacketPlayOutMapChunkBulk(List list) {
+    // Poweruser start
+    public PacketPlayOutMapChunkBulk(PacketBuilderBuffer pbb, List list) {
+        this.pbb = pbb;
+    // Poweruser end
         int i = list.size();
 
         this.a = new int[i];
@@ -44,6 +83,8 @@ public class PacketPlayOutMapChunkBulk extends Packet {
             Chunk chunk = (Chunk) list.get(k);
             ChunkMap chunkmap = PacketPlayOutMapChunk.a(chunk, true, '\uffff');
 
+            /* Poweruser - instead of allocating a larger buffer and copying over the processed chunks each time,
+             * it is better to collect the seperate buildbuffers first, to do this only once
             if (buildBuffer.length < j + chunkmap.a.length) {
                 byte[] abyte = new byte[j + chunkmap.a.length];
 
@@ -52,6 +93,7 @@ public class PacketPlayOutMapChunkBulk extends Packet {
             }
 
             System.arraycopy(chunkmap.a, 0, buildBuffer, j, chunkmap.a.length);
+            */
             j += chunkmap.a.length;
             this.a[k] = chunk.locX;
             this.b[k] = chunk.locZ;
@@ -59,6 +101,25 @@ public class PacketPlayOutMapChunkBulk extends Packet {
             this.d[k] = chunkmap.c;
             this.inflatedBuffers[k] = chunkmap.a;
         }
+
+        // Poweruser start - we know the total size now (j), lets build the buffer and copy over the builderBuffers of each chunk
+        byte[] completeBuildBuffer = new byte[j];
+        int startIndex = 0;
+        for(int a = 0; a < i; a++) {
+            System.arraycopy(this.inflatedBuffers[a], 0, completeBuildBuffer, startIndex, this.inflatedBuffers[a].length);
+            startIndex += this.inflatedBuffers[a].length;
+            this.inflatedBuffers[a] = null;
+        }
+        Deflater deflater = new Deflater(targetCompressionLevel);
+        try {
+            deflater.setInput(completeBuildBuffer);
+            deflater.finish();
+            this.buffer = this.pbb.requestSendBuffer(completeBuildBuffer.length + 100);
+            this.size = deflater.deflate(this.buffer);
+        } finally {
+            deflater.end();
+        }
+        // Poweruser end
 
         /* CraftBukkit start - Moved to compress()
         Deflater deflater = new Deflater(-1);
@@ -74,6 +135,7 @@ public class PacketPlayOutMapChunkBulk extends Packet {
         */
     }
 
+    /*
     // Add compression method
     public void compress() {
         if (this.buffer != null) {
@@ -89,6 +151,7 @@ public class PacketPlayOutMapChunkBulk extends Packet {
         this.size = deflater.deflate(this.buffer);
     }
     // CraftBukkit end
+    */
 
     public static int c() {
         return 5;
@@ -152,7 +215,7 @@ public class PacketPlayOutMapChunkBulk extends Packet {
     }
 
     public void b(PacketDataSerializer packetdataserializer) throws IOException { // CraftBukkit - throws IOException
-        compress(); // CraftBukkit
+        //compress(); // CraftBukkit
         packetdataserializer.writeShort(this.a.length);
         packetdataserializer.writeInt(this.size);
         packetdataserializer.writeBoolean(this.h);
@@ -164,6 +227,12 @@ public class PacketPlayOutMapChunkBulk extends Packet {
             packetdataserializer.writeShort((short) (this.c[i] & '\uffff'));
             packetdataserializer.writeShort((short) (this.d[i] & '\uffff'));
         }
+
+        // Poweruser start
+        if(this.pendingUses.decrementAndGet() == 0) {
+            this.discard();
+        }
+        // Poweruser end
     }
 
     public void a(PacketPlayOutListener packetplayoutlistener) {

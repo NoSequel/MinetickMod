@@ -5,10 +5,17 @@ import java.util.List;
 
 // CraftBukkit start
 import org.bukkit.craftbukkit.chunkio.ChunkIOExecutor;
+
+import de.minetick.PlayerChunkSendQueue;
+import de.minetick.packetbuilder.PacketBuilderChunkData;
+import de.minetick.packetbuilder.PacketBuilderThreadPool;
+import de.minetick.packetbuilder.jobs.PBJobPlayOutMapChunk;
+
 import java.util.HashMap;
 // CraftBukkit end
 
-class PlayerChunk {
+//class PlayerChunk {
+public class PlayerChunk { // Poweruser
 
     private final List b;
     private final ChunkCoordIntPair location;
@@ -27,12 +34,28 @@ class PlayerChunk {
     };
     // CraftBukkit end
 
+    //Poweruser start
+    public boolean newChunk = false;
+    public boolean isNewChunk() {
+        boolean out = this.newChunk;
+        this.newChunk = false;
+        return out;
+    }
+    // Poweruser end
+
     public PlayerChunk(PlayerChunkMap playerchunkmap, int i, int j) {
         this.playerChunkMap = playerchunkmap;
         this.b = new ArrayList();
         this.dirtyBlocks = new short[64];
         this.location = new ChunkCoordIntPair(i, j);
-        playerchunkmap.a().chunkProviderServer.getChunkAt(i, j, this.loadedRunnable); // CraftBukkit
+        //playerchunkmap.a().chunkProviderServer.getChunkAt(i, j, this.loadedRunnable); // CraftBukkit
+        // Poweruser start
+        Chunk c = playerchunkmap.a().chunkProviderServer.getChunkAt(i, j, this.loadedRunnable);
+        if(c != null && !(c instanceof EmptyChunk)) {
+            this.newChunk = c.newChunk;
+            c.newChunk = false;
+        }
+        // Poweruser end
     }
 
     public void a(final EntityPlayer entityplayer) { // CraftBukkit - added final to argument
@@ -85,12 +108,16 @@ class PlayerChunk {
             Chunk chunk = PlayerChunkMap.a(this.playerChunkMap).getChunkAt(this.location.x, this.location.z);
 
             if (chunk.k()) {
-                entityplayer.playerConnection.sendPacket(new PacketPlayOutMapChunk(chunk, true, 0));
+                //entityplayer.playerConnection.sendPacket(new PacketPlayOutMapChunk(chunk, true, 0));
+                PacketBuilderThreadPool.addJobStatic(new PBJobPlayOutMapChunk(entityplayer.playerConnection, entityplayer.chunkQueue, new PacketBuilderChunkData(chunk, true, 0))); // Poweruser
             }
 
             this.players.remove(entityplayer); // CraftBukkit
             this.b.remove(entityplayer);
-            entityplayer.chunkCoordIntPairQueue.remove(this.location);
+            /* Poweruser - chunkCoordIntPairQueue is not used anymore.
+             * MinetickMod got its own queue
+             */
+            //entityplayer.chunkCoordIntPairQueue.remove(this.location);
             if (this.b.isEmpty()) {
                 long i = (long) this.location.x + 2147483647L | (long) this.location.z + 2147483647L << 32;
 
@@ -138,9 +165,19 @@ class PlayerChunk {
         for (int i = 0; i < this.b.size(); ++i) {
             EntityPlayer entityplayer = (EntityPlayer) this.b.get(i);
 
+            /*
             if (!entityplayer.chunkCoordIntPairQueue.contains(this.location)) {
                 entityplayer.playerConnection.sendPacket(packet);
             }
+            */
+            // Poweruser start
+            PlayerChunkSendQueue sq = entityplayer.chunkQueue;
+            if(sq != null) {
+                if(!sq.isAboutToSend(this.location)) {
+                    entityplayer.playerConnection.sendPacket(packet);
+                }
+            }
+            // Poweruser end
         }
     }
 
@@ -164,6 +201,7 @@ class PlayerChunk {
                 if (this.dirtyCount == 64) {
                     i = this.location.x * 16;
                     j = this.location.z * 16;
+                    /*
                     this.sendAll(new PacketPlayOutMapChunk(PlayerChunkMap.a(this.playerChunkMap).getChunkAt(this.location.x, this.location.z), (this.f == 0xFFFF), this.f)); // CraftBukkit - send everything (including biome) if all sections flagged
 
                     for (k = 0; k < 16; ++k) {
@@ -175,7 +213,22 @@ class PlayerChunk {
                                 this.sendTileEntity((TileEntity) list.get(i1));
                             }
                         }
+                    }*/
+                    // Poweruser start
+                    PlayerConnection[] players = new PlayerConnection[this.b.size()];
+                    PlayerChunkSendQueue[] queues = new PlayerChunkSendQueue[this.b.size()];
+                    for(int index = 0; index < this.b.size(); index++) {
+                        EntityPlayer entityplayer = (EntityPlayer) this.b.get(index);
+                        PlayerChunkSendQueue sq = entityplayer.chunkQueue;
+                        if(sq != null) {
+                            if(!sq.isAboutToSend(this.location)) {
+                                players[index] = entityplayer.playerConnection;
+                                queues[index] = entityplayer.chunkQueue;
+                            }
+                        }
                     }
+                    PacketBuilderThreadPool.addJobStatic(new PBJobPlayOutMapChunk(players, queues, new PacketBuilderChunkData(PlayerChunkMap.a(this.playerChunkMap).getChunkAt(this.location.x, this.location.z), (this.f == 0xFFFF), this.f)));
+                    // Poweruser end
                 } else {
                     this.sendAll(new PacketPlayOutMultiBlockChange(this.dirtyCount, this.dirtyBlocks, PlayerChunkMap.a(this.playerChunkMap).getChunkAt(this.location.x, this.location.z)));
 
@@ -205,7 +258,8 @@ class PlayerChunk {
         }
     }
 
-    static ChunkCoordIntPair a(PlayerChunk playerchunk) {
+    //static ChunkCoordIntPair a(PlayerChunk playerchunk) {
+    public static ChunkCoordIntPair a(PlayerChunk playerchunk) { // Poweruser
         return playerchunk.location;
     }
 

@@ -14,7 +14,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
-import java.util.concurrent.Callable;
+
 import javax.imageio.ImageIO;
 
 import net.minecraft.util.com.google.common.base.Charsets;
@@ -41,6 +41,18 @@ import org.bukkit.craftbukkit.util.Waitable;
 import org.bukkit.event.server.RemoteServerCommandEvent;
 import org.bukkit.event.world.WorldSaveEvent;
 // CraftBukkit end
+
+// Poweruser start
+import de.minetick.MinetickMod;
+import de.minetick.profiler.Profile;
+import de.minetick.profiler.ProfilingComperator;
+import de.minetick.profiler.WorldProfile.WorldProfileSection;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.LinkedList;
+import java.util.PriorityQueue;
+// Poweruser end
 
 public abstract class MinecraftServer implements ICommandListener, Runnable, IMojangStatistics {
 
@@ -106,6 +118,19 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
     public java.util.Queue<Runnable> processQueue = new java.util.concurrent.ConcurrentLinkedQueue<Runnable>();
     public int autosavePeriod;
     // CraftBukkit end
+
+    // Poweruser start
+    protected MinetickMod minetickMod = new MinetickMod();
+    public List<Future<?>> worldTickers = new ArrayList<Future<?>>();
+    private WorldServer sortedWorldsArray[] = null;
+    private PriorityQueue<WorldServer> priQueue = new PriorityQueue<WorldServer>(20, new ProfilingComperator());
+
+    public void cancelHeavyCalculationsForAllWorlds(boolean cancel) {
+        for(WorldServer ws: this.worlds) {
+            ws.cancelHeavyCalculations(cancel);
+        }
+    }
+    // Poweruser end
 
     public MinecraftServer(OptionSet options, Proxy proxy) { // CraftBukkit - signature file -> OptionSet
         this.X = new UserCache(this, a);
@@ -412,6 +437,8 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
             if (this.l.d()) {
                 this.l.e();
             }
+
+            this.minetickMod.shutdown(); // Poweruser
         }
     }
 
@@ -460,13 +487,25 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
                     j += l;
                     i = k;
                     if (this.worlds.get(0).everyoneDeeplySleeping()) { // CraftBukkit
+                        // Poweruser start
+                        this.minetickMod.getProfiler().start("GameLogicLoop");
                         this.u();
+                        Profile p = this.minetickMod.getProfiler().stop("GameLogicLoop");
+                        p.setCurrentPlayerNumber(this.C());
+                        this.minetickMod.getProfiler().newTick();
+                        // Poweruser end
                         j = 0L;
                     } else {
                         while (j > 50L) {
                             MinecraftServer.currentTick = (int) (System.currentTimeMillis() / 50); // CraftBukkit
                             j -= 50L;
+                            // Poweruser start
+                            this.minetickMod.getProfiler().start("GameLogicLoop");
                             this.u();
+                            Profile p = this.minetickMod.getProfiler().stop("GameLogicLoop");
+                            p.setCurrentPlayerNumber(this.C());
+                            this.minetickMod.getProfiler().newTick();
+                            // Poweruser end
                         }
                     }
 
@@ -547,6 +586,11 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
     protected void u() throws ExceptionWorldConflict { // CraftBukkit - added throws
         long i = System.nanoTime();
 
+        // Poweruser start
+        this.minetickMod.startTickTimerTask();
+        this.minetickMod.increaseTickCounter();
+        // Poweruser end
+
         ++this.ticks;
         if (this.R) {
             this.R = false;
@@ -577,8 +621,14 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
             this.methodProfiler.b();
         }
 
+        // Poweruser start
+        long tickTime = System.nanoTime() - i;
+        this.minetickMod.checkTickTime(tickTime);
+        // Poweruser end
+
         this.methodProfiler.a("tallying");
-        this.g[this.ticks % 100] = System.nanoTime() - i;
+        //this.g[this.ticks % 100] = System.nanoTime() - i;
+        this.g[this.ticks % 100] = tickTime; // Poweruser - just measured the time, a few lines up
         this.methodProfiler.b();
         this.methodProfiler.a("snooper");
         if (!this.l.d() && this.ticks > 100) {
@@ -616,6 +666,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
 
         int i;
 
+        /*
         for (i = 0; i < this.worlds.size(); ++i) {
             long j = System.nanoTime();
 
@@ -625,6 +676,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
                 this.methodProfiler.a(worldserver.getWorldData().getName());
                 this.methodProfiler.a("pools");
                 this.methodProfiler.b();
+        */
                 /* Drop global time updates
                 if (this.ticks % 20 == 0) {
                     this.methodProfiler.a("timeSync");
@@ -633,6 +685,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
                 }
                 // CraftBukkit end */
 
+        /*
                 this.methodProfiler.a("tick");
 
                 CrashReport crashreport;
@@ -662,10 +715,52 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
 
             // this.h[i][this.ticks % 100] = System.nanoTime() - j; // CraftBukkit
         }
+        */
 
         // Poweruser start
-        for (i = 0; i < this.worlds.size(); ++i) {
-            WorldServer worldserver = this.worlds.get(i);
+        int worldCount = this.worlds.size();
+        if(this.sortedWorldsArray == null || this.minetickMod.getProfiler().checkAvgs() ||
+                this.sortedWorldsArray.length != worldCount) {
+            this.priQueue.clear();
+            this.priQueue.addAll(this.worlds);
+            if(this.sortedWorldsArray == null || this.sortedWorldsArray.length < worldCount) {
+                this.sortedWorldsArray = new WorldServer[worldCount];
+            }
+            for(i = 0; !this.priQueue.isEmpty(); i++) {
+                this.sortedWorldsArray[i] = this.priQueue.poll();
+            }
+        }
+
+        this.worldTickers.clear();
+        for(i = 0; i < worldCount; i++) {
+            WorldServer worldserver = this.sortedWorldsArray[i];
+            worldserver.cancelHeavyCalculations(false);
+            this.minetickMod.getProfiler().getWorldProfile(worldserver.getWorld().getName()).start(WorldProfileSection.DO_TICK);
+            try {
+                worldserver.doTick();
+            } catch (Throwable throwable) {
+                CrashReport crashreport = CrashReport.a(throwable, "Exception ticking world");
+                worldserver.a(crashreport);
+                throw new ReportedException(crashreport);
+            }
+            this.minetickMod.getProfiler().getWorldProfile(worldserver.getWorld().getName()).stop(WorldProfileSection.DO_TICK);
+            this.worldTickers.add(this.minetickMod.tickWorld(worldserver));
+        }
+        for(Future<?> f: this.worldTickers) {
+            try {
+                f.get();
+            } catch (InterruptedException e) {
+                this.h(e.toString());
+                e.printStackTrace();
+            } catch (ExecutionException e) {
+                this.h(e.toString());
+                e.printStackTrace();
+            }
+        }
+        this.minetickMod.cancelTimerTask(false);
+
+        for(i = 0; i < worldCount; i++) {
+            WorldServer worldserver = this.sortedWorldsArray[i];
             worldserver.processDimensionChangeQueue();
         }
         // Poweruser end

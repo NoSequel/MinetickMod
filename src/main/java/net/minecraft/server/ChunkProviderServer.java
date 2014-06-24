@@ -23,6 +23,9 @@ import org.bukkit.craftbukkit.util.LongObjectHashMap;
 import org.bukkit.event.world.ChunkUnloadEvent;
 // CraftBukkit end
 
+import de.minetick.MinetickEmptyChunk;
+import de.minetick.MinetickMod;
+
 public class ChunkProviderServer implements IChunkProvider {
 
     private static final Logger b = LogManager.getLogger();
@@ -36,9 +39,40 @@ public class ChunkProviderServer implements IChunkProvider {
     public WorldServer world;
     // CraftBukkit end
 
+    // Poweruser start
+    private ChunkRegionLoader checkedRegionLoader = null;
+    private LongHashSet corruptRegions = new LongHashSet();
+    private MinetickEmptyChunk mtmEmptyChunk;
+
+    public boolean doesChunkExist(int x, int z) {
+        if(this.checkedRegionLoader == null) {
+            if (this.f instanceof ChunkRegionLoader) {
+                this.checkedRegionLoader = (ChunkRegionLoader) this.f;
+            }
+        }
+        if(this.checkedRegionLoader != null) {
+            boolean doesChunkExist = false;
+            long regionHash = LongHash.toLong(x >> 5, z >> 5); // region hash
+            if(this.corruptRegions.contains(regionHash)) { return false; }
+                try {
+                    doesChunkExist = this.checkedRegionLoader.chunkExists(this.world, x, z);
+                } catch (Exception e) {
+                    this.corruptRegions.add(regionHash);
+                    String corruptFile = "\\" + this.world.getWorld().getName() + "\\region\\r." + (x >> 5) + "." + (z >> 5) + ".mca";
+                    b.error("!!! Corrupt Region File " + corruptFile + " !!!");
+                    b.error("The chunks within this region will be temporarily regenerated, but not saved!");
+                    b.error("You might want to restore the file from a previous backup.");
+                }
+                return doesChunkExist;
+        }
+        return false;
+    }
+    // Poweruser end
+
     public ChunkProviderServer(WorldServer worldserver, IChunkLoader ichunkloader, IChunkProvider ichunkprovider) {
         //this.emptyChunk = new EmptyChunk(worldserver, 0, 0);
         this.emptyChunk = new EmptyChunk(worldserver, Integer.MIN_VALUE, Integer.MIN_VALUE); // Poweruser
+        this.mtmEmptyChunk = new MinetickEmptyChunk(worldserver, Integer.MIN_VALUE, Integer.MIN_VALUE); // Poweruser
         this.world = worldserver;
         this.f = ichunkloader;
         this.chunkProvider = ichunkprovider;
@@ -134,10 +168,20 @@ public class ChunkProviderServer implements IChunkProvider {
         boolean newChunk = false;
 
         if (chunk == null) {
-            chunk = this.loadChunk(i, j);
+            //chunk = this.loadChunk(i, j);
+            // Poweruser start
+            boolean isMarkedCorrupt = this.corruptRegions.contains(LongHash.toLong(i >> 5,  j >> 5));
+            if(!isMarkedCorrupt) {
+                chunk = this.loadChunk(i, j);
+            }
+            // Poweruser end
             if (chunk == null) {
                 if (this.chunkProvider == null) {
                     chunk = this.emptyChunk;
+                // Poweruser start
+                } else if (MinetickMod.doesWorldNotGenerateChunks(this.world.getWorld().getName())) {
+                    return this.mtmEmptyChunk;
+                // Poweruser end
                 } else {
                     try {
                         chunk = this.chunkProvider.getOrCreateChunk(i, j);
@@ -152,6 +196,12 @@ public class ChunkProviderServer implements IChunkProvider {
                     }
                 }
                 newChunk = true; // CraftBukkit
+                // Poweruser start
+                chunk.newChunk = true;
+                if(chunk != null && isMarkedCorrupt) {
+                    chunk.markAsCorrupt();
+                }
+                // Poweruser end
             }
 
             this.chunks.put(LongHash.toLong(i, j), chunk); // CraftBukkit
@@ -179,7 +229,8 @@ public class ChunkProviderServer implements IChunkProvider {
         Chunk chunk = (Chunk) this.chunks.get(LongHash.toLong(i, j));
 
         chunk = chunk == null ? (!this.world.isLoading && !this.forceChunkLoad ? this.emptyChunk : this.getChunkAt(i, j)) : chunk;
-        if (chunk == this.emptyChunk) return chunk;
+        //if (chunk == this.emptyChunk) return chunk;
+        if (chunk == this.emptyChunk || chunk == this.mtmEmptyChunk) return chunk; // Poweruser
         if (i != chunk.locX || j != chunk.locZ) {
             b.error("Chunk (" + chunk.locX + ", " + chunk.locZ + ") stored at  (" + i + ", " + j + ") in world '" + world.getWorld().getName() + "'");
             b.error(chunk.getClass().getName());
@@ -195,6 +246,11 @@ public class ChunkProviderServer implements IChunkProvider {
         if (this.f == null) {
             return null;
         } else {
+            // Poweruser start
+            if(this.corruptRegions.contains(LongHash.toLong(i >> 5, j >> 5))) {
+                return this.getChunkAt(i, j);
+            }
+            // Poweruser end
             try {
                 Chunk chunk = this.f.a(this.world, i, j);
 
@@ -214,7 +270,8 @@ public class ChunkProviderServer implements IChunkProvider {
     }
 
     public void saveChunkNOP(Chunk chunk) { // CraftBukkit - private -> public
-        if (this.f != null) {
+        //if (this.f != null) {
+        if (this.f != null && !chunk.isCorrupt() && !chunk.isEmpty()) { // Poweruser
             try {
                 this.f.b(this.world, chunk);
             } catch (Exception exception) {
@@ -224,7 +281,8 @@ public class ChunkProviderServer implements IChunkProvider {
     }
 
     public void saveChunk(Chunk chunk) { // CraftBukkit - private -> public
-        if (this.f != null) {
+        //if (this.f != null) {
+        if (this.f != null && !chunk.isCorrupt() && !chunk.isEmpty()) { // Poweruser
             try {
                 chunk.p = this.world.getTime();
                 this.f.a(this.world, chunk);

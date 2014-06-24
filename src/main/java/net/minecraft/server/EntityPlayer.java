@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import net.minecraft.util.com.google.common.collect.Sets;
 import net.minecraft.util.com.mojang.authlib.GameProfile;
@@ -26,6 +27,8 @@ import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 // CraftBukkit end
+
+import de.minetick.PlayerChunkSendQueue;
 
 public class EntityPlayer extends EntityHuman implements ICrafting {
 
@@ -64,6 +67,18 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
     public boolean joining = true;
     // CraftBukkit end
 
+    // Poweruser start
+    public PlayerChunkSendQueue chunkQueue;
+    public ConcurrentLinkedQueue<Chunk> chunksForTracking = new ConcurrentLinkedQueue<Chunk>();
+
+    public void setPlayerChunkSendQueue(PlayerChunkSendQueue pcsq) {
+        if(this.chunkQueue != null) {
+            this.chunkQueue.clear();
+        }
+        this.chunkQueue = pcsq;
+    }
+    // Poweruser end
+
     public EntityPlayer(MinecraftServer minecraftserver, WorldServer worldserver, GameProfile gameprofile, PlayerInteractManager playerinteractmanager) {
         super(worldserver, gameprofile);
         playerinteractmanager.player = this;
@@ -97,6 +112,8 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
         // this.canPickUpLoot = true; TODO
         this.maxHealthCache = this.getMaxHealth();
         // CraftBukkit end
+
+        this.isPlayer = true; // Poweruser
     }
 
     public void a(NBTTagCompound nbttagcompound) {
@@ -192,6 +209,13 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
             this.playerConnection.sendPacket(new PacketPlayOutEntityDestroy(aint));
         }
 
+        // Poweruser start
+        while(!this.chunksForTracking.isEmpty()) {
+            Chunk c = this.chunksForTracking.poll();
+            this.r().getTracker().a(this, c);
+        }
+        // Poweruser end
+        /*
         if (!this.chunkCoordIntPairQueue.isEmpty()) {
             ArrayList arraylist = new ArrayList();
             Iterator iterator1 = this.chunkCoordIntPairQueue.iterator();
@@ -234,6 +258,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
                 }
             }
         }
+        */
 
         if (this.bX > 0L && this.server.getIdleTimeout() > 0 && MinecraftServer.ar() - this.bX > (long) (this.server.getIdleTimeout() * 1000 * 60)) {
             this.playerConnection.disconnect("You have been idle for too long!");
@@ -493,7 +518,8 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
         }
     }
 
-    private void b(TileEntity tileentity) {
+    //private void b(TileEntity tileentity) {
+    public void b(TileEntity tileentity) { // Poweruser - private -> public
         if (tileentity != null) {
             Packet packet = tileentity.getUpdatePacket();
 

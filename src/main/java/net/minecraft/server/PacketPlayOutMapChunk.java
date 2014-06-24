@@ -1,9 +1,13 @@
 package net.minecraft.server;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
+
+import de.minetick.MinetickMod;
+import de.minetick.packetbuilder.PacketBuilderBuffer;
 
 public class PacketPlayOutMapChunk extends Packet {
 
@@ -15,16 +19,56 @@ public class PacketPlayOutMapChunk extends Packet {
     private byte[] buffer;
     private boolean inflatedBuffer;
     private int size;
-    private static byte[] buildBuffer = new byte[196864];
+    //private static byte[] buildBuffer = new byte[196864];
+    // Poweruser start
+    private static final ThreadLocal<byte[]> localBuildBuffer = new ThreadLocal<byte[]>() {
+        @Override
+        protected byte[] initialValue() {
+            return new byte[196864];
+        }
+    };
+
+    private AtomicInteger pendingUses;
+    private static int targetCompressionLevel = MinetickMod.defaultPacketCompression;
+
+    public static void changeCompressionLevel(int level) {
+        if(level < Deflater.BEST_SPEED || level > Deflater.BEST_COMPRESSION) {
+            targetCompressionLevel = Deflater.DEFAULT_COMPRESSION;
+        } else {
+            targetCompressionLevel = level;
+        }
+    }
+
+    public void setPendingUses(int uses) {
+        this.pendingUses = new AtomicInteger(uses);
+    }
+
+    private PacketBuilderBuffer pbb;
+
+    public void discard() {
+        if(this.pbb != null) {
+            if(this.e != null) {
+                this.pbb.offerSendBuffer(this.e);
+                this.e = null;
+            }
+            this.pbb = null;
+        }
+    }
+    // Poweruser end
 
     public PacketPlayOutMapChunk() {}
 
-    public PacketPlayOutMapChunk(Chunk chunk, boolean flag, int i) {
+    //public PacketPlayOutMapChunk(Chunk chunk, boolean flag, int i) {
+    // Poweruser start
+    public PacketPlayOutMapChunk(PacketBuilderBuffer pbb, Chunk chunk, boolean flag, int i) {
+        this.pbb = pbb;
+    // Poweruser end
         this.a = chunk.locX;
         this.b = chunk.locZ;
         this.inflatedBuffer = flag;
         ChunkMap chunkmap = a(chunk, flag, i);
-        Deflater deflater = new Deflater(-1);
+        //Deflater deflater = new Deflater(-1);
+        Deflater deflater = new Deflater(targetCompressionLevel); // Poweruser
 
         this.d = chunkmap.c;
         this.c = chunkmap.b;
@@ -33,7 +77,8 @@ public class PacketPlayOutMapChunk extends Packet {
             this.buffer = chunkmap.a;
             deflater.setInput(chunkmap.a, 0, chunkmap.a.length);
             deflater.finish();
-            this.e = new byte[chunkmap.a.length];
+            //this.e = new byte[chunkmap.a.length];
+            this.e = this.pbb.requestSendBuffer(chunkmap.a.length); // Poweruser
             this.size = deflater.deflate(this.e);
         } finally {
             deflater.end();
@@ -52,11 +97,20 @@ public class PacketPlayOutMapChunk extends Packet {
         this.c = packetdataserializer.readShort();
         this.d = packetdataserializer.readShort();
         this.size = packetdataserializer.readInt();
+        /*
         if (buildBuffer.length < this.size) {
             buildBuffer = new byte[this.size];
         }
 
         packetdataserializer.readBytes(buildBuffer, 0, this.size);
+        */
+        // Poweruser start
+        if(localBuildBuffer.get().length < this.size) {
+            localBuildBuffer.set(new byte[this.size]);
+        }
+
+        packetdataserializer.readBytes(localBuildBuffer.get(), 0, this.size);
+        // Poweruser end
         int i = 0;
 
         int j;
@@ -73,7 +127,8 @@ public class PacketPlayOutMapChunk extends Packet {
         this.buffer = new byte[j];
         Inflater inflater = new Inflater();
 
-        inflater.setInput(buildBuffer, 0, this.size);
+        //inflater.setInput(buildBuffer, 0, this.size);
+        inflater.setInput(localBuildBuffer.get(), 0, this.size); // Poweruser
 
         try {
             inflater.inflate(this.buffer);
@@ -92,6 +147,11 @@ public class PacketPlayOutMapChunk extends Packet {
         packetdataserializer.writeShort((short) (this.d & '\uffff'));
         packetdataserializer.writeInt(this.size);
         packetdataserializer.writeBytes(this.e, 0, this.size);
+        // Poweruser start
+        if(this.pendingUses.decrementAndGet() == 0) {
+            this.discard();
+        }
+        // Poweruser end
     }
 
     public void a(PacketPlayOutListener packetplayoutlistener) {
@@ -107,7 +167,8 @@ public class PacketPlayOutMapChunk extends Packet {
         ChunkSection[] achunksection = chunk.i();
         int k = 0;
         ChunkMap chunkmap = new ChunkMap();
-        byte[] abyte = buildBuffer;
+        //byte[] abyte = buildBuffer;
+        byte[] abyte = localBuildBuffer.get(); // Poweruser
 
         if (flag) {
             chunk.q = true;
@@ -181,6 +242,7 @@ public class PacketPlayOutMapChunk extends Packet {
 
         chunkmap.a = new byte[j];
         System.arraycopy(abyte, 0, chunkmap.a, 0, j);
+        chunk.world.antiXRay.orebfuscate(chunkmap.a, chunkmap.a.length, chunk, chunkmap.b); // Poweruser
         return chunkmap;
     }
 

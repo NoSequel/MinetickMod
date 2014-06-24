@@ -31,6 +31,8 @@ import org.bukkit.event.entity.EntityPortalEvent;
 import org.bukkit.plugin.PluginManager;
 // CraftBukkit end
 
+import de.minetick.MinetickMod;
+
 public abstract class Entity {
 
     // CraftBukkit start
@@ -116,8 +118,19 @@ public abstract class Entity {
 
     // Poweruser start
     private int targetDimension;
+    protected boolean isImportantEntity = false;
+    protected boolean isPlayer = false;
+
     public int getTargetDimension() {
         return this.targetDimension;
+    }
+
+    public boolean isImportantEntity() {
+        return this.isImportantEntity;
+    }
+
+    public boolean isPlayer() {
+        return this.isPlayer;
     }
     // Poweruser end
 
@@ -153,6 +166,8 @@ public abstract class Entity {
         this.datawatcher.a(0, Byte.valueOf((byte) 0));
         this.datawatcher.a(1, Short.valueOf((short) 300));
         this.c();
+
+        this.isImportantEntity = MinetickMod.isImportantEntity(this); // Poweruser
     }
 
     protected abstract void c();

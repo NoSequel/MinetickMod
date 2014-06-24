@@ -33,6 +33,12 @@ import org.bukkit.event.weather.ThunderChangeEvent;
 import org.bukkit.craftbukkit.util.LongHash;
 //Poweruser end
 
+import de.minetick.LockObject;
+import de.minetick.MinetickMod;
+import de.minetick.antixray.AntiXRay;
+import de.minetick.profiler.WorldProfile;
+import de.minetick.profiler.WorldProfile.WorldProfileSection;
+
 public abstract class World implements IBlockAccess {
 
     public boolean d;
@@ -81,13 +87,40 @@ public abstract class World implements IBlockAccess {
     public boolean populating;
     private int tickPosition;
     // CraftBukkit end
-    private ArrayList L;
+    //private ArrayList L; // Poweruser - replaced by two ThreadLocal lists
     private boolean M;
     int[] I;
 
     // Poweruser start
     private HashSet<Long> alreadyCheckedChunks = new HashSet<Long>();
     private List<Entity> dimensionChangeQueue = Collections.synchronizedList(new LinkedList<Entity>());
+    public ChunkProviderServer chunkProviderServer; // moved here from class WorldServer
+    protected boolean cancelHeavyCalculations = false;
+    private int nextTickEntityIndex = 0;
+    private long lastTickAvg = 0L;
+    public AntiXRay antiXRay = null;
+
+    private static ThreadLocal<List> getCubesList = new ThreadLocal<List>() {
+        @Override
+        public List initialValue() {
+            return new ArrayList();
+        }
+    };
+
+    private static ThreadLocal<List> getBoundingBoxList = new ThreadLocal<List>() {
+        @Override
+        public List initialValue() {
+            return new ArrayList();
+        }
+    };
+
+    public void setLastTickAvg(long avg) {
+        this.lastTickAvg = avg;
+    }
+
+    public long getLastTickAvg() {
+        return this.lastTickAvg;
+    }
 
     public void queueEntityForDimensionChange(Entity entity) {
         this.dimensionChangeQueue.add(entity);
@@ -150,7 +183,7 @@ public abstract class World implements IBlockAccess {
         this.K = this.random.nextInt(12000);
         this.allowMonsters = true;
         this.allowAnimals = true;
-        this.L = new ArrayList();
+        //this.L = new ArrayList(); // Poweruser - replaced by two ThreadLocal lists
         this.I = new int['\u8000'];
         this.dataManager = idatamanager;
         this.methodProfiler = methodprofiler;
@@ -1085,6 +1118,11 @@ public abstract class World implements IBlockAccess {
             if (index <= this.tickPosition) {
                 this.tickPosition--;
             }
+            // Poweruser start
+            if (this.cancelHeavyCalculations && index < this.nextTickEntityIndex) {
+                this.nextTickEntityIndex--;
+            }
+            // Poweruser end
             this.entityList.remove(index);
         }
         // CraftBukkit end
@@ -1097,7 +1135,11 @@ public abstract class World implements IBlockAccess {
     }
 
     public List getCubes(Entity entity, AxisAlignedBB axisalignedbb) {
-        this.L.clear();
+        //this.L.clear();
+        // Poweruser start
+        List threadlocalList = getCubesList.get();
+        threadlocalList.clear();
+        // Poweruser end
         int i = MathHelper.floor(axisalignedbb.a);
         int j = MathHelper.floor(axisalignedbb.d + 1.0D);
         int k = MathHelper.floor(axisalignedbb.b);
@@ -1117,7 +1159,8 @@ public abstract class World implements IBlockAccess {
                             block = Blocks.STONE;
                         }
 
-                        block.a(this, k1, i2, l1, axisalignedbb, this.L, entity);
+                        //block.a(this, k1, i2, l1, axisalignedbb, this.L, entity);
+                        block.a(this, k1, i2, l1, axisalignedbb, threadlocalList, entity); // Poweruser
                     }
                 }
             }
@@ -1130,20 +1173,27 @@ public abstract class World implements IBlockAccess {
             AxisAlignedBB axisalignedbb1 = ((Entity) list.get(j2)).I();
 
             if (axisalignedbb1 != null && axisalignedbb1.b(axisalignedbb)) {
-                this.L.add(axisalignedbb1);
+                //this.L.add(axisalignedbb1);
+                threadlocalList.add(axisalignedbb1); // Poweruser
             }
 
             axisalignedbb1 = entity.h((Entity) list.get(j2));
             if (axisalignedbb1 != null && axisalignedbb1.b(axisalignedbb)) {
-                this.L.add(axisalignedbb1);
+                //this.L.add(axisalignedbb1);
+                threadlocalList.add(axisalignedbb1); // Poweruser
             }
         }
 
-        return this.L;
+        //return this.L;
+        return threadlocalList; // Poweruser
     }
 
     public List a(AxisAlignedBB axisalignedbb) {
-        this.L.clear();
+        //this.L.clear();
+        // Poweruser start
+        List threadLocalList = getBoundingBoxList.get();
+        threadLocalList.clear();
+        // Poweruser end
         int i = MathHelper.floor(axisalignedbb.a);
         int j = MathHelper.floor(axisalignedbb.d + 1.0D);
         int k = MathHelper.floor(axisalignedbb.b);
@@ -1163,13 +1213,15 @@ public abstract class World implements IBlockAccess {
                             block = Blocks.BEDROCK;
                         }
 
-                        block.a(this, k1, i2, l1, axisalignedbb, this.L, (Entity) null);
+                        //block.a(this, k1, i2, l1, axisalignedbb, this.L, (Entity) null);
+                        block.a(this, k1, i2, l1, axisalignedbb, threadLocalList, (Entity) null); // Poweruser
                     }
                 }
             }
         }
 
-        return this.L;
+        //return this.L;
+        return threadLocalList; // Poweruser
     }
 
     public int a(float f) {
@@ -1236,6 +1288,11 @@ public abstract class World implements IBlockAccess {
         this.methodProfiler.a("entities");
         this.methodProfiler.a("global");
 
+        // Poweruser start
+        WorldProfile worldProfile = MinetickMod.getProfilerStatic().getWorldProfile(this.getWorld().getName());
+        worldProfile.start(WorldProfileSection.TICK_ENTITIES);
+        // Poweruser end
+
         int i;
         Entity entity;
         CrashReport crashreport;
@@ -1296,21 +1353,51 @@ public abstract class World implements IBlockAccess {
         this.f.clear();
         this.methodProfiler.c("regular");
 
+        // Poweruser start
+        /*
+         * Instead of running through the list from 0 to size-1 everytime, I'm going to
+         * rotate through it, by remembering the index of the last ticked entity and resuming there
+         * on the next tick. This is crucial with the just added skipping of entities when the server
+         * is overloaded. If it wasn't done, the entities at the end of the list would eventually miss
+         * several seconds or minutes.
+         */
+
         this.alreadyCheckedChunks.clear(); // Poweruser - Maybe clear less frequent
 
+        /*
         // CraftBukkit start - Use field for loop variable
         for (this.tickPosition = 0; this.tickPosition < this.entityList.size(); ++this.tickPosition) {
             entity = (Entity) this.entityList.get(this.tickPosition);
+        */
+        int count = 0, size;
+        this.tickPosition = this.nextTickEntityIndex;
+        while(count < (size = this.entityList.size()) ) {
+            if(this.tickPosition >= size) {
+                this.tickPosition = 0;
+            }
+            entity = (Entity) this.entityList.get(this.tickPosition);
+            if(!this.cancelHeavyCalculations) {
+                this.nextTickEntityIndex = this.tickPosition + 1;
+            }
+        // Poweruser end
 
             // Don't tick entities in chunks queued for unload
             ChunkProviderServer chunkProviderServer = ((WorldServer) this).chunkProviderServer;
             if (chunkProviderServer.unloadQueue.contains(MathHelper.floor(entity.locX) >> 4, MathHelper.floor(entity.locZ) >> 4)) {
+                // Poweruser start - Increasing the counters, as this entity wasnt skipped by me
+                this.tickPosition++;
+                count++;
+                // Poweruser end
                 continue;
             }
             // CraftBukkit end
 
             if (entity.vehicle != null) {
                 if (!entity.vehicle.dead && entity.vehicle.passenger == entity) {
+                    // Poweruser start - Increasing the counters, as this entity wasnt skipped by me
+                    this.tickPosition++;
+                    count++;
+                    // Poweruser end
                     continue;
                 }
 
@@ -1321,7 +1408,22 @@ public abstract class World implements IBlockAccess {
             this.methodProfiler.a("tick");
             if (!entity.dead) {
                 try {
-                    this.playerJoinedWorld(entity);
+                    //this.playerJoinedWorld(entity);
+                    // Poweruser start
+                    boolean playerIsPassenger = false;
+                    if(entity.passenger != null) {
+                        playerIsPassenger = entity.passenger.isImportantEntity();
+                    }
+                    if(entity.isImportantEntity() || playerIsPassenger || !this.cancelHeavyCalculations) {
+                        if(entity.isPlayer() || playerIsPassenger) {
+                            synchronized(LockObject.playerTickLock) {
+                                this.playerJoinedWorld(entity);
+                            }
+                        } else {
+                            this.playerJoinedWorld(entity);
+                        }
+                    }
+                    // Poweruser end
                 } catch (Throwable throwable1) {
                     crashreport = CrashReport.a(throwable1, "Ticking entity");
                     crashreportsystemdetails = crashreport.a("Entity being ticked");
@@ -1339,12 +1441,24 @@ public abstract class World implements IBlockAccess {
                     this.getChunkAt(j, k).b(entity);
                 }
 
-                this.entityList.remove(this.tickPosition--); // CraftBukkit - Use field for loop variable
+                //this.entityList.remove(this.tickPosition--); // CraftBukkit - Use field for loop variable
+                this.entityList.remove(this.tickPosition); // Poweruser
                 this.b(entity);
             }
+            // Poweruser start
+            else {
+                this.tickPosition++; // Increasing the counter to the index of the next entity
+            }
+            count++;
+            // Poweruser end
 
             this.methodProfiler.b();
         }
+
+        // Poweruser start
+        worldProfile.stop(WorldProfileSection.TICK_ENTITIES);
+        worldProfile.start(WorldProfileSection.TICK_TILEENTITIES);
+        // Poweruser end
 
         this.methodProfiler.c("blockEntities");
         this.M = true;
@@ -1419,6 +1533,8 @@ public abstract class World implements IBlockAccess {
 
             this.a.clear();
         }
+
+        worldProfile.stop(WorldProfileSection.TICK_TILEENTITIES); // Poweruser
 
         this.methodProfiler.b();
         this.methodProfiler.b();
