@@ -387,8 +387,14 @@ public class PlayerChunkMap {
 
             while (iterator.hasNext()) {
                 EntityPlayer entityplayer = (EntityPlayer) iterator.next();
+                /*
                 int k = (int) entityplayer.locX >> 4;
                 int l = (int) entityplayer.locZ >> 4;
+                */
+                // Poweruser start
+                int k = MathHelper.floor(entityplayer.locX) >> 4;
+                int l = MathHelper.floor(entityplayer.locZ) >> 4;
+                // Poweruser end
                 int i1;
                 int j1;
 
