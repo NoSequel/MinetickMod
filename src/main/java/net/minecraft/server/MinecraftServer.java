@@ -1416,15 +1416,16 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
 
     private void autoSaveNextWorld() throws ExceptionWorldConflict {
         if(!this.autoSaveWorlds.isEmpty()) {
-            if(this.autoSaveDelay++ > 100) { // delay of 5 seconds between each save
+            if(this.autoSaveDelay++ > 60) { // delay of 3 seconds between each save
                 this.autoSaveDelay = 0;
                 WorldServer ws = this.autoSaveWorlds.removeFirst();
                 ws.save(true, (IProgressUpdate) null);
-                ws.saveLevel();
+                //ws.saveLevel(); // Poweruser - waiting for the chunks to be saved to disk freezes the server too much
                 WorldSaveEvent event = new WorldSaveEvent(ws.getWorld());
                 this.server.getPluginManager().callEvent(event);
             }
         } else if(this.autoSaveOrdered){
+            RegionFileCache.a(); // Poweruser - this is called by WorldServer.saveLevel(), which i commented out a few lines above
             h.info("[AutoSave] Done.");
             this.autoSaveOrdered = false;
         }
