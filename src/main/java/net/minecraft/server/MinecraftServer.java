@@ -1425,7 +1425,6 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
                 this.server.getPluginManager().callEvent(event);
             }
         } else if(this.autoSaveOrdered){
-            RegionFileCache.a(); // Poweruser - this is called by WorldServer.saveLevel(), which i commented out a few lines above
             h.info("[AutoSave] Done.");
             this.autoSaveOrdered = false;
         }
