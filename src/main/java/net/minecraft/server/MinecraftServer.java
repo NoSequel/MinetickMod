@@ -1407,14 +1407,11 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
             for (int j = 0; j < this.worlds.size(); ++j) {
                 WorldServer worldserver = this.worlds.get(j);
                 if(worldserver != null) {
-                    this.autoSaveWorlds.addLast(new AutoSaveJob(worldserver));
+                    this.autoSaveWorlds.addLast(new AutoSaveJob(JobDetail.WORLD_SAVE, worldserver));
+                    this.autoSaveWorlds.addLast(new AutoSaveJob(JobDetail.WORLD_SAVEEVENT, worldserver));
                 }
             }
-            if(!this.autoSaveWorlds.isEmpty()) {
-                this.autoSaveWorlds.getLast().markAsLastQueuedWorld();
-            }
             int queuesize = this.autoSaveWorlds.size();
-            this.autoSaveWorlds.addLast(new AutoSaveJob(JobDetail.CLEAR_REGION_CACHE));
             this.autoSaveDelay = 0;
             this.autoSaveOrdered = true;
             h.info("[AutoSave] " + queuesize + " worlds - Starting ...");
@@ -1423,7 +1420,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
 
     private void autoSaveNextWorld() throws ExceptionWorldConflict {
         if(!this.autoSaveWorlds.isEmpty()) {
-            if(this.autoSaveDelay++ > 60) { // delay of 3 seconds between each save
+            if(this.autoSaveDelay++ > 20) { // delay of 1 seconds between checks of the autosavejob queue 
                 this.autoSaveDelay = 0;
                 boolean remove = this.autoSaveWorlds.getFirst().process();
                 if(remove) {

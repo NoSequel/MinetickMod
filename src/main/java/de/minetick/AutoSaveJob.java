@@ -15,35 +15,16 @@ import net.minecraft.server.WorldServer;
 public class AutoSaveJob {
 
     public enum JobDetail {
-        CLEAR_REGION_CACHE
+        WORLD_SAVE,
+        WORLD_SAVEEVENT,
     }
 
     private WorldServer worldserver;
-    private boolean lastQueuedWorld;
-    private boolean clearRegionCache;
+    private JobDetail jobDetail;
 
-    public AutoSaveJob() {
-        this.worldserver = null;
-        this.clearRegionCache = false;
-        this.lastQueuedWorld = false;
-    }
-
-    public AutoSaveJob(WorldServer worldserver) {
-        this();
+    public AutoSaveJob(JobDetail detail, WorldServer worldserver) {
+        this.jobDetail = detail;
         this.worldserver = worldserver;
-    }
-
-    public AutoSaveJob(JobDetail detail) {
-        this();
-        if(detail.equals(JobDetail.CLEAR_REGION_CACHE)) {
-            this.clearRegionCache = true;
-        }
-    }
-
-    public void markAsLastQueuedWorld() {
-        if(this.worldserver != null) {
-            this.lastQueuedWorld = true;
-        }
     }
 
     /**
@@ -53,25 +34,29 @@ public class AutoSaveJob {
      */
 
     public boolean process() throws ExceptionWorldConflict {
-        if(this.worldserver != null) {
+        if(this.isJob(JobDetail.WORLD_SAVE) && this.worldserver != null) {
             MinecraftServer.av().info("[AutoSave] Saving world " + this.worldserver.getWorld().getName());
             this.worldserver.save(true, (IProgressUpdate) null);
-            WorldSaveEvent event = new WorldSaveEvent(this.worldserver.getWorld());
-            Bukkit.getPluginManager().callEvent(event);
-            this.worldserver = null;
-            if(this.lastQueuedWorld) {
-                this.setFileIONoDelay(true);
-            }
-        } else if(this.clearRegionCache) {
+            this.setFileIONoDelay(true);
+        } else if(this.isJob(JobDetail.WORLD_SAVEEVENT) && this.worldserver != null) {
             if(this.isFileIOThreadDone()) {
-                MinecraftServer.av().info("[AutoSave] Clearing RegionFileCache ...");
-                RegionFileCache.a();
                 this.setFileIONoDelay(false);
+                RegionFileCache.a();
+                WorldSaveEvent event = new WorldSaveEvent(this.worldserver.getWorld());
+                Bukkit.getPluginManager().callEvent(event);
             } else {
                 return false;
             }
         }
+        this.worldserver = null;
         return true;
+    }
+
+    private boolean isJob(JobDetail detail) {
+        if(this.jobDetail != null) {
+            return this.jobDetail.equals(detail);
+        }
+        return false;
     }
 
     private boolean isFileIOThreadDone() {
