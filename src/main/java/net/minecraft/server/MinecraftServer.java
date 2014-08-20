@@ -1411,7 +1411,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
                     this.autoSaveWorlds.addLast(new AutoSaveJob(JobDetail.WORLD_SAVEEVENT, worldserver));
                 }
             }
-            int queuesize = this.autoSaveWorlds.size();
+            int queuesize = this.autoSaveWorlds.size() / 2;
             this.autoSaveDelay = 0;
             this.autoSaveOrdered = true;
             h.info("[AutoSave] " + queuesize + " worlds - Starting ...");
