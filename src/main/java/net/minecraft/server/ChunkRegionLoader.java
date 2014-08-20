@@ -192,6 +192,14 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
             try {
                 this.a(pendingchunktosave);
             } catch (Exception exception) {
+                // Poweruser start - If saving fails, dont dismiss the chunk, but readd it to the queue if it has not been queued again by someone else in the mean time
+                synchronized(this.d) {
+                    if(!this.c.contains(pendingchunktosave.a)) {
+                        this.b.add(pendingchunktosave);
+                        this.c.add(pendingchunktosave.a);
+                    }
+                }
+                // Poweruser end
                 exception.printStackTrace();
             }
         }
