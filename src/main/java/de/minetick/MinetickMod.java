@@ -55,7 +55,7 @@ public class MinetickMod {
 
     private TickTimer tickTimerObject;
     private int timerDelay = 45;
-    private ScheduledExecutorService timerService = Executors.newScheduledThreadPool(2, new MinetickThreadFactory("MinetickMod_TimerService"));
+    private ScheduledExecutorService timerService = Executors.newScheduledThreadPool(2, new MinetickThreadFactory(Thread.NORM_PRIORITY + 2, "MinetickMod_TimerService"));
     private ExecutorService nbtFileService = Executors.newCachedThreadPool(new MinetickThreadFactory(Thread.NORM_PRIORITY - 2, "MinetickMod_NBTFileSaver"));
     private ExecutorService worldTickerService = Executors.newCachedThreadPool(new MinetickThreadFactory(Thread.NORM_PRIORITY + 1, "MinetickMod_WorldTicker"));
     private ExecutorService pathFinder = Executors.newCachedThreadPool(new MinetickThreadFactory(Thread.NORM_PRIORITY - 1, "MinetickMod_PathFinder"));
