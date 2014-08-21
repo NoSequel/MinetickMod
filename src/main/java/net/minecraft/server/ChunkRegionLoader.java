@@ -9,7 +9,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.logging.log4j.LogManager;
@@ -18,8 +20,11 @@ import org.apache.logging.log4j.Logger;
 public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
 
     private static final Logger a = LogManager.getLogger();
+    /*
     private List b = new ArrayList();
     private Set c = new HashSet();
+    */
+    private LinkedHashMap<ChunkCoordIntPair, PendingChunkToSave> map = new LinkedHashMap<ChunkCoordIntPair, PendingChunkToSave>(); // Poweruser
     private Object d = new Object();
     private final File e;
 
@@ -32,6 +37,7 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
         ChunkCoordIntPair chunkcoordintpair = new ChunkCoordIntPair(i, j);
 
         synchronized (this.d) {
+            /*
             if (this.c.contains(chunkcoordintpair)) {
                 for (int k = 0; k < this.b.size(); ++k) {
                     if (((PendingChunkToSave) this.b.get(k)).a.equals(chunkcoordintpair)) {
@@ -39,6 +45,15 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
                     }
                 }
             }
+            */
+            // Poweruser start
+            if(this.map.containsKey(chunkcoordintpair)) {
+                PendingChunkToSave pcts = this.map.get(chunkcoordintpair);
+                if(pcts.a.equals(chunkcoordintpair)) {
+                    return true;
+                }
+            }
+            // Poweruser end
         }
 
         return RegionFileCache.a(this.e, i, j).chunkExists(i & 31, j & 31);
@@ -65,6 +80,7 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
         Object object = this.d;
 
         synchronized (this.d) {
+            /*
             if (this.c.contains(chunkcoordintpair)) {
                 for (int k = 0; k < this.b.size(); ++k) {
                     if (((PendingChunkToSave) this.b.get(k)).a.equals(chunkcoordintpair)) {
@@ -73,6 +89,15 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
                     }
                 }
             }
+            */
+            // Poweruser start
+            if(this.map.containsKey(chunkcoordintpair)) {
+                PendingChunkToSave pcts = this.map.get(chunkcoordintpair);
+                if(pcts.a.equals(chunkcoordintpair)) {
+                    nbttagcompound = pcts.b;
+                }
+            }
+            // Poweruser end
         }
 
         if (nbttagcompound == null) {
@@ -160,6 +185,7 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
         Object object = this.d;
 
         synchronized (this.d) {
+            /*
             if (this.c.contains(chunkcoordintpair)) {
                 for (int i = 0; i < this.b.size(); ++i) {
                     if (((PendingChunkToSave) this.b.get(i)).a.equals(chunkcoordintpair)) {
@@ -171,6 +197,16 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
 
             this.b.add(new PendingChunkToSave(chunkcoordintpair, nbttagcompound));
             this.c.add(chunkcoordintpair);
+            */
+            // Poweruser start
+            if(this.map.containsKey(chunkcoordintpair)) {
+                PendingChunkToSave pcts = this.map.get(chunkcoordintpair);
+                if(pcts.a.equals(chunkcoordintpair)) {
+                    this.map.put(chunkcoordintpair, new PendingChunkToSave(chunkcoordintpair, nbttagcompound));
+                    return;
+                }
+            }
+            // Poweruser end
             FileIOThread.a.a(this);
         }
     }
@@ -180,12 +216,23 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
         Object object = this.d;
 
         synchronized (this.d) {
+            /*
             if (this.b.isEmpty()) {
                 return false;
             }
 
             pendingchunktosave = (PendingChunkToSave) this.b.remove(0);
             this.c.remove(pendingchunktosave.a);
+            */
+            // Poweruser start
+            Iterator<Entry<ChunkCoordIntPair, PendingChunkToSave>> iterator = this.map.entrySet().iterator();
+            if(iterator.hasNext()) {
+                pendingchunktosave = iterator.next().getValue();
+                iterator.remove();
+            } else {
+                return false;
+            }
+            // Poweruser end
         }
 
         if (pendingchunktosave != null) {
@@ -194,9 +241,8 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
             } catch (Exception exception) {
                 // Poweruser start - If saving fails, dont dismiss the chunk, but readd it to the queue if it has not been queued again by someone else in the mean time
                 synchronized(this.d) {
-                    if(!this.c.contains(pendingchunktosave.a)) {
-                        this.b.add(pendingchunktosave);
-                        this.c.add(pendingchunktosave.a);
+                    if(!this.map.containsKey(pendingchunktosave.a)) {
+                        this.map.put(pendingchunktosave.a, pendingchunktosave);
                     }
                 }
                 // Poweruser end
