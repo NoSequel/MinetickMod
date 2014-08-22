@@ -206,6 +206,8 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
                     return;
                 }
             }
+
+            this.map.put(chunkcoordintpair, new PendingChunkToSave(chunkcoordintpair, nbttagcompound));
             // Poweruser end
             FileIOThread.a.a(this);
         }
