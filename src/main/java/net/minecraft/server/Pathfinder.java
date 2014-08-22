@@ -6,10 +6,18 @@ public class Pathfinder {
     private Path b = new Path();
     private IntHashMap c = new IntHashMap();
     private PathPoint[] d = new PathPoint[32];
+    /*
     private boolean e;
     private boolean f;
     private boolean g;
     private boolean h;
+    */
+    // Poweruser start
+    protected boolean e;
+    protected boolean f;
+    protected boolean g;
+    protected boolean h;
+    // Poweruser end
 
     public Pathfinder(IBlockAccess iblockaccess, boolean flag, boolean flag1, boolean flag2, boolean flag3) {
         this.a = iblockaccess;
