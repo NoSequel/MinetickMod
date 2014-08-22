@@ -939,7 +939,7 @@ public class PlayerConnection implements PacketPlayInListener {
     // CraftBukkit end
 
     private void handleCommand(String s) {
-        // CraftBukkit start
+        // CraftBukkit start - whole method
         CraftPlayer player = this.getPlayer();
 
         PlayerCommandPreprocessEvent event = new PlayerCommandPreprocessEvent(player, s, new LazyPlayerSet());
@@ -950,7 +950,7 @@ public class PlayerConnection implements PacketPlayInListener {
         }
 
         try {
-            this.c.info(event.getPlayer().getName() + " issued server command: " + event.getMessage()); // CraftBukkit
+            this.c.info(event.getPlayer().getName() + " issued server command: " + event.getMessage());
             if (this.server.dispatchCommand(event.getPlayer(), event.getMessage().substring(1))) {
                 return;
             }
