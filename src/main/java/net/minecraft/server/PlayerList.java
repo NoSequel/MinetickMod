@@ -85,8 +85,8 @@ public abstract class PlayerList {
             s = networkmanager.getSocketAddress().toString();
         }
 
-        // CraftBukkit - add world to 'logged in' message.
-        d.info(entityplayer.getName() + "[" + s + "] logged in with entity id " + entityplayer.getId() + " at ([" + entityplayer.world.worldData.getName() + "] " + entityplayer.locX + ", " + entityplayer.locY + ", " + entityplayer.locZ + ")");
+        // CraftBukkit - Moved message to after join
+        // d.info(entityplayer.getName() + "[" + s + "] logged in with entity id " + entityplayer.getId() + " at (" + entityplayer.locX + ", " + entityplayer.locY + ", " + entityplayer.locZ + ")");
         WorldServer worldserver = this.server.getWorldServer(entityplayer.dimension);
         ChunkCoordinates chunkcoordinates = worldserver.getSpawn();
 
@@ -116,6 +116,7 @@ public abstract class PlayerList {
         this.sendMessage(chatmessage);
         // CraftBukkit end*/
         this.c(entityplayer);
+        worldserver = this.server.getWorldServer(entityplayer.dimension); // CraftBukkit - Update in case join event changed it
         playerconnection.a(entityplayer.locX, entityplayer.locY, entityplayer.locZ, entityplayer.yaw, entityplayer.pitch);
         this.b(entityplayer, worldserver);
         if (this.server.getResourcePack().length() > 0) {
@@ -141,6 +142,8 @@ public abstract class PlayerList {
                 entity.o = false;
             }
         }
+        // CraftBukkit - Moved from above, added world
+        d.info(entityplayer.getName() + "[" + s + "] logged in with entity id " + entityplayer.getId() + " at ([" + entityplayer.world.worldData.getName() + "] " + entityplayer.locX + ", " + entityplayer.locY + ", " + entityplayer.locZ + ")");
     }
 
     public void a(ScoreboardServer scoreboardserver, EntityPlayer entityplayer) { // CraftBukkit - protected -> public
