@@ -11,6 +11,7 @@ The main achievements so far:
 - Prioritized parallel processing of the entities of different worlds
 - Queued, limited and parallel chunk generation in different worlds
 - Main thread independent creation, orebfuscation and compression of chunk packets
+- Main thread independent path searches for most mobs
 
 Parts of the changes are pretty well tested already (like parallel ticking of entities), other parts that I added recently (like offloaded packet creation) still require lots of testing. 
 
