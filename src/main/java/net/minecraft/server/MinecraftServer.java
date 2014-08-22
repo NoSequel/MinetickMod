@@ -43,6 +43,8 @@ import org.bukkit.event.world.WorldSaveEvent;
 // CraftBukkit end
 
 // Poweruser start
+import de.minetick.AutoSaveJob;
+import de.minetick.AutoSaveJob.JobDetail;
 import de.minetick.MinetickMod;
 import de.minetick.profiler.Profile;
 import de.minetick.profiler.ProfilingComperator;
@@ -124,6 +126,9 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
     public List<Future<?>> worldTickers = new ArrayList<Future<?>>();
     private WorldServer sortedWorldsArray[] = null;
     private PriorityQueue<WorldServer> priQueue = new PriorityQueue<WorldServer>(20, new ProfilingComperator());
+    private LinkedList<AutoSaveJob> autoSaveWorlds = new LinkedList<AutoSaveJob>();
+    private int autoSaveDelay = 0;
+    private boolean autoSaveOrdered = false;
 
     public void cancelHeavyCalculationsForAllWorlds(boolean cancel) {
         for(WorldServer ws: this.worlds) {
@@ -617,11 +622,15 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
         if ((this.autosavePeriod > 0) && ((this.ticks % this.autosavePeriod) == 0)) { // CraftBukkit
             this.methodProfiler.a("save");
             this.u.savePlayers();
-            this.saveChunks(true);
+            //this.saveChunks(true);
+            this.queueWorldsForAutoSave(); // Poweruser
             this.methodProfiler.b();
         }
 
         // Poweruser start
+        if(this.autoSaveOrdered) {
+            this.autoSaveNextWorld();
+        }
         long tickTime = System.nanoTime() - i;
         this.minetickMod.checkTickTime(tickTime);
         // Poweruser end
@@ -1420,4 +1429,39 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
     public static PlayerList a(MinecraftServer minecraftserver) {
         return minecraftserver.u;
     }
+
+    // Poweruser start
+    private void queueWorldsForAutoSave() {
+        if (!this.M) {
+            this.autoSaveWorlds.clear();
+            int worldcount = 0;
+            for (int j = 0; j < this.worlds.size(); ++j) {
+                WorldServer worldserver = this.worlds.get(j);
+                if(worldserver != null) {
+                    worldcount++;
+                    this.autoSaveWorlds.addLast(new AutoSaveJob(JobDetail.WORLD_SAVE, worldserver));
+                    this.autoSaveWorlds.addLast(new AutoSaveJob(JobDetail.WORLD_SAVEEVENT, worldserver));
+                }
+            }
+            this.autoSaveDelay = 0;
+            this.autoSaveOrdered = true;
+            i.info("[AutoSave] " + String.valueOf(worldcount) + " worlds - Starting ...");
+        }
+    }
+
+    private void autoSaveNextWorld() throws ExceptionWorldConflict {
+        if(!this.autoSaveWorlds.isEmpty()) {
+            if(this.autoSaveDelay++ > 20) { // delay of 1 seconds between checks of the autosavejob queue 
+                this.autoSaveDelay = 0;
+                boolean remove = this.autoSaveWorlds.getFirst().process();
+                if(remove) {
+                    this.autoSaveWorlds.removeFirst();
+                }
+            }
+        } else if(this.autoSaveOrdered){
+            i.info("[AutoSave] Done.");
+            this.autoSaveOrdered = false;
+        }
+    }
+    // Poweruser end
 }
