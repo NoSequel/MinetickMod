@@ -293,8 +293,7 @@ public abstract class World implements IBlockAccess {
 
             for (int k1 = i; k1 <= l; ++k1) {
                 for (int l1 = k; l1 <= j1; ++l1) {
-                    // CraftBukkit - check unload queue too so we don't leak a chunk
-                    if (!this.isChunkLoaded(k1, l1) || ((WorldServer) this).chunkProviderServer.unloadQueue.contains(k1, l1)) {
+                    if (!this.isChunkLoaded(k1, l1)) {
                         return false;
                     }
                 }
@@ -1223,13 +1222,8 @@ public abstract class World implements IBlockAccess {
 
         for (i = 0; i < this.i.size(); ++i) {
             entity = (Entity) this.i.get(i);
-            // CraftBukkit start - Fixed an NPE, don't process entities in chunks queued for unload
+            // CraftBukkit start - Fixed an NPE
             if (entity == null) {
-                continue;
-            }
-
-            ChunkProviderServer chunkProviderServer = ((WorldServer) this).chunkProviderServer;
-            if (chunkProviderServer.unloadQueue.contains(MathHelper.floor(entity.locX) >> 4, MathHelper.floor(entity.locZ) >> 4)) {
                 continue;
             }
             // CraftBukkit end
@@ -1302,16 +1296,6 @@ public abstract class World implements IBlockAccess {
                 this.nextTickEntityIndex = this.tickPosition + 1;
             }
         // Poweruser end
-            // Don't tick entities in chunks queued for unload
-            ChunkProviderServer chunkProviderServer = ((WorldServer) this).chunkProviderServer;
-            if (chunkProviderServer.unloadQueue.contains(MathHelper.floor(entity.locX) >> 4, MathHelper.floor(entity.locZ) >> 4)) {
-                // Poweruser start - Increasing the counters, as this entity wasnt skipped by me
-                this.tickPosition++;
-                count++;
-                // Poweruser end
-                continue;
-            }
-            // CraftBukkit end
 
             if (entity.vehicle != null) {
                 if (!entity.vehicle.dead && entity.vehicle.passenger == entity) {
@@ -1385,16 +1369,16 @@ public abstract class World implements IBlockAccess {
 
         this.methodProfiler.c("blockEntities");
         this.N = true;
+        // CraftBukkit start - From below, clean up tile entities before ticking them
+        if (!this.b.isEmpty()) {
+            this.tileEntityList.removeAll(this.b);
+            this.b.clear();
+        }
+        // CraftBukkit end
         Iterator iterator = this.tileEntityList.iterator();
 
         while (iterator.hasNext()) {
             TileEntity tileentity = (TileEntity) iterator.next();
-            // CraftBukkit start - Don't tick entities in chunks queued for unload
-            ChunkProviderServer chunkProviderServer = ((WorldServer) this).chunkProviderServer;
-            if (chunkProviderServer.unloadQueue.contains(tileentity.x >> 4, tileentity.z >> 4)) {
-                continue;
-            }
-            // CraftBukkit end
 
             if (!tileentity.r() && tileentity.o() && this.isLoaded(tileentity.x, tileentity.y, tileentity.z)) {
                 try {
@@ -1420,10 +1404,12 @@ public abstract class World implements IBlockAccess {
         }
 
         this.N = false;
+        /* CraftBukkit start - Moved up
         if (!this.b.isEmpty()) {
             this.tileEntityList.removeAll(this.b);
             this.b.clear();
         }
+        */ // CraftBukkit end
 
         this.methodProfiler.c("pendingBlockEntities");
         if (!this.a.isEmpty()) {
@@ -2077,13 +2063,6 @@ public abstract class World implements IBlockAccess {
 
             for (int l = -b0; l <= b0; ++l) {
                 for (int i1 = -b0; i1 <= b0; ++i1) {
-                    // CraftBukkit start - Don't tick chunks queued for unload
-                    ChunkProviderServer chunkProviderServer = ((WorldServer) entityhuman.world).chunkProviderServer;
-                    if (chunkProviderServer.unloadQueue.contains(l + j, i1 + k)) {
-                        continue;
-                    }
-                    // CraftBukkit end
-
                     if(chunkProviderServer.isChunkLoaded(l + j, i1 + k)) { // Poweruser
                         this.chunkTickList.add(org.bukkit.craftbukkit.util.LongHash.toLong(l + j, i1 + k)); // CraftBukkit
                     }
