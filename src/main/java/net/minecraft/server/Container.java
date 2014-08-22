@@ -327,7 +327,7 @@ public abstract class Container {
                             } else if (itemstack1.getItem() == itemstack4.getItem() && itemstack4.getMaxStackSize() > 1 && (!itemstack1.usesData() || itemstack1.getData() == itemstack4.getData()) && ItemStack.equals(itemstack1, itemstack4)) {
                                 k1 = itemstack1.count;
                                 // CraftBukkit start - itemstack4.getMaxStackSize() -> maxStack
-                                int maxStack = Math.min(itemstack4.getMaxStackSize(), slot2.getMaxStackSize());
+                                int maxStack = Math.min(itemstack4.getMaxStackSize(), slot2.a());
                                 if (k1 > 0 && k1 + itemstack4.count <= maxStack) {
                                     // CraftBukkit end
                                     itemstack4.count += k1;
@@ -347,7 +347,7 @@ public abstract class Container {
 
                         slot2.f();
                         // CraftBukkit start - Make sure the client has the right slot contents
-                        if (entityhuman instanceof EntityPlayer && slot2.getMaxStackSize() != 64) {
+                        if (entityhuman instanceof EntityPlayer && slot2.a() != 64) {
                             ((EntityPlayer) entityhuman).playerConnection.sendPacket(new PacketPlayOutSetSlot(this.windowId, slot2.rawSlotIndex, slot2.getItem()));
                             // Updating a crafting inventory makes the client reset the result slot, have to send it again
                             if (this.getBukkitView().getType() == InventoryType.WORKBENCH || this.getBukkitView().getType() == InventoryType.CRAFTING) {
@@ -494,7 +494,7 @@ public abstract class Container {
                     int l = itemstack1.count + itemstack.count;
 
                     // CraftBukkit start - itemstack.getMaxStackSize() -> maxStack
-                    int maxStack = Math.min(itemstack.getMaxStackSize(), slot.getMaxStackSize());
+                    int maxStack = Math.min(itemstack.getMaxStackSize(), slot.a());
                     if (l <= maxStack) {
                         itemstack.count = 0;
                         itemstack1.count = l;
