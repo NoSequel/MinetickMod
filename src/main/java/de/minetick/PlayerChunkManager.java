@@ -131,7 +131,8 @@ public class PlayerChunkManager {
             while(queue.size() > 0 && buff.loadedChunks < 40) {
                 ChunkCoordIntPair ccip = queue.poll();
                 if(buff.getPlayerChunkSendQueue().isOnServer(ccip) && !buff.getPlayerChunkSendQueue().alreadyLoaded(ccip)) {
-                    if(allowGeneration && !this.skipChunkGeneration && allGenerated <= (this.world.getWorldData().getType().equals(WorldType.FLAT) ? 1 : 0)) {
+                    boolean chunkExists = this.world.chunkProviderServer.doesChunkExist(ccip.x, ccip.z);
+                    if(chunkExists || (allowGeneration && !this.skipChunkGeneration && allGenerated <= (this.world.getWorldData().getType().equals(WorldType.FLAT) ? 1 : 0))) {
                         PlayerChunk c = this.pcm.a(ccip.x, ccip.z, true);
                         c.a(entityplayer);
                         if(c.isNewChunk()) {
