@@ -71,11 +71,11 @@ public class PlayerChunk { // Poweruser
             Runnable playerRunnable;
             if (this.loaded) {
                 playerRunnable = null;
-                entityplayer.chunkCoordIntPairQueue.add(this.location);
+                //entityplayer.chunkCoordIntPairQueue.add(this.location); // Poweruser - MinetickMod got its own queue
             } else {
                 playerRunnable = new Runnable() {
                     public void run() {
-                        entityplayer.chunkCoordIntPairQueue.add(PlayerChunk.this.location);
+                        //entityplayer.chunkCoordIntPairQueue.add(PlayerChunk.this.location); // Poweruser - MinetickMod got its own queue
                     }
                 };
                 this.playerChunkMap.a().chunkProviderServer.getChunkAt(this.location.x, this.location.z, playerRunnable);
