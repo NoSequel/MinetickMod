@@ -27,7 +27,7 @@ import net.minecraft.server.WorldType;
 public class PlayerChunkManager {
 
     private List<EntityPlayer> shuffleList = Collections.synchronizedList(new LinkedList<EntityPlayer>());
-    private boolean skipChunkGeneration = false;
+    private boolean skipHeavyCalculations = false;
     private int chunkCreated = 0;
     private WorldServer world;
     private PlayerChunkMap pcm;
@@ -80,11 +80,11 @@ public class PlayerChunkManager {
     }
 
     public boolean skipChunkGeneration() {
-        return this.skipChunkGeneration;
+        return this.skipHeavyCalculations;
     }
 
     public void skipChunkGeneration(boolean skip) {
-        this.skipChunkGeneration = skip;
+        this.skipHeavyCalculations = skip;
     }
 
     public boolean alreadyEnqueued(EntityPlayer entityplayer, ChunkCoordIntPair ccip) {
@@ -98,7 +98,7 @@ public class PlayerChunkManager {
         return false;
     }
 
-    public int updatePlayers(boolean allowGeneration) {
+    public int updatePlayers(ChunkGenerationPolicy chunkGenerationPolicy) {
         int allGenerated = 0;
         EntityPlayer[] array = this.shuffleList.toArray(new EntityPlayer[0]);
         for(int i = 0; i < array.length; i++) {
@@ -128,16 +128,17 @@ public class PlayerChunkManager {
 
             // Low priority chunks
             queue = buff.getLowPriorityQueue();
-            while(queue.size() > 0 && buff.loadedChunks < 40) {
+            while(queue.size() > 0 && buff.loadedChunks < 5) {
                 ChunkCoordIntPair ccip = queue.poll();
                 if(buff.getPlayerChunkSendQueue().isOnServer(ccip) && !buff.getPlayerChunkSendQueue().alreadyLoaded(ccip)) {
                     boolean chunkExists = this.world.chunkProviderServer.doesChunkExist(ccip.x, ccip.z);
-                    if(chunkExists || (allowGeneration && !this.skipChunkGeneration && allGenerated <= (this.world.getWorldData().getType().equals(WorldType.FLAT) ? 1 : 0))) {
+                    if(!this.skipHeavyCalculations && (chunkExists || chunkGenerationPolicy.isChunkGenerationCurrentlyAllowed(this.world.getWorld().getWorldType()))) {
                         PlayerChunk c = this.pcm.a(ccip.x, ccip.z, true);
                         c.a(entityplayer);
                         if(c.isNewChunk()) {
                             buff.generatedChunks++;
                             allGenerated++;
+                            chunkGenerationPolicy.generatedChunk();
                         } else {
                             buff.loadedChunks++;
                         }

@@ -13,6 +13,7 @@ import java.util.LinkedList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import de.minetick.ChunkGenerationPolicy;
 import de.minetick.PlayerChunkBuffer;
 import de.minetick.PlayerChunkManager;
 import de.minetick.PlayerChunkSendQueue;
@@ -37,8 +38,8 @@ public class PlayerChunkMap {
         this.playerChunkManager.skipChunkGeneration(skip);
     }
 
-    public int updatePlayers(boolean allowGeneration) {
-        return this.playerChunkManager.updatePlayers(allowGeneration);
+    public int updatePlayers(ChunkGenerationPolicy chunkGenerationPolicy) {
+        return this.playerChunkManager.updatePlayers(chunkGenerationPolicy);
     }
 
     public int getViewDistance() {

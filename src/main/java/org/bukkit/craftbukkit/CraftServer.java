@@ -188,6 +188,11 @@ import com.avaje.ebeaninternal.server.lib.sql.TransactionIsolation;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.MapMaker;
 
+// Poweruser start
+import java.util.HashMap;
+import de.minetick.ChunkGenerationPolicy;
+// Poweruser end
+
 import jline.console.ConsoleReader;
 
 public final class CraftServer implements Server {
@@ -1715,6 +1720,23 @@ public final class CraftServer implements Server {
 
     public List<String> getMinetickModCustomOreRates() {
         return configuration.getStringList("minetickmod.customOreRates");
+    }
+
+    public Map<org.bukkit.WorldType, Double> getMinetickModMaxChunkGenerationRates() {
+        ConfigurationSection section = configuration.getConfigurationSection("minetickmod.maxChunkGenerationRates");
+        Set<String> subkeys = section.getKeys(false);
+        Map<org.bukkit.WorldType, Double> rateMap = new HashMap<org.bukkit.WorldType, Double>();
+        for(String key: subkeys) {
+            org.bukkit.WorldType type = org.bukkit.WorldType.getByName(key);
+            if(type != null) {
+                double rate = section.getDouble(key, ChunkGenerationPolicy.getDefaultRate(type));
+                if(rate < 0.25D) { rate = 0.25D; }
+                rateMap.put(type, rate);
+            } else {
+                logger.warning("[MinetickMod] The WorldType '" + key + "' was not recognized in the setting minetickmod.maxChunkGenerationRates");
+            }
+        }
+        return rateMap;
     }
     // Poweruser end
 }

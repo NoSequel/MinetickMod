@@ -105,6 +105,7 @@ public class MinetickMod {
                     craftserver.getMinetickModProfilerWriteEnabled(),
                     craftserver.getMinetickModProfilerWriteInterval());
             AntiXRay.setWorldsFromConfig(craftserver.getMinetickModOrebfuscatedWorlds());
+            ChunkGenerationPolicy.setRatesFromConfig(craftserver.getMinetickModMaxChunkGenerationRates());
             int axrps = craftserver.getMinetickModAntiXRayPoolSize();
             if(axrps <= 0 || axrps > 64) {
                 axrps = this.availableProcessors;
