@@ -114,7 +114,7 @@ public class PlayerChunkManager {
 
             // High priority chunks
             PriorityQueue<ChunkCoordIntPair> queue = buff.getHighPriorityQueue();
-            while(queue.size() > 0) {
+            while(queue.size() > 0 && !this.skipHeavyCalculations && buff.loadedChunks < 15) {
                 ChunkCoordIntPair ccip = queue.poll();
                 if(buff.getPlayerChunkSendQueue().isOnServer(ccip) && !buff.getPlayerChunkSendQueue().alreadyLoaded(ccip)) {
                     PlayerChunk c = this.pcm.a(ccip.x, ccip.z, true);
@@ -128,7 +128,7 @@ public class PlayerChunkManager {
 
             // Low priority chunks
             queue = buff.getLowPriorityQueue();
-            while(queue.size() > 0 && buff.loadedChunks < 5) {
+            while(queue.size() > 0 && buff.loadedChunks < 5 && !this.skipHeavyCalculations) {
                 ChunkCoordIntPair ccip = queue.poll();
                 if(buff.getPlayerChunkSendQueue().isOnServer(ccip) && !buff.getPlayerChunkSendQueue().alreadyLoaded(ccip)) {
                     boolean chunkExists = this.world.chunkProviderServer.doesChunkExist(ccip.x, ccip.z);
