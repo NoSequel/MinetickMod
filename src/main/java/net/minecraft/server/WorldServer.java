@@ -24,7 +24,10 @@ import org.bukkit.event.weather.LightningStrikeEvent;
 import org.bukkit.event.weather.ThunderChangeEvent;
 import org.bukkit.event.weather.WeatherChangeEvent;
 
+// Poweruser start
+import de.minetick.ChunkGenerationPolicy;
 import de.minetick.antixray.AntiXRay;
+// Poweruser end
 
 public class WorldServer extends World implements org.bukkit.BlockChangeDelegate {
     // CraftBukkit end
@@ -52,6 +55,8 @@ public class WorldServer extends World implements org.bukkit.BlockChangeDelegate
 
     // Poweruser start
     private PriorityQueue<NextTickListEntry> N;
+    private ChunkGenerationPolicy chunkGenerationPolicy;
+
     public void cancelHeavyCalculations(boolean cancel) {
         this.cancelHeavyCalculations = cancel;
         this.manager.skipChunkGeneration(cancel);
@@ -61,19 +66,10 @@ public class WorldServer extends World implements org.bukkit.BlockChangeDelegate
         return this.chunkProviderServer.doesChunkExist(x, z);
     }
 
-    boolean allowChunkGeneration = false;
-    public boolean isChunkGenerationAllowed() {
-        if(this.worldData.getType().equals(WorldType.FLAT)) {
-            return true;
-        } else {
-            this.allowChunkGeneration = !this.allowChunkGeneration;
-        }
-        return this.allowChunkGeneration;
-    }
-
     public int loadAndGenerateChunks() {
         if(this.players.size() > 0) {
-            return this.manager.updatePlayers(this.isChunkGenerationAllowed());
+            this.chunkGenerationPolicy.newTick();
+            return this.manager.updatePlayers(this.chunkGenerationPolicy);
         } else {
             return 0;
         }
@@ -102,7 +98,10 @@ public class WorldServer extends World implements org.bukkit.BlockChangeDelegate
             //this.N = new TreeSet();
             this.N = new PriorityQueue<NextTickListEntry>(1500); // Poweruser
         }
-        this.antiXRay = new AntiXRay(this); // Poweruser
+        // Poweruser start
+        this.antiXRay = new AntiXRay(this);
+        this.chunkGenerationPolicy = new ChunkGenerationPolicy();
+        // Poweruser end
 
         this.Q = new org.bukkit.craftbukkit.CraftTravelAgent(this); // CraftBukkit
         this.scoreboard = new ScoreboardServer(minecraftserver);

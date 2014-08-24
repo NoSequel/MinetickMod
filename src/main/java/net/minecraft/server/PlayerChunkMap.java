@@ -9,10 +9,13 @@ import java.util.Queue;
 import java.util.LinkedList;
 // CraftBukkit end
 
+// Poweruser start
 import de.minetick.ChunkCoordComparator;
+import de.minetick.ChunkGenerationPolicy;
 import de.minetick.PlayerChunkBuffer;
 import de.minetick.PlayerChunkManager;
 import de.minetick.PlayerChunkSendQueue;
+// Poweruser end
 
 public class PlayerChunkMap {
 
@@ -33,8 +36,8 @@ public class PlayerChunkMap {
         this.playerChunkManager.skipChunkGeneration(skip);
     }
 
-    public int updatePlayers(boolean allowGeneration) {
-        return this.playerChunkManager.updatePlayers(allowGeneration);
+    public int updatePlayers(ChunkGenerationPolicy chunkGenerationPolicy) {
+        return this.playerChunkManager.updatePlayers(chunkGenerationPolicy);
     }
 
     public int getViewDistance() {
