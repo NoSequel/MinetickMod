@@ -71,7 +71,7 @@ public class PacketBuilderThreadPool implements Observer {
     }
 
     public static void shutdownStatic() {
-        if(pool != null)
+        if(pool != null) {
             pool.shutdown();
         }
     }
