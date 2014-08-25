@@ -31,6 +31,10 @@ public abstract class EntityCreature extends EntityInsentient {
     private boolean searchIssued = false;
     private PathEntity returnedPathEntity;
 
+    public boolean isSearchingForAPath() {
+        return this.searchIssued;
+    }
+
     private void issueSearch(int x, int y, int z, float range) {
         if(!this.searchIssued) {
             this.searchIssued = true;
@@ -46,10 +50,12 @@ public abstract class EntityCreature extends EntityInsentient {
     }
 
     public void setPathEntityByTarget(Entity target, PathEntity pathentity) {
-        if(this.target.equals(target)) {
-            this.returnedPathEntity = pathentity;
+        if(this.searchIssued && target != null) {
+            if(this.target.equals(target)) {
+                this.returnedPathEntity = pathentity;
+            }
+            this.searchIssued = false;
         }
-        this.searchIssued = false;
     }
 
     public void setPathEntityByPosition(PathEntity pathentity) {

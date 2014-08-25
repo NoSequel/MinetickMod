@@ -141,7 +141,8 @@ public class EntitySilverfish extends EntityMonster {
                 } else {
                     this.bQ();
                 }
-            } else if (this.target != null && !this.bS()) {
+            //} else if (this.target != null && !this.bS()) {
+            } else if (this.target != null && !this.bS() && !this.isSearchingForAPath()) { // Poweruser
                 this.target = null;
             }
         }
