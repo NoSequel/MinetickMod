@@ -110,7 +110,8 @@ public class EntityWolf extends EntityTameableAnimal {
 
     public void e() {
         super.e();
-        if (!this.world.isStatic && this.bs && !this.bt && !this.bQ() && this.onGround) {
+        //if (!this.world.isStatic && this.bs && !this.bt && !this.bQ() && this.onGround) {
+        if (!this.world.isStatic && this.bs && !this.bt && !this.bQ() && !this.isSearchingForAPath() && this.onGround) { // Poweruser
             this.bt = true;
             this.bu = 0.0F;
             this.bv = 0.0F;
