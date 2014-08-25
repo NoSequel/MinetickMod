@@ -10,15 +10,20 @@ public class ChunkIOExecutor {
     //static final int BASE_THREADS = 1;
     static final int BASE_THREADS = 2; // Poweruser
     static final int PLAYERS_PER_THREAD = 50;
+    static final Object lockObject = new Object(); // Poweruser
 
     private static final AsynchronousExecutor<QueuedChunk, Chunk, Runnable, RuntimeException> instance = new AsynchronousExecutor<QueuedChunk, Chunk, Runnable, RuntimeException>(new ChunkIOProvider(), BASE_THREADS);
 
     public static Chunk syncChunkLoad(World world, ChunkRegionLoader loader, ChunkProviderServer provider, int x, int z) {
-        return instance.getSkipQueue(new QueuedChunk(x, z, loader, world, provider));
+        synchronized(lockObject) { // Poweruser - MinetickMod got several world threads that call these methods
+            return instance.getSkipQueue(new QueuedChunk(x, z, loader, world, provider));
+        }
     }
 
     public static void queueChunkLoad(World world, ChunkRegionLoader loader, ChunkProviderServer provider, int x, int z, Runnable runnable) {
-        instance.add(new QueuedChunk(x, z, loader, world, provider), runnable);
+        synchronized(lockObject) { // Poweruser - MinetickMod got several world threads that call these methods
+            instance.add(new QueuedChunk(x, z, loader, world, provider), runnable);
+        }
     }
 
     public static void adjustPoolSize(int players) {
