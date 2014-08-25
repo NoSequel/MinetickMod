@@ -120,7 +120,8 @@ public class EntitySilverfish extends EntityMonster {
                 }
             }
 
-            if (this.target == null && !this.bS()) {
+            //if (this.target == null && !this.bS()) {
+            if (this.target == null && !this.bS() && !this.isSearchingForAPath()) { // Poweruser
                 i = MathHelper.floor(this.locX);
                 j = MathHelper.floor(this.locY + 0.5D);
                 k = MathHelper.floor(this.locZ);
