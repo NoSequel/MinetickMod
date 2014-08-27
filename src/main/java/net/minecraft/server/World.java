@@ -92,6 +92,8 @@ public abstract class World implements IBlockAccess {
     int[] I;
 
     // Poweruser start
+    private Chunk dummyChunk = new EmptyChunk(this, Integer.MIN_VALUE, Integer.MIN_VALUE);
+    private Chunk lastChunkAccessed = dummyChunk;
     private HashSet<Long> alreadyCheckedChunks = new HashSet<Long>();
     private List<Entity> dimensionChangeQueue = Collections.synchronizedList(new LinkedList<Entity>());
     public ChunkProviderServer chunkProviderServer; // moved here from class WorldServer
@@ -163,9 +165,6 @@ public abstract class World implements IBlockAccess {
     public boolean pvpMode;
     public boolean keepSpawnInMemory = true;
     public ChunkGenerator generator;
-    Chunk lastChunkAccessed;
-    int lastXAccessed = Integer.MIN_VALUE;
-    int lastZAccessed = Integer.MIN_VALUE;
     final Object chunkLock = new Object();
 
     public CraftWorld getWorld() {
@@ -332,19 +331,32 @@ public abstract class World implements IBlockAccess {
         return this.getChunkAt(i >> 4, j >> 4);
     }
 
+    // Poweruser start
+    private void cacheLastChunkAccess(Chunk foundChunk) {
+        this.lastChunkAccessed = ((foundChunk.isEmpty() || foundChunk == null) ? this.dummyChunk : foundChunk);
+    }
+    // Poweruser end
+
     public Chunk getChunkAt(int i, int j) {
-        // CraftBukkit start
+        // Poweruser start
         Chunk result = null;
-        synchronized (this.chunkLock) {
-            if (this.lastChunkAccessed == null || this.lastXAccessed != i || this.lastZAccessed != j) {
-                this.lastChunkAccessed = this.chunkProvider.getOrCreateChunk(i, j);
-                this.lastXAccessed = i;
-                this.lastZAccessed = j;
+        Chunk last = this.lastChunkAccessed;
+        if(last.a(i,j) && !last.wasUnloaded()) {
+            result = last;
+        } else {
+            // Synchronizing shouldnt be necessary for getting loaded chunks
+            if(this.chunkProviderServer.isChunkLoaded(i, j)) {
+                result = this.chunkProviderServer.getChunkAt(i, j);
+                this.cacheLastChunkAccess(result);
+            } else {
+                synchronized (this.chunkLock) {
+                    result = this.chunkProvider.getOrCreateChunk(i, j);
+                    this.cacheLastChunkAccess(result);
+                }
             }
-            result = this.lastChunkAccessed;
         }
         return result;
-        // CraftBukkit end
+        // Poweruser end
     }
 
     public boolean setTypeAndData(int i, int j, int k, Block block, int l, int i1) {

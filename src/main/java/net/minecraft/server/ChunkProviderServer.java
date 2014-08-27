@@ -380,6 +380,7 @@ public class ChunkProviderServer implements IChunkProvider {
                 server.getPluginManager().callEvent(event);
                 if (!event.isCancelled()) {
                     if (chunk != null) {
+                        chunk.markAsUnloaded();
                         chunk.removeEntities();
                         this.saveChunk(chunk);
                         this.saveChunkNOP(chunk);
