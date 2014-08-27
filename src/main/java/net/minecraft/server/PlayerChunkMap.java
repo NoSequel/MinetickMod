@@ -262,7 +262,7 @@ public class PlayerChunkMap {
             }
         }*/
         // Poweruser start
-        java.util.Iterator i = this.e.iterator();
+        java.util.Iterator i = this.f.iterator();
         while(i.hasNext()) {
             PlayerChunk c = (PlayerChunk) i.next();
             if(c != null) {
