@@ -163,8 +163,8 @@ public class PlayerChunkManager {
             for(int w = 0; w < packetsPerTick; w++) {
                 PacketBuilderChunkDataBulk chunkData = new PacketBuilderChunkDataBulk();
                 int skipped = 0;
-                chunkQueue.requeuePreviouslySkipped();
-                while(chunkQueue.hasChunksQueued() && chunkData.size() < PacketPlayOutMapChunkBulk.c() && skipped < 20) {
+                int previouslyskipped = chunkQueue.requeuePreviouslySkipped();
+                while(chunkQueue.hasChunksQueued() && chunkData.size() < PacketPlayOutMapChunkBulk.c() && skipped < (20 + previouslyskipped)) {
                     ChunkCoordIntPair chunkcoordintpair = chunkQueue.peekFirst();
                     if (chunkcoordintpair != null && chunkQueue.isOnServer(chunkcoordintpair)) {
                         if(this.world.isLoaded(chunkcoordintpair.x << 4, 0, chunkcoordintpair.z << 4)) {
