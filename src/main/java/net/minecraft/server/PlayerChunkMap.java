@@ -257,12 +257,12 @@ public class PlayerChunkMap {
             PlayerChunk c = (PlayerChunk) i.next();
             if(c != null) {
                 c.b(entityplayer);
-                ChunkCoordIntPair ccip = PlayerChunk.a(c);
-                entityplayer.chunkQueue.removeFromServer(ccip.x, ccip.z);
-                entityplayer.chunkQueue.removeFromClient(PlayerChunk.a(c));
             }
         }
-        //entityplayer.chunkCoordIntPairQueue.clear();
+        PlayerChunkSendQueue pcsq = entityplayer.chunkQueue;
+        if(pcsq != null) {
+            pcsq.clear();
+        }
         entityplayer.setPlayerChunkSendQueue(null);
         this.playerChunkManager.removePlayer(entityplayer);
         // Poweruser end
