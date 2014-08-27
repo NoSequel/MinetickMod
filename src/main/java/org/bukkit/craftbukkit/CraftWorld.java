@@ -177,7 +177,7 @@ public class CraftWorld implements World {
         if (chunk.mustSave) {   // If chunk had previously been queued to save, must do save to avoid loss of that data
             save = true;
         }
-
+        chunk.markAsUnloaded(); // Poweruser
         chunk.removeEntities(); // Always remove entities - even if discarding, need to get them out of world table
 
         if (save && !(chunk instanceof EmptyChunk)) {

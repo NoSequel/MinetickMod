@@ -161,7 +161,8 @@ public abstract class World implements IBlockAccess {
     public ChunkGenerator generator;
     //Chunk lastChunkAccessed;
     // Poweruser start - setting a valid initial value to get rid of the check for null in getChunkAt
-    private Chunk lastChunkAccessed = new EmptyChunk(this, Integer.MIN_VALUE, Integer.MIN_VALUE);
+    private Chunk dummyChunk = new EmptyChunk(this, Integer.MIN_VALUE, Integer.MIN_VALUE);
+    private Chunk lastChunkAccessed = dummyChunk;
     // Poweruser end
     int lastXAccessed = Integer.MIN_VALUE;
     int lastZAccessed = Integer.MIN_VALUE;
@@ -319,21 +320,27 @@ public abstract class World implements IBlockAccess {
         return this.getChunkAt(i >> 4, j >> 4);
     }
 
+    // Poweruser start
+    private void cacheLastChunkAccess(Chunk foundChunk) {
+        this.lastChunkAccessed = ((foundChunk.isEmpty() || foundChunk == null) ? this.dummyChunk : foundChunk);
+    }
+    // Poweruser end
+
     public Chunk getChunkAt(int i, int j) {
         // Poweruser start
         Chunk result = null;
         Chunk last = this.lastChunkAccessed;
-        if(last.a(i,j)) {
+        if(last.a(i,j) && !last.wasUnloaded()) {
             result = last;
         } else {
             // Synchronizing shouldnt be necessary for getting loaded chunks
             if(this.chunkProviderServer.isChunkLoaded(i, j)) {
                 result = this.chunkProviderServer.getChunkAt(i, j);
-                this.lastChunkAccessed = result;
+                this.cacheLastChunkAccess(result);
             } else {
                 synchronized (this.chunkLock) {
                     result = this.chunkProvider.getOrCreateChunk(i, j);
-                    this.lastChunkAccessed = result;
+                    this.cacheLastChunkAccess(result);
                 }
             }
         }

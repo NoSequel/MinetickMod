@@ -378,6 +378,7 @@ public class ChunkProviderServer implements IChunkProvider {
                 ChunkUnloadEvent event = new ChunkUnloadEvent(chunk.bukkitChunk);
                 server.getPluginManager().callEvent(event);
                 if (!event.isCancelled()) {
+                    chunk.markAsUnloaded(); // Poweruser
                     chunk.removeEntities();
                     this.saveChunk(chunk);
                     this.saveChunkNOP(chunk);
