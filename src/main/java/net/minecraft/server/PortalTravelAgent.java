@@ -91,7 +91,13 @@ public class PortalTravelAgent {
 
     public boolean b(Entity entity, double d0, double d1, double d2, float f) {
         // CraftBukkit start - Modularize portal search process and entity teleportation
-        ChunkCoordinates found = this.findPortal(entity.locX, entity.locY, entity.locZ, 128);
+        //ChunkCoordinates found = this.findPortal(entity.locX, entity.locY, entity.locZ, 128);
+        // Poweruser start - check a small area first
+        ChunkCoordinates found = this.findPortal(entity.locX, entity.locY, entity.locZ, 10);
+        if(found == null) {
+            found = this.findPortal(entity.locX, entity.locY, entity.locZ, 128);
+        }
+        // Poweruser end
         if (found == null) {
             return false;
         }
