@@ -134,11 +134,23 @@ public class PortalTravelAgent {
             chunkcoordinatesportal.d = this.a.getTime();
             flag = false;
         } else {
+            /*
             for (k1 = l - short1; k1 <= l + short1; ++k1) {
 
                 for (int l1 = i1 - short1; l1 <= i1 + short1; ++l1) {
 
                     for (int i2 = this.a.S() - 1; i2 >= 0; --i2) {
+            */
+            /*  Poweruser start - cutting down the amount of blocks to check by ~83%, 8.38M -> 1.39M (at the default search range of 128 blocks)
+             *  It is still brute force, but at least using the fact that the smallest nether portal has at least a size of 2x3x1
+             */
+            int zOffset = 0, yOffset = 0;
+            for (k1 = l - short1; k1 <= l + short1; ++k1) {
+                zOffset = (zOffset + 1) % 2;
+                for (int l1 = i1 - short1 + zOffset; l1 <= i1 + short1; l1 = l1 + 2) { // skipping every 2nd block in z direction and alternating from row to row in x direction
+                    yOffset = (yOffset + 1) % 3;
+                    for (int i2 = this.a.S() - (1 + yOffset) ; i2 >= 0; i2 = i2 - 3) { // checking only every 3rd block in y direction and alternating in high in each column
+            // Poweruser end
                         if (this.a.getType(k1, i2, l1) == Blocks.PORTAL) {
                             while (this.a.getType(k1, i2 - 1, l1) == Blocks.PORTAL) {
                                 --i2;
