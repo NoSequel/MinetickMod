@@ -135,10 +135,8 @@ public class PortalTravelAgent {
             flag = false;
         } else {
             for (k1 = l - short1; k1 <= l + short1; ++k1) {
-                double d5 = (double) k1 + 0.5D - x; // CraftBukkit
 
                 for (int l1 = i1 - short1; l1 <= i1 + short1; ++l1) {
-                    double d6 = (double) l1 + 0.5D - z; // CraftBukkit
 
                     for (int i2 = this.a.R() - 1; i2 >= 0; --i2) {
                         if (this.a.getType(k1, i2, l1) == Blocks.PORTAL) {
@@ -147,6 +145,8 @@ public class PortalTravelAgent {
                             }
 
                             d4 = (double) i2 + 0.5D - y; // CraftBukkit
+                            double d5 = (double) k1 + 0.5D - x; // CraftBukkit
+                            double d6 = (double) l1 + 0.5D - z; // CraftBukkit
                             double d7 = d5 * d5 + d4 * d4 + d6 * d6;
 
                             if (d3 < 0.0D || d7 < d3) {
