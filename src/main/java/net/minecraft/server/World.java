@@ -28,8 +28,6 @@ import org.bukkit.event.weather.WeatherChangeEvent;
 import org.bukkit.event.weather.ThunderChangeEvent;
 // CraftBukkit end
 
-import org.bukkit.craftbukkit.util.LongHash; // Poweruser
-
 import de.minetick.LockObject;
 import de.minetick.MinetickMod;
 import de.minetick.antixray.AntiXRay;
@@ -88,7 +86,6 @@ public abstract class World implements IBlockAccess {
     int[] I;
 
     // Poweruser start
-    private HashSet<Long> alreadyCheckedChunks = new HashSet<Long>();
     public ChunkProviderServer chunkProviderServer; // moved here from class WorldServer
     protected boolean cancelHeavyCalculations = false;
     private int nextTickEntityIndex = 0;
@@ -1314,7 +1311,6 @@ public abstract class World implements IBlockAccess {
          * several seconds or minutes.
          */
 
-        this.alreadyCheckedChunks.clear(); // Poweruser - Maybe clear less frequent
         /*
         // CraftBukkit start - Use field for loop variable
         for (this.tickPosition = 0; this.tickPosition < this.entityList.size(); ++this.tickPosition) {
@@ -1499,21 +1495,9 @@ public abstract class World implements IBlockAccess {
     public void entityJoinedWorld(Entity entity, boolean flag) {
         int i = MathHelper.floor(entity.locX);
         int j = MathHelper.floor(entity.locZ);
-        //byte b0 = 32;
-        // Poweruser start
-        byte b0 = 4; // It should be enough to check the chunks within a range of 4 blocks, instead of always 25 chunks
-        long hash = LongHash.toLong(i, j);
-        boolean isChunkLoaded = this.alreadyCheckedChunks.contains(hash);
-        if(!isChunkLoaded) {
-            isChunkLoaded = this.b(i - b0, 0, j - b0, i + b0, 0, j + b0);
-            if(isChunkLoaded) {
-                this.alreadyCheckedChunks.add(hash);
-            }
-        }
+        byte b0 = 32;
 
-        //if (!flag || this.b(i - b0, 0, j - b0, i + b0, 0, j + b0)) {
-        if (!flag || isChunkLoaded) {
-        // Poweruser end
+        if (!flag || this.b(i - b0, 0, j - b0, i + b0, 0, j + b0)) {
             entity.T = entity.locX;
             entity.U = entity.locY;
             entity.V = entity.locZ;
