@@ -518,6 +518,9 @@ public class TileEntityHopper extends TileEntity implements IHopper {
         int i = MathHelper.floor(d0);
         int j = MathHelper.floor(d1);
         int k = MathHelper.floor(d2);
+        // Poweruser start
+        if ( !world.isLoaded( i, j, k ) ) return null; // Spigot
+        // Poweruser end
         TileEntity tileentity = world.getTileEntity(i, j, k);
 
         if (tileentity != null && tileentity instanceof IInventory) {
