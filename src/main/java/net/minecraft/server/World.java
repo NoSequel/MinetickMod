@@ -1322,13 +1322,22 @@ public abstract class World implements IBlockAccess {
                     if(entity.passenger != null) {
                         playerIsPassenger = entity.passenger.isImportantEntity();
                     }
-                    if(entity.isImportantEntity() || playerIsPassenger || !this.cancelHeavyCalculations) {
+                    int[] range = MinetickMod.getActivationRange();
+                    int activationRange = (this.cancelHeavyCalculations ? range[0] : range[1]);
+                    float tickChance = (100.0f / (float) this.entityList.size()) * (this.cancelHeavyCalculations ? 0.5f : 1.0f);
+                    if(entity.isImportantEntity() || playerIsPassenger || entity.ticksLived < 120 || this.findNearbyPlayer(entity, (activationRange)) != null || this.random.nextFloat() < tickChance) {
                         if(entity.isPlayer() || playerIsPassenger) {
                             synchronized(LockObject.playerTickLock) {
                                 this.playerJoinedWorld(entity);
                             }
                         } else {
                             this.playerJoinedWorld(entity);
+                        }
+                    } else {
+                        if(entity instanceof EntityLiving) {
+                            EntityLiving ei = (EntityLiving) entity;
+                            ei.skipped();
+                            ei.w();
                         }
                     }
                     // Poweruser end

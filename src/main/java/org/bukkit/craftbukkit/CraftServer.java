@@ -1692,5 +1692,12 @@ public final class CraftServer implements Server {
         }
         return rateMap;
     }
+
+    public int[] getMinetickModActivationRange() {
+        int low = configuration.getInt("minetickmod.activationrange.low", -1);
+        int high = configuration.getInt("minetickmod.activationrange.high", -1);
+        int max = configuration.getInt("minetickmod.activationrange.max", -1);
+        return new int[] {low, high, max};
+    }
     // Poweruser end
 }
