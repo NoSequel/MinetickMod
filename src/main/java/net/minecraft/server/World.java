@@ -88,7 +88,6 @@ public abstract class World implements IBlockAccess {
     // Poweruser start
     public ChunkProviderServer chunkProviderServer; // moved here from class WorldServer
     protected boolean cancelHeavyCalculations = false;
-    private int nextTickEntityIndex = 0;
     private long lastTickAvg = 0L;
     private List<Entity> dimensionChangeQueue = Collections.synchronizedList(new LinkedList<Entity>());
     public AntiXRay antiXRay = null;
@@ -1076,11 +1075,6 @@ public abstract class World implements IBlockAccess {
             if (index <= this.tickPosition) {
                 this.tickPosition--;
             }
-            // Poweruser start
-            if (this.cancelHeavyCalculations && index < this.nextTickEntityIndex) {
-                this.nextTickEntityIndex--;
-            }
-            // Poweruser end
             this.entityList.remove(index);
         }
         // CraftBukkit end
@@ -1306,38 +1300,12 @@ public abstract class World implements IBlockAccess {
         this.f.clear();
         this.methodProfiler.c("regular");
 
-        // Poweruser start
-        /*
-         * Instead of running through the list from 0 to size-1 everytime, I'm going to
-         * rotate through it, by remembering the index of the last ticked entity and resuming there
-         * on the next tick. This is crucial with the just added skipping of entities when the server
-         * is overloaded. If it wasn't done, the entities at the end of the list would eventually miss
-         * several seconds or minutes.
-         */
-
-        /*
         // CraftBukkit start - Use field for loop variable
         for (this.tickPosition = 0; this.tickPosition < this.entityList.size(); ++this.tickPosition) {
             entity = (Entity) this.entityList.get(this.tickPosition);
-        */
-        int count = 0, size;
-        this.tickPosition = this.nextTickEntityIndex;
-        while(count < (size = this.entityList.size()) ) {
-            if(this.tickPosition >= size) {
-                this.tickPosition = 0;
-            }
-            entity = (Entity) this.entityList.get(this.tickPosition);
-            if(!this.cancelHeavyCalculations) {
-                this.nextTickEntityIndex = this.tickPosition + 1;
-            }
-        // Poweruser end
 
             if (entity.vehicle != null) {
                 if (!entity.vehicle.dead && entity.vehicle.passenger == entity) {
-                    // Poweruser start - Increasing the counters, as this entity wasnt skipped by me
-                    this.tickPosition++;
-                    count++;
-                    // Poweruser end
                     continue;
                 }
 
@@ -1382,17 +1350,10 @@ public abstract class World implements IBlockAccess {
                 }
 
                 //this.entityList.remove(i--);
-                this.entityList.remove(this.tickPosition); // Poweruser
-                //this.entityList.remove(this.tickPosition--); // CraftBukkit - Use field for loop variable
+                this.entityList.remove(this.tickPosition--); // CraftBukkit - Use field for loop variable
 
                 this.b(entity);
             }
-            // Poweruser start
-            else {
-                this.tickPosition++; // Increasing the counter to the index of the next entity
-            }
-            count++;
-            // Poweruser end
 
             this.methodProfiler.b();
         }
