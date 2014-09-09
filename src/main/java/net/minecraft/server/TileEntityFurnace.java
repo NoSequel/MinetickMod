@@ -243,6 +243,7 @@ public class TileEntityFurnace extends TileEntity implements IWorldInventory {
             return false;
         } else {
             ItemStack itemstack = RecipesFurnace.getInstance().getResult(this.items[0]);
+            if(itemstack == null || !this.world.isLoaded(this.x, this.y, this.z) || this.world.chunkProviderServer.unloadQueue.contains(this.x >> 4, this.z >> 4)) { return false; } // Poweruser
 
             // CraftBukkit - consider resultant count instead of current count
             return itemstack == null ? false : (this.items[2] == null ? true : (!this.items[2].doMaterialsMatch(itemstack) ? false : (this.items[2].count + itemstack.count <= this.getMaxStackSize() && this.items[2].count < this.items[2].getMaxStackSize() ? true : this.items[2].count + itemstack.count <= itemstack.getMaxStackSize())));
