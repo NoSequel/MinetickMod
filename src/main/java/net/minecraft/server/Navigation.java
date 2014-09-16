@@ -2,8 +2,8 @@ package net.minecraft.server;
 
 public class Navigation {
 
-    private EntityInsentient a;
-    private World b;
+    //private EntityInsentient a;
+    //private World b;
     private PathEntity c;
     private double d;
     private AttributeInstance e;
@@ -11,10 +11,24 @@ public class Navigation {
     private int g;
     private int h;
     private Vec3D i = Vec3D.a(0.0D, 0.0D, 0.0D);
+    /*
     private boolean j = true;
     private boolean k;
     private boolean l;
     private boolean m;
+    */
+    // Poweruser start
+    protected EntityInsentient a;
+    protected World b;
+    protected boolean j = true;
+    protected boolean k;
+    protected boolean l;
+    protected boolean m;
+
+    public void setPathEntityByTarget(Entity target, PathEntity pathentity) { }
+
+    public void setPathEntityByPosition(int x, int y, int z, PathEntity pathentity) { }
+    // Poweruser end
 
     public Navigation(EntityInsentient entityinsentient, World world) {
         this.a = entityinsentient;
@@ -205,7 +219,8 @@ public class Navigation {
         }
     }
 
-    private boolean l() {
+    //private boolean l() {
+    protected boolean l() { // Poweruser
         return this.a.onGround || this.m && this.m();
     }
 

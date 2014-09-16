@@ -33,6 +33,7 @@ import de.minetick.modcommands.ThreadPoolsCommand;
 import de.minetick.modcommands.WorldStatsCommand;
 import de.minetick.packetbuilder.PacketBuilderThreadPool;
 import de.minetick.pathsearch.PathSearchJob;
+import de.minetick.pathsearch.PathSearchThrottlerThread;
 import de.minetick.profiler.Profiler;
 
 import net.minecraft.server.Block;
@@ -60,7 +61,7 @@ public class MinetickMod {
     private ScheduledExecutorService timerService = Executors.newScheduledThreadPool(2, new MinetickThreadFactory(Thread.NORM_PRIORITY + 2, "MinetickMod_TimerService"));
     private ExecutorService nbtFileService = Executors.newCachedThreadPool(new MinetickThreadFactory(Thread.NORM_PRIORITY - 2, "MinetickMod_NBTFileSaver"));
     private ExecutorService worldTickerService = Executors.newCachedThreadPool(new MinetickThreadFactory(Thread.NORM_PRIORITY + 1, "MinetickMod_WorldTicker"));
-    private ExecutorService pathFinder = Executors.newCachedThreadPool(new MinetickThreadFactory(Thread.NORM_PRIORITY - 1, "MinetickMod_PathFinder"));
+    private PathSearchThrottlerThread pathSearchThrottler;
     private LockObject worldTickerLock = new LockObject();
     private ScheduledFuture<Object> tickTimerTask;
     private static MinetickMod instance;
@@ -90,6 +91,7 @@ public class MinetickMod {
         this.notGeneratingWorlds = new HashSet<String>();
         this.entitiesToDelete = new HashSet<EntityType>();
         this.customOreRates = new HashMap<Block, Integer>();
+        this.pathSearchThrottler = new PathSearchThrottlerThread();
         instance = this;
     }
     
@@ -200,7 +202,7 @@ public class MinetickMod {
     
     public void shutdown() {
         this.timerService.shutdown();
-        this.pathFinder.shutdown();
+        this.pathSearchThrottler.shutdown();
         PacketBuilderThreadPool.shutdownStatic();
         AntiXRay.shutdown();
         this.nbtFileService.shutdown();
@@ -320,7 +322,7 @@ public class MinetickMod {
     }
 
     public static void queuePathSearch(PathSearchJob pathSearchJob) {
-        instance.pathFinder.execute(pathSearchJob);
+        instance.pathSearchThrottler.queuePathSearch(pathSearchJob);
     }
 
     public static int[] getActivationRange() {
