@@ -135,7 +135,7 @@ public class PathfinderGoalMeleeAttack extends PathfinderGoal {
             double newRange = this.originalSearchRange;
             if(this.failedSearches > 0) {
                 if(!this.targetNotFound && this.lastSearchFailed) {
-                    newRange = Math.min(Math.max(xdiff, zdiff) + 8.0D, currentRange);
+                    newRange = Math.min(Math.max(xdiff, zdiff) + 4.0D, currentRange);
                 }
             }
             this.lastAdjustedRange = newRange;
@@ -146,7 +146,7 @@ public class PathfinderGoalMeleeAttack extends PathfinderGoal {
 
             if (this.lastSearchFailed && !this.targetNotFound) {
                 this.failedSearches++;
-                this.h += (d0 / 100.0D);
+                this.h += (d0 / 40.0D);
             } else {
                 this.failedSearches = 0;
             }
@@ -154,7 +154,7 @@ public class PathfinderGoalMeleeAttack extends PathfinderGoal {
                 this.failedSearches = 0;
             }
 
-            this.h += this.failedSearches;
+            this.h += 2 * this.failedSearches;
             // Poweruser end
         }
 
