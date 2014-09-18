@@ -23,6 +23,7 @@ import org.bukkit.entity.EntityType;
 
 import de.minetick.antixray.AntiXRay;
 import de.minetick.modcommands.AntiXRayCommand;
+import de.minetick.modcommands.LoadedChunksCommand;
 import de.minetick.modcommands.PacketCompressionCommand;
 import de.minetick.modcommands.PacketsPerTickCommand;
 import de.minetick.modcommands.SetEntityActivationRange;
@@ -103,6 +104,7 @@ public class MinetickMod {
             craftserver.getCommandMap().register("threadpools", "MinetickMod", new ThreadPoolsCommand("threadpools"));
             craftserver.getCommandMap().register("worldstats", "MinetickMod", new WorldStatsCommand("worldstats"));
             craftserver.getCommandMap().register("threadlist", "MinetickMod", new ThreadListCommand("threadlist"));
+            craftserver.getCommandMap().register("loadedchunks", "MinetickMod", new LoadedChunksCommand("loadedchunks"));
             craftserver.getCommandMap().register("setentityactivationrange", "MinetickMod", new SetEntityActivationRange("setentityactivationrange"));
             this.profiler = new Profiler(craftserver.getMinetickModProfilerLogInterval(),
                     craftserver.getMinetickModProfilerWriteEnabled(),
