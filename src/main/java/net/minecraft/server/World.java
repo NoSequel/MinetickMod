@@ -174,6 +174,10 @@ public abstract class World implements IBlockAccess {
         return (CraftServer) Bukkit.getServer();
     }
 
+    public Chunk getChunkIfLoaded(int x, int z) {
+        return ((ChunkProviderServer) this.chunkProvider).getChunkIfLoaded(x, z);
+    }
+
     // Changed signature - added gen and env
     public World(IDataManager idatamanager, String s, WorldSettings worldsettings, WorldProvider worldprovider, MethodProfiler methodprofiler, ChunkGenerator gen, org.bukkit.World.Environment env) {
         this.generator = gen;
@@ -1582,7 +1586,10 @@ public abstract class World implements IBlockAccess {
         int j = MathHelper.floor(entity.locZ);
         byte b0 = 32;
 
-        if (!flag || this.b(i - b0, 0, j - b0, i + b0, 0, j + b0)) {
+        // CraftBukkit start - Use neighbor cache instead of looking up
+        Chunk startingChunk = this.getChunkIfLoaded(i >> 4, j >> 4);
+        if (!flag || (startingChunk != null && startingChunk.areNeighborsLoaded(2)) /* this.b(i - b0, 0, j - b0, i + b0, 0, j + b0) */) {
+            // CraftBukkit end
             entity.S = entity.locX;
             entity.T = entity.locY;
             entity.U = entity.locZ;
@@ -2374,14 +2381,17 @@ public abstract class World implements IBlockAccess {
     }
 
     public boolean c(EnumSkyBlock enumskyblock, int i, int j, int k, boolean chunksAlreadyChecked) {
-        boolean chunksAreloaded = chunksAlreadyChecked || this.areChunksLoaded(i, j, k, 17);
-        if(!chunksAreloaded) {
+        boolean chunksAreLoaded = chunksAlreadyChecked;
+        if(!chunksAlreadyChecked) {
+            // CraftBukkit start - Use neighbor cache instead of looking up
+            Chunk chunk = this.getChunkIfLoaded(i >> 4, k >> 4);
+            if (chunk != null && chunk.areNeighborsLoaded(1) /* !this.areChunksLoaded(i, j, k, 17)*/) {
+                chunksAreLoaded = true;
+            }
+        }
+        if(!chunksAreLoaded) {
+            // CraftBukkit end
     // Poweruser end
-
-    /*
-    public boolean c(EnumSkyBlock enumskyblock, int i, int j, int k) {
-        if (!this.areChunksLoaded(i, j, k, 17)) {
-    */
             return false;
         } else {
             int l = 0;
