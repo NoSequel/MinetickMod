@@ -25,6 +25,7 @@ import de.minetick.antixray.AntiXRay;
 import de.minetick.modcommands.AntiXRayCommand;
 import de.minetick.modcommands.PacketCompressionCommand;
 import de.minetick.modcommands.PacketsPerTickCommand;
+import de.minetick.modcommands.SetEntityActivationRange;
 import de.minetick.modcommands.TPSCommand;
 import de.minetick.modcommands.ThreadListCommand;
 import de.minetick.modcommands.ThreadPoolsCommand;
@@ -77,6 +78,7 @@ public class MinetickMod {
     private HashSet<EntityType> entitiesToDelete;
     private HashMap<Block, Integer> customOreRates;
     private final Logger log = LogManager.getLogger();
+    private int[] activationRange = new int[] { 16, 64, 88 };
 
     public MinetickMod() {
         this.availableProcessors = Runtime.getRuntime().availableProcessors();
@@ -101,6 +103,7 @@ public class MinetickMod {
             craftserver.getCommandMap().register("threadpools", "MinetickMod", new ThreadPoolsCommand("threadpools"));
             craftserver.getCommandMap().register("worldstats", "MinetickMod", new WorldStatsCommand("worldstats"));
             craftserver.getCommandMap().register("threadlist", "MinetickMod", new ThreadListCommand("threadlist"));
+            craftserver.getCommandMap().register("setentityactivationrange", "MinetickMod", new SetEntityActivationRange("setentityactivationrange"));
             this.profiler = new Profiler(craftserver.getMinetickModProfilerLogInterval(),
                     craftserver.getMinetickModProfilerWriteEnabled(),
                     craftserver.getMinetickModProfilerWriteInterval());
@@ -144,7 +147,13 @@ public class MinetickMod {
                 }
             }
             this.loadCustomOreRates(craftserver.getMinetickModCustomOreRates());
+
+            this.loadActivationRange(craftserver.getMinetickModActivationRange());
         }
+    }
+
+    private void loadActivationRange(int[] ranges) {
+        setActivationRange(ranges[0], ranges[1], ranges[2]);
     }
 
     private void loadCustomOreRates(List<String> customOreRates) {
@@ -310,5 +319,26 @@ public class MinetickMod {
 
     public static void queuePathSearch(PathSearchJob pathSearchJob) {
         instance.pathFinder.execute(pathSearchJob);
+    }
+
+    public static int[] getActivationRange() {
+        return instance.activationRange;
+    }
+
+    public static double getEntityDeleteRange() {
+        double max = (double) instance.activationRange[2];
+        return max * max;
+    }
+
+    public static boolean setActivationRange(int low, int high, int max) {
+        if(instance != null && low > 4 && low < 144 && high >= low && high < 144) {
+            instance.activationRange[0] = low;
+            instance.activationRange[1] = high;
+            if(max > 0) {
+                instance.activationRange[2] = max;
+            }
+            return true;
+        }
+        return false;
     }
 }
