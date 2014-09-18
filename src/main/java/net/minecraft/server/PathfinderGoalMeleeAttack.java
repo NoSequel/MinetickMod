@@ -64,35 +64,26 @@ public class PathfinderGoalMeleeAttack extends PathfinderGoal {
         } else if (this.g != null && !this.g.isAssignableFrom(entityliving.getClass())) {
             return false;
         } else {
-            /*
-            this.f = this.b.getNavigation().a(entityliving);
-            return this.f != null;
-            */
-            boolean out;
-            if(this.skipChecks-- <= 0) {
-                double xdiff = entityliving.locX - this.b.locX;
-                double zdiff = entityliving.locZ - this.b.locZ;
-                if(!entityliving.onGround || (xdiff * xdiff + zdiff * zdiff) < 9.0D) {
-                    out = true;
-                } else {
-                    AttributeInstance attr = this.b.getAttributeInstance(GenericAttributes.b);
-                    attr.setValue(this.lastAdjustedRange);
-                    this.f = this.b.getNavigation().a(entityliving);
-                    attr.setValue(this.originalSearchRange);
-                    boolean success = this.checkIfSearchWasSuccessFul(entityliving, 1.5D);
-                    if(!success) {
-                        this.failedChecks++;
-                    } else {
-                        this.failedChecks = 0;
-                    }
-                    if(this.failedChecks >= 20) {
-                        this.failedChecks = 0;
-                    }
-                    this.skipChecks = 2 + (6 * this.failedChecks);
-                    out = this.f != null;
-                }
-            } else {
+            boolean out = false;
+            double xdiff = entityliving.locX - this.b.locX;
+            double zdiff = entityliving.locZ - this.b.locZ;
+            if(!entityliving.onGround || (xdiff * xdiff + zdiff * zdiff) < 9.0D) {
                 out = true;
+            } else {
+                AttributeInstance attr = this.b.getAttributeInstance(GenericAttributes.b);
+                attr.setValue(this.lastAdjustedRange);
+                this.f = this.b.getNavigation().a(entityliving);
+                attr.setValue(this.originalSearchRange);
+                boolean success = this.checkIfSearchWasSuccessFul(entityliving, 1.5D);
+                if(!success) {
+                    this.failedChecks++;
+                } else {
+                    this.failedChecks = 0;
+                }
+                if(this.failedChecks >= 10) {
+                    this.failedChecks = 0;
+                }
+                out = this.f != null;
             }
             return out;
             // Poweruser end
@@ -154,7 +145,7 @@ public class PathfinderGoalMeleeAttack extends PathfinderGoal {
             double newRange = this.originalSearchRange;
             if(this.failedSearches > 0) {
                 if(!this.targetNotFound && this.lastSearchFailed) {
-                    newRange = Math.min(Math.max(xdiff, zdiff) + 3.0D, currentRange);
+                    newRange = Math.min(Math.max(xdiff, zdiff) + 4.0D, currentRange);
                 }
             }
             this.lastAdjustedRange = newRange;
@@ -165,15 +156,15 @@ public class PathfinderGoalMeleeAttack extends PathfinderGoal {
 
             if (this.lastSearchFailed && !this.targetNotFound) {
                 this.failedSearches++;
-                this.h += (d0 / 20.0D);
+                this.h += (d0 / 40.0D);
             } else {
                 this.failedSearches = 0;
             }
-            if(this.failedSearches >= 20) {
+            if(this.failedSearches >= 10) {
                 this.failedSearches = 0;
             }
 
-            this.h += (10 * this.failedSearches);
+            this.h += 2 * this.failedSearches;
             // Poweruser end
         }
 
