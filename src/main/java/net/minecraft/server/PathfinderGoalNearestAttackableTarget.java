@@ -40,16 +40,16 @@ public class PathfinderGoalNearestAttackableTarget extends PathfinderGoalTarget 
             // Poweruser start
             List list;
             if(this.a == EntityHuman.class) {
-                this.playerSortList.clear();
+                this.sortList.clear();
                 for(Object o: this.c.world.players) {
                     EntityPlayer ep = (EntityPlayer) o;
                     if((ep.locX >= this.c.locX - d0) && (ep.locX <= this.c.locX + d0) &&
                        (ep.locZ >= this.c.locZ - d0) && (ep.locZ <= this.c.locZ + d0) &&
                        (ep.locY >= this.c.locY - 4.0D) && (ep.locY <= this.c.locY + 4.0D)) {
-                        this.playerSortList.add(ep);
+                        this.sortList.add(ep);
                     }
                 }
-                list = this.playerSortList;
+                list = this.sortList;
             } else {
                 list = this.c.world.a(this.a, this.c.boundingBox.grow(d0, 4.0D, d0), this.f);
             }
