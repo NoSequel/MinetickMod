@@ -151,19 +151,19 @@ public class PlayerChunkManager {
                     buff.remove(ccip);
                 }
             }
-            if(buff.generatedChunks > 0 || buff.loadedChunks > 0 || buff.enlistedChunks > 0) {
-                buff.getPlayerChunkSendQueue().sort(entityplayer);
+            PlayerChunkSendQueue chunkQueue = buff.getPlayerChunkSendQueue();
+            int previouslyskipped = chunkQueue.requeuePreviouslySkipped();
+            if(buff.generatedChunks > 0 || buff.loadedChunks > 0 || buff.enlistedChunks > 0 || previouslyskipped > 0) {
+                chunkQueue.sort(entityplayer);
             }
             if(buff.generatedChunks > 0) {
                 this.shuffleList.remove(entityplayer);
                 this.shuffleList.add(entityplayer);
             }
 
-            PlayerChunkSendQueue chunkQueue = buff.getPlayerChunkSendQueue();
+            int skipped = 0;
             for(int w = 0; w < packetsPerTick; w++) {
                 PacketBuilderChunkDataBulk chunkData = new PacketBuilderChunkDataBulk();
-                int skipped = 0;
-                int previouslyskipped = chunkQueue.requeuePreviouslySkipped();
                 while(chunkQueue.hasChunksQueued() && chunkData.size() < PacketPlayOutMapChunkBulk.c() && skipped < (20 + previouslyskipped)) {
                     ChunkCoordIntPair chunkcoordintpair = chunkQueue.peekFirst();
                     if (chunkcoordintpair != null && chunkQueue.isOnServer(chunkcoordintpair)) {
