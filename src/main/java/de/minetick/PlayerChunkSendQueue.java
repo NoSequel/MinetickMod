@@ -30,7 +30,7 @@ public class PlayerChunkSendQueue {
     }
     
     public void sort(EntityPlayer entityplayer) {
-        ChunkCoordComparator comp = new ChunkCoordComparator(entityplayer);
+        MinetickChunkCoordComparator comp = new MinetickChunkCoordComparator(entityplayer);
         Collections.sort(this.queue, comp);
         Collections.sort(this.player.chunkCoordIntPairQueue, comp);
     }

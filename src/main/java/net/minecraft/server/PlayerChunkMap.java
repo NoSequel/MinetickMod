@@ -10,7 +10,6 @@ import java.util.LinkedList;
 // CraftBukkit end
 
 // Poweruser start
-import de.minetick.ChunkCoordComparator;
 import de.minetick.ChunkGenerationPolicy;
 import de.minetick.PlayerChunkBuffer;
 import de.minetick.PlayerChunkManager;

@@ -18,7 +18,7 @@ public class PlayerChunkBuffer {
     private LinkedHashSet<ChunkCoordIntPair> lowPriorityBuffer;
     private LinkedHashSet<ChunkCoordIntPair> highPriorityBuffer;
     public PriorityQueue<ChunkCoordIntPair> pq;
-    public ChunkCoordComparator comp;
+    public MinetickChunkCoordComparator comp;
     public int generatedChunks = 0;
     public int loadedChunks = 0;
     public int skippedChunks = 0;
@@ -34,7 +34,7 @@ public class PlayerChunkBuffer {
         this.lowPriorityBuffer = new LinkedHashSet<ChunkCoordIntPair>();
         this.highPriorityBuffer = new LinkedHashSet<ChunkCoordIntPair>();
         this.sendQueue = new PlayerChunkSendQueue(this.playerChunkManager, ent);
-        this.comp = new ChunkCoordComparator(ent);
+        this.comp = new MinetickChunkCoordComparator(ent);
         this.pq = new PriorityQueue<ChunkCoordIntPair>(750, this.comp);
         this.playerRegionCenter = new int[] { MathHelper.floor(ent.locX) >> 4, MathHelper.floor(ent.locZ) >> 4 };
         this.lastMovement = new int[] { 0, 0 };
