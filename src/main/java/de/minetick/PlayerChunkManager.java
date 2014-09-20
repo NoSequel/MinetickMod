@@ -114,7 +114,7 @@ public class PlayerChunkManager {
 
             // High priority chunks
             PriorityQueue<ChunkCoordIntPair> queue = buff.getHighPriorityQueue();
-            while(queue.size() > 0 && !this.skipHeavyCalculations && buff.loadedChunks < 15) {
+            while(queue.size() > 0 && buff.loadedChunks < (this.skipHeavyCalculations ? 5: 15)) {
                 ChunkCoordIntPair ccip = queue.poll();
                 if(buff.getPlayerChunkSendQueue().isOnServer(ccip) && !buff.getPlayerChunkSendQueue().alreadyLoaded(ccip)) {
                     PlayerChunk c = this.pcm.a(ccip.x, ccip.z, true);
