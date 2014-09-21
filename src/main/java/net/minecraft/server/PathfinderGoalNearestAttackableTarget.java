@@ -1,5 +1,6 @@
 package net.minecraft.server;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -10,6 +11,7 @@ public class PathfinderGoalNearestAttackableTarget extends PathfinderGoalTarget 
     private final DistanceComparator e;
     private final IEntitySelector f;
     private EntityLiving g;
+    private List playerSortList = new ArrayList(); // Poweruser
 
     public PathfinderGoalNearestAttackableTarget(EntityCreature entitycreature, Class oclass, int i, boolean flag) {
         this(entitycreature, oclass, i, flag, false);
@@ -33,7 +35,23 @@ public class PathfinderGoalNearestAttackableTarget extends PathfinderGoalTarget 
             return false;
         } else {
             double d0 = this.f();
-            List list = this.c.world.a(this.a, this.c.boundingBox.grow(d0, 4.0D, d0), this.f);
+            //List list = this.c.world.a(this.a, this.c.boundingBox.grow(d0, 4.0D, d0), this.f);
+            // Poweruser start
+            List list;
+            if(this.a == EntityHuman.class) {
+                this.playerSortList.clear();
+                AxisAlignedBB region = this.c.boundingBox.grow(d0, 4.0D, d0);
+                for(int i = 0; i < this.c.world.players.size(); i++) {
+                    EntityPlayer ep = (EntityPlayer) this.c.world.players.get(i);
+                    if (this.a.isAssignableFrom(ep.getClass()) && ep.boundingBox.b(region) && (this.f == null || this.f.a(ep))) {
+                        this.playerSortList.add(ep);
+                    }
+                }
+                list = this.playerSortList;
+            } else {
+                list = this.c.world.a(this.a, this.c.boundingBox.grow(d0, 4.0D, d0), this.f);
+            }
+            // Poweruser end
 
             Collections.sort(list, this.e);
             if (list.isEmpty()) {
