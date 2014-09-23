@@ -73,6 +73,7 @@ minetickmod:
         low: 16
         high: 64
         max: 88
+    minimumTargetDistanceForOffloadedPathSearches: 8
     entitiesWithOffloadedPathSearches:
     - BAT
     - CHICKEN

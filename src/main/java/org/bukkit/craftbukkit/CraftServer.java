@@ -1749,5 +1749,9 @@ public final class CraftServer implements Server {
     public List<String> getMinetickModEntitiesWithOffloadedPathSearches() {
         return configuration.getStringList("minetickmod.entitiesWithOffloadedPathSearches");
     }
+
+    public int getMinetickModMinimumTargetDistanceForOffloading(int defaultDistance) {
+        return configuration.getInt("minetickmod.minimumTargetDistanceForOffloadedPathSearches", defaultDistance);
+    }
     // Poweruser end
 }
