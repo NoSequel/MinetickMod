@@ -42,6 +42,7 @@ import net.minecraft.server.EntityArrow;
 import net.minecraft.server.EntityEnderCrystal;
 import net.minecraft.server.EntityEnderDragon;
 import net.minecraft.server.EntityFireball;
+import net.minecraft.server.EntityGhast;
 import net.minecraft.server.EntityHuman;
 import net.minecraft.server.EntityInsentient;
 import net.minecraft.server.EntityLiving;
@@ -210,7 +211,7 @@ public class MinetickMod {
         return (entity instanceof EntityArrow || entity instanceof EntityPlayer || 
                 entity instanceof EntityProjectile || entity instanceof EntityFireball ||
                 entity instanceof EntityWither || entity instanceof EntityEnderCrystal ||
-                entity instanceof EntityEnderDragon);
+                entity instanceof EntityEnderDragon || entity instanceof EntityGhast);
     }
     
     public void shutdown() {
