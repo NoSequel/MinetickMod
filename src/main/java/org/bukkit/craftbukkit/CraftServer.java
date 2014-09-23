@@ -1745,5 +1745,9 @@ public final class CraftServer implements Server {
         int max = configuration.getInt("minetickmod.activationrange.max", -1);
         return new int[] {low, high, max};
     }
+
+    public List<String> getMinetickModEntitiesWithOffloadedPathSearches() {
+        return configuration.getStringList("minetickmod.entitiesWithOffloadedPathSearches");
+    }
     // Poweruser end
 }

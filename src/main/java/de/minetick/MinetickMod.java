@@ -43,6 +43,7 @@ import net.minecraft.server.EntityEnderCrystal;
 import net.minecraft.server.EntityEnderDragon;
 import net.minecraft.server.EntityFireball;
 import net.minecraft.server.EntityHuman;
+import net.minecraft.server.EntityInsentient;
 import net.minecraft.server.EntityLiving;
 import net.minecraft.server.EntityPlayer;
 import net.minecraft.server.EntityProjectile;
@@ -78,6 +79,7 @@ public class MinetickMod {
     private HashSet<String> notGeneratingWorlds;
     private int maxEntityLifeTime = 10;
     private HashSet<EntityType> entitiesToDelete;
+    private HashSet<EntityType> entitiesWithOffloadedPathSearches;
     private HashMap<Block, Integer> customOreRates;
     private final Logger log = LogManager.getLogger();
     private int[] activationRange = new int[] { 16, 64, 88 };
@@ -90,6 +92,7 @@ public class MinetickMod {
         this.timerService.scheduleAtFixedRate(this.tickCounterObject, 1, 1, TimeUnit.SECONDS);
         this.notGeneratingWorlds = new HashSet<String>();
         this.entitiesToDelete = new HashSet<EntityType>();
+        this.entitiesWithOffloadedPathSearches = new HashSet<EntityType>();
         this.customOreRates = new HashMap<Block, Integer>();
         this.pathSearchThrottler = new PathSearchThrottlerThread();
         instance = this;
@@ -153,6 +156,16 @@ public class MinetickMod {
             this.loadCustomOreRates(craftserver.getMinetickModCustomOreRates());
 
             this.loadActivationRange(craftserver.getMinetickModActivationRange());
+
+            List<String> entitiesWithOffloadedPathSearches = craftserver.getMinetickModEntitiesWithOffloadedPathSearches();
+            for(String name: entitiesWithOffloadedPathSearches) {
+                try {
+                    EntityType type = EntityType.valueOf(name.toUpperCase());
+                    this.entitiesWithOffloadedPathSearches.add(type);
+                } catch (IllegalArgumentException e) {
+                    log.warn("[MinetickMod] Settings: Skipping \"" + name + "\", as it is not a constant in org.bukkit.entity.EntityType!");
+                }
+            }
         }
     }
 
@@ -344,5 +357,9 @@ public class MinetickMod {
             return true;
         }
         return false;
+    }
+
+    public static boolean isPathSearchOffloadedFor(EntityInsentient entity) {
+        return instance.entitiesWithOffloadedPathSearches.contains(entity.getBukkitEntity().getType());
     }
 }

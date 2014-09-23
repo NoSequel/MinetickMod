@@ -23,10 +23,12 @@ public class MinetickNavigation extends Navigation {
 
     private HashMap<UUID, SearchCacheEntry> searchCache;
     private SearchCacheEntryPosition lastPositionSearch;
+    private boolean offloadSearches;
 
     public MinetickNavigation(EntityInsentient entityinsentient, World world) {
         super(entityinsentient, world);
         this.searchCache = new HashMap<UUID, SearchCacheEntry>();
+        this.offloadSearches = MinetickMod.isPathSearchOffloadedFor(entityinsentient);
     }
 
     private void issueSearch(Entity target, float range, boolean j, boolean k, boolean l, boolean m) {
@@ -54,6 +56,9 @@ public class MinetickNavigation extends Navigation {
 
     @Override
     public PathEntity a(Entity entity) {
+        if(!this.offloadSearches) {
+            return super.a(entity);
+        }
         UUID id = entity.getUniqueID();
         if(!this.l()) {
             return null;
@@ -77,6 +82,9 @@ public class MinetickNavigation extends Navigation {
 
     @Override
     public PathEntity a(double d0, double d1, double d2) {
+        if(!this.offloadSearches) {
+            return super.a(d0, d1, d2);
+        }
         if(!this.l()) {
             return null;
         }
