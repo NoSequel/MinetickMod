@@ -157,7 +157,7 @@ public class MinetickMod {
             }
             this.loadCustomOreRates(craftserver.getMinetickModCustomOreRates());
 
-            this.loadActivationRange(craftserver.getMinetickModActivationRange());
+            this.loadActivationRange(craftserver.getMinetickModActivationRange(this.activationRange));
 
             List<String> entitiesWithOffloadedPathSearches = craftserver.getMinetickModEntitiesWithOffloadedPathSearches();
             for(String name: entitiesWithOffloadedPathSearches) {
