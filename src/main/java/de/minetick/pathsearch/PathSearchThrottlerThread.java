@@ -52,34 +52,28 @@ public class PathSearchThrottlerThread implements Runnable {
     }
 
     private boolean checkPendingJobs() {
-        boolean nothingToDo = this.filter.isEmpty();
-        for(int i = 0; i < this.activeJobs.length; i++) {
+        for(int i = 0; i < this.activeJobs.length && !this.filter.isEmpty(); i++) {
             Future<?> f = this.activeJobs[i];
             if(f == null || f.isDone()) {
                 this.activeJobs[i] = null;
-                if(!this.filter.isEmpty()) {
-                    PathSearchJob job = null;
-                    synchronized(this.filter) {
-                        Iterator<Entry<PathSearchJob, PathSearchJob>> iter = this.filter.entrySet().iterator();
-                        if(iter.hasNext()) {
-                            job = iter.next().getValue();
-                            iter.remove();
-                        }
-                    }
-                    if(job != null) {
-                        try {
-                            this.activeJobs[i] = this.pathFinder.submit(job);
-                            nothingToDo = false;
-                        } catch (RejectedExecutionException exception) {
-                            
-                        }
+                PathSearchJob job = null;
+                synchronized(this.filter) {
+                    Iterator<Entry<PathSearchJob, PathSearchJob>> iter = this.filter.entrySet().iterator();
+                    if(iter.hasNext()) {
+                        job = iter.next().getValue();
+                        iter.remove();
                     }
                 }
-            } else {
-                nothingToDo = false;
+                if(job != null) {
+                    try {
+                        this.activeJobs[i] = this.pathFinder.submit(job);
+                    } catch (RejectedExecutionException exception) {
+
+                    }
+                }
             }
         }
-        return nothingToDo;
+        return !this.filter.isEmpty();
     }
 
     @Override
