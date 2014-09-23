@@ -84,6 +84,7 @@ public class MinetickMod {
     private HashMap<Block, Integer> customOreRates;
     private final Logger log = LogManager.getLogger();
     private int[] activationRange = new int[] { 16, 64, 88 };
+    private int minimumPathSearchOffloadDistance = 8;
 
     public MinetickMod() {
         this.availableProcessors = Runtime.getRuntime().availableProcessors();
@@ -167,6 +168,7 @@ public class MinetickMod {
                     log.warn("[MinetickMod] Settings: Skipping \"" + name + "\", as it is not a constant in org.bukkit.entity.EntityType!");
                 }
             }
+            this.minimumPathSearchOffloadDistance = craftserver.getMinetickModMinimumTargetDistanceForOffloading(this.minimumPathSearchOffloadDistance);
         }
     }
 
@@ -362,5 +364,9 @@ public class MinetickMod {
 
     public static boolean isPathSearchOffloadedFor(EntityInsentient entity) {
         return instance.entitiesWithOffloadedPathSearches.contains(entity.getBukkitEntity().getType());
+    }
+
+    public static double getMinimumPathSearchOffloadDistance() {
+        return instance.minimumPathSearchOffloadDistance;
     }
 }
