@@ -33,11 +33,11 @@ public class PathSearchThrottlerThread implements Runnable {
 
     public void queuePathSearch(PathSearchJob job) {
         synchronized(this.filter) {
-            if(this.filter.size() < 1000) {
+            if(this.filter.containsKey(job) || this.filter.size() < 1000) {
                 this.filter.put(job, job);
-                this.wakeUp();
             }
         }
+        this.wakeUp();
     }
 
     public void wakeUp() {
@@ -78,15 +78,11 @@ public class PathSearchThrottlerThread implements Runnable {
 
     @Override
     public void run() {
-        int i = 0;
         while(this.running) {
-            i++;
-            boolean isBusy = this.checkPendingJobs();
-            if(i > 10) {
-                i = 0;
+            if(!this.checkPendingJobs()) {
                 synchronized(this.waitObject) {
                     try {
-                        this.waitObject.wait(isBusy ? 1L : 10L);
+                        this.waitObject.wait(1L);
                     } catch (InterruptedException e) {}
                 }
             }
