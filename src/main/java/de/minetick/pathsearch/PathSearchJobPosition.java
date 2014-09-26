@@ -20,8 +20,8 @@ public class PathSearchJobPosition extends PathSearchJob {
     public void run() {
         if(!this.issued) {
             this.issued = true;
-            PathEntity pathentity = (new MinetickPathfinder(this.chunkCache, this.b1, this.b2, this.b3, this.b4)).a(entity, this.x, this.y, this.z, this.range);
-            ((EntityCreature)this.entity).setPathEntityByPosition(pathentity);
+            this.pathEntity = (new MinetickPathfinder(this.chunkCache, this.b1, this.b2, this.b3, this.b4)).a(entity, this.x, this.y, this.z, this.range);
+            ((EntityCreature)this.entity).setPathEntityByPosition(this.pathEntity);
             this.cleanup();
         }
     }

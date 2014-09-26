@@ -4,6 +4,7 @@ import net.minecraft.server.ChunkCache;
 import net.minecraft.server.EntityCreature;
 import net.minecraft.server.EntityInsentient;
 import net.minecraft.server.MathHelper;
+import net.minecraft.server.PathEntity;
 import net.minecraft.server.World;
 
 public abstract class PathSearchJob implements Runnable {
@@ -13,6 +14,7 @@ public abstract class PathSearchJob implements Runnable {
     protected boolean issued;
     protected float range;
     protected boolean b1, b2, b3, b4;
+    protected PathEntity pathEntity;
 
     public PathSearchJob(EntityInsentient entity, float range, boolean b1, boolean b2, boolean b3, boolean b4) {
         this.entity = entity;
@@ -42,6 +44,7 @@ public abstract class PathSearchJob implements Runnable {
     public void cleanup() {
         this.entity = null;
         this.chunkCache = null;
+        this.pathEntity = null;
     }
 
     @Override
