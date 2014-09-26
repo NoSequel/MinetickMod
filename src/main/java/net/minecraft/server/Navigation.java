@@ -1,5 +1,7 @@
 package net.minecraft.server;
 
+import de.minetick.pathsearch.PathSearchJobNavigationEntity;
+import de.minetick.pathsearch.PathSearchJobNavigationPosition;
 import de.minetick.pathsearch.PositionPathSearchType;
 
 public class Navigation {
@@ -27,9 +29,9 @@ public class Navigation {
     protected boolean l;
     protected boolean m;
 
-    public void setPathEntityByTarget(Entity target, PathEntity pathentity) { }
+    public void setPathEntity(PathSearchJobNavigationEntity pathSearch) { }
 
-    public void setPathEntityByPosition(int x, int y, int z, PathEntity pathentity) { }
+    public void setPathEntity(PathSearchJobNavigationPosition pathSearch) { }
 
     public PathEntity a(PositionPathSearchType type, double d0, double d1, double d2) {
         return null;
