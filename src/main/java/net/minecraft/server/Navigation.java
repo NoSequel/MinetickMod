@@ -1,5 +1,7 @@
 package net.minecraft.server;
 
+import de.minetick.pathsearch.PositionPathSearchType;
+
 public class Navigation {
 
     //private EntityInsentient a;
@@ -28,6 +30,14 @@ public class Navigation {
     public void setPathEntityByTarget(Entity target, PathEntity pathentity) { }
 
     public void setPathEntityByPosition(int x, int y, int z, PathEntity pathentity) { }
+
+    public PathEntity a(PositionPathSearchType type, double d0, double d1, double d2) {
+        return null;
+    }
+
+    public boolean a(PositionPathSearchType type, double d0, double d1, double d2, double d3) {
+        return false;
+    }
     // Poweruser end
 
     public Navigation(EntityInsentient entityinsentient, World world) {
