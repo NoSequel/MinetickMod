@@ -40,4 +40,8 @@ public class SearchCacheEntry {
     public PathEntity getPathEntity() {
         return this.path;
     }
+
+    public boolean hasExpired() {
+        return !this.entity.isAlive() || (this.getCurrentTick() - this.tick) > 200;
+    }
 }
