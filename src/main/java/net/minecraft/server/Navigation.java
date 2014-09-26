@@ -38,6 +38,8 @@ public class Navigation {
     public boolean a(PositionPathSearchType type, double d0, double d1, double d2, double d3) {
         return false;
     }
+
+    public void cleanUpExpiredSearches() { }
     // Poweruser end
 
     public Navigation(EntityInsentient entityinsentient, World world) {

@@ -409,6 +409,7 @@ public abstract class EntityInsentient extends EntityLiving {
 
     protected void bm() {
         ++this.aU;
+        this.navigation.cleanUpExpiredSearches(); // Poweruser
         this.world.methodProfiler.a("checkDespawn");
         this.w();
         this.world.methodProfiler.b();

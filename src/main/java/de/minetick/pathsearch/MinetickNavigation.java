@@ -2,6 +2,8 @@ package de.minetick.pathsearch;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map.Entry;
 import java.util.UUID;
 
 import org.bukkit.util.BlockVector;
@@ -25,6 +27,7 @@ public class MinetickNavigation extends Navigation {
     private HashMap<PositionPathSearchType, SearchCacheEntryPosition> positionSearchCache;
     private boolean offloadSearches;
     private double minimumDistanceForOffloadingSquared;
+    private int cleanUpDelay = 0;
 
     public MinetickNavigation(EntityInsentient entityinsentient, World world) {
         super(entityinsentient, world);
@@ -124,5 +127,26 @@ public class MinetickNavigation extends Navigation {
         PathEntity pathentity = this.a(type, (double) MathHelper.floor(d0), (double) ((int) d1), (double) MathHelper.floor(d2));
 
         return this.a(pathentity, d3);
+    }
+
+    public void cleanUpExpiredSearches() {
+        this.cleanUpDelay++;
+        if(this.cleanUpDelay > 100) {
+            this.cleanUpDelay = 0;
+            Iterator<Entry<UUID, SearchCacheEntry>> iter = this.searchCache.entrySet().iterator();
+            while(iter.hasNext()) {
+                Entry<UUID, SearchCacheEntry> entry = iter.next();
+                if(entry.getValue().hasExpired()) {
+                    iter.remove();
+                }
+            }
+            Iterator<Entry<PositionPathSearchType, SearchCacheEntryPosition>> iter2 = this.positionSearchCache.entrySet().iterator();
+            while(iter2.hasNext()) {
+                Entry<PositionPathSearchType, SearchCacheEntryPosition> entry = iter2.next();
+                if(entry.getValue().hasExpired()) {
+                    iter2.remove();
+                }
+            }
+        }
     }
 }
