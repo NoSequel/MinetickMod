@@ -111,19 +111,23 @@ public class MinetickNavigation extends Navigation {
         int z = MathHelper.floor(d2);
 
         SearchCacheEntryPosition entry = null;
+        boolean entryIsValid = false;
         if(this.positionSearchCache.containsKey(type)) {
             entry = this.positionSearchCache.get(type);
             if(entry.isStillValid()) {
-                this.issueSearch(type, x, y, z, this.d(), this.j, this.k, this.l, this.m);
-                return entry.getPathEntity();
+                entryIsValid = true;
             } else {
                 this.positionSearchCache.remove(type);
             }
         }
 
         this.issueSearch(type, x, y, z, this.d(), this.j, this.k, this.l, this.m);
-        if(this.lastPositionSearch != null) {
-            return this.lastPositionSearch.getPathEntity();
+        if(entry != null) {
+            PathEntity pE = entry.getPathEntity();
+            if(!entryIsValid && pE != null && !pE.b()) {
+                pE.a();
+            }
+            return pE;
         }
         return null;
     }
