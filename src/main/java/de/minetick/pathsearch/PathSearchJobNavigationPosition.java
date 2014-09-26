@@ -24,7 +24,7 @@ public class PathSearchJobNavigationPosition extends PathSearchJob {
         if(!this.issued) {
             this.issued = true;
             this.pathEntity = (new MinetickPathfinder(this.chunkCache, this.b1, this.b2, this.b3, this.b4)).a(entity, this.x, this.y, this.z, this.range);
-            this.entity.getNavigation().setPathEntityByPosition(this.x, this.y, this.z, this.pathEntity);
+            this.entity.getNavigation().setPathEntity(this);
             this.cleanup();
         }
     }

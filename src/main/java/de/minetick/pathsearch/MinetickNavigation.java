@@ -42,14 +42,14 @@ public class MinetickNavigation extends Navigation {
         MinetickMod.queuePathSearch(new PathSearchJobNavigationEntity(this.a, target, range, j, k, l, m));
     }
 
-    private void issueSearch(int x, int y, int z, float range, boolean j, boolean k, boolean l, boolean m) {
-        MinetickMod.queuePathSearch(new PathSearchJobNavigationPosition(this.a, x, y, z, range, j, k, l, m));
+    private void issueSearch(PositionPathSearchType type, int x, int y, int z, float range, boolean j, boolean k, boolean l, boolean m) {
+        MinetickMod.queuePathSearch(new PathSearchJobNavigationPosition(type, this.a, x, y, z, range, j, k, l, m));
     }
 
     @Override
-    public void setPathEntityByTarget(Entity target, PathEntity pathentity) {
-        UUID id = target.getUniqueID();
-        this.searchCache.put(id, new SearchCacheEntryEntity(this.a, target, pathentity));
+    public void setPathEntity(PathSearchJobNavigationEntity pathSearch) {
+        SearchCacheEntry entry = pathSearch.getCacheEntryValue();
+        this.searchCache.put(pathSearch.getCacheEntryKey(), entry);
     }
 
     private BlockVector createBlockVectorForPosition(int x, int y, int z) {
@@ -57,8 +57,9 @@ public class MinetickNavigation extends Navigation {
     }
 
     @Override
-    public void setPathEntityByPosition(int x, int y, int z, PathEntity pathentity) {
-        this.lastPositionSearch = new SearchCacheEntryPosition(this.a, x, y, z, pathentity);
+    public void setPathEntity(PathSearchJobNavigationPosition pathSearch) {
+        SearchCacheEntryPosition entry = pathSearch.getCacheEntryValue();
+        this.positionSearchCache.put(pathSearch.getCacheEntryKey(), entry);
     }
 
     @Override
@@ -115,7 +116,7 @@ public class MinetickNavigation extends Navigation {
             }
         }
 
-        this.issueSearch(x, y, z, this.d(), this.j, this.k, this.l, this.m);
+        this.issueSearch(type, x, y, z, this.d(), this.j, this.k, this.l, this.m);
         if(this.lastPositionSearch != null) {
             return this.lastPositionSearch.getPathEntity();
         }
