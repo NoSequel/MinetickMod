@@ -67,15 +67,16 @@ public class MinetickNavigation extends Navigation {
         if(!this.offloadSearches || this.a.e(entity) < this.minimumDistanceForOffloadingSquared) {
             return super.a(entity);
         }
-        UUID id = entity.getUniqueID();
         if(!this.l()) {
             return null;
         }
         SearchCacheEntry entry = null;
+        UUID id = entity.getUniqueID();
+        boolean entryIsValid = false;
         if(this.searchCache.containsKey(id)) {
             entry = this.searchCache.get(id);
             if(entry.isStillValid()) {
-                return entry.getPathEntity();
+                entryIsValid = true;
             } else {
                 this.searchCache.remove(id);
             }
@@ -83,7 +84,11 @@ public class MinetickNavigation extends Navigation {
 
         this.issueSearch(entity, this.d(), this.j, this.k, this.l, this.m);
         if(entry != null) {
-            return entry.getPathEntity();
+            PathEntity pE = entry.getPathEntity();
+            if(!entryIsValid && pE != null && !pE.b()) {
+                pE.a();
+            }
+            return pE;
         }
         return null;
     }
