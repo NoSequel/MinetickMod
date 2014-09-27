@@ -26,6 +26,7 @@ public class MinetickNavigation extends Navigation {
     private HashMap<UUID, SearchCacheEntry> searchCache;
     private HashMap<PositionPathSearchType, SearchCacheEntryPosition> positionSearchCache;
     private boolean offloadSearches;
+    private boolean offloadSearchesConfigChecked;
     private double minimumDistanceForOffloadingSquared;
     private int cleanUpDelay = 0;
 
@@ -33,7 +34,8 @@ public class MinetickNavigation extends Navigation {
         super(entityinsentient, world);
         this.searchCache = new HashMap<UUID, SearchCacheEntry>();
         this.positionSearchCache = new HashMap<PositionPathSearchType, SearchCacheEntryPosition>();
-        this.offloadSearches = MinetickMod.isPathSearchOffloadedFor(entityinsentient);
+        this.offloadSearches = false;
+        this.offloadSearchesConfigChecked = false;
         double minDist = MinetickMod.getMinimumPathSearchOffloadDistance();
         this.minimumDistanceForOffloadingSquared = minDist * minDist;
     }
@@ -68,7 +70,7 @@ public class MinetickNavigation extends Navigation {
 
     @Override
     public PathEntity a(Entity entity) {
-        if(!this.offloadSearches || this.a.e(entity) < this.minimumDistanceForOffloadingSquared) {
+        if(!this.offloadSearches() || this.a.e(entity) < this.minimumDistanceForOffloadingSquared) {
             return super.a(entity);
         }
         if(!this.l()) {
@@ -102,7 +104,7 @@ public class MinetickNavigation extends Navigation {
 
     @Override
     public PathEntity a(PositionPathSearchType type, double d0, double d1, double d2) {
-        if(!this.offloadSearches || this.a.e(d0, d1, d2) < this.minimumDistanceForOffloadingSquared) {
+        if(!this.offloadSearches() || this.a.e(d0, d1, d2) < this.minimumDistanceForOffloadingSquared) {
             return super.a(d0, d1, d2);
         }
         if(!this.l()) {
@@ -158,5 +160,13 @@ public class MinetickNavigation extends Navigation {
                 }
             }
         }
+    }
+
+    private boolean offloadSearches() {
+        if(!this.offloadSearchesConfigChecked) {
+            this.offloadSearches = MinetickMod.isPathSearchOffloadedFor(this.a);
+            this.offloadSearchesConfigChecked = true;
+        }
+        return this.offloadSearches;
     }
 }
