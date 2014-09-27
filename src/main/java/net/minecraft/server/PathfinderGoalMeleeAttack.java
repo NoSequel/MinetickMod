@@ -17,7 +17,6 @@ public class PathfinderGoalMeleeAttack extends PathfinderGoal {
     private double k;
 
     // Poweruser start
-    private boolean lastSearchFailed = false;
     private int failedSearches = 0;
     private boolean targetFound = false;
     private double originalSearchRange;
