@@ -1,5 +1,7 @@
 package net.minecraft.server;
 
+import de.minetick.pathsearch.PositionPathSearchType; // Poweruser
+
 public class PathfinderGoalMoveTowardsTarget extends PathfinderGoal {
 
     private EntityCreature a;
@@ -46,6 +48,7 @@ public class PathfinderGoalMoveTowardsTarget extends PathfinderGoal {
     }
 
     public void c() {
-        this.a.getNavigation().a(this.c, this.d, this.e, this.f);
+        //this.a.getNavigation().a(this.c, this.d, this.e, this.f);
+        this.a.getNavigation().a(PositionPathSearchType.MOVETOWARDSTARGET, this.c, this.d, this.e, this.f); // Poweruser
     }
 }

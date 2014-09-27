@@ -2,6 +2,8 @@ package net.minecraft.server;
 
 import java.util.Random;
 
+import de.minetick.pathsearch.PositionPathSearchType; // Poweruser
+
 public class PathfinderGoalFleeSun extends PathfinderGoal {
 
     private EntityCreature a;
@@ -44,7 +46,8 @@ public class PathfinderGoalFleeSun extends PathfinderGoal {
     }
 
     public void c() {
-        this.a.getNavigation().a(this.b, this.c, this.d, this.e);
+        //this.a.getNavigation().a(this.b, this.c, this.d, this.e);
+        this.a.getNavigation().a(PositionPathSearchType.FLEESUN, this.b, this.c, this.d, this.e); // Poweruser
     }
 
     private Vec3D f() {

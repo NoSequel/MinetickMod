@@ -3,6 +3,8 @@ package net.minecraft.server;
 import java.util.Iterator;
 import java.util.List;
 
+import de.minetick.pathsearch.PositionPathSearchType; // Poweruser
+
 public class PathfinderGoalPlay extends PathfinderGoal {
 
     private EntityVillager a;
@@ -81,7 +83,8 @@ public class PathfinderGoalPlay extends PathfinderGoal {
                 return;
             }
 
-            this.a.getNavigation().a(vec3d.a, vec3d.b, vec3d.c, this.c);
+            //this.a.getNavigation().a(vec3d.a, vec3d.b, vec3d.c, this.c);
+            this.a.getNavigation().a(PositionPathSearchType.PLAY, vec3d.a, vec3d.b, vec3d.c, this.c); // Poweruser
         }
     }
 }

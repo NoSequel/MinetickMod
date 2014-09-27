@@ -1,5 +1,7 @@
 package net.minecraft.server;
 
+import de.minetick.pathsearch.PositionPathSearchType; // Poweruser
+
 public class PathfinderGoalJumpOnBlock extends PathfinderGoal {
 
     private final EntityOcelot a;
@@ -26,7 +28,8 @@ public class PathfinderGoalJumpOnBlock extends PathfinderGoal {
     }
 
     public void c() {
-        this.a.getNavigation().a((double) ((float) this.f) + 0.5D, (double) (this.g + 1), (double) ((float) this.h) + 0.5D, this.b);
+        //this.a.getNavigation().a(PositionPathSearchType.JUMPONBLOCK, (double) ((float) this.f) + 0.5D, (double) (this.g + 1), (double) ((float) this.h) + 0.5D, this.b);
+        this.a.getNavigation().a((double) ((float) this.f) + 0.5D, (double) (this.g + 1), (double) ((float) this.h) + 0.5D, this.b); // Poweruser
         this.c = 0;
         this.d = 0;
         this.e = this.a.aH().nextInt(this.a.aH().nextInt(1200) + 1200) + 1200;
