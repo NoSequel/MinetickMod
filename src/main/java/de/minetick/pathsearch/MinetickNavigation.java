@@ -86,13 +86,11 @@ public class MinetickNavigation extends Navigation {
             }
         }
 
-        this.issueSearch(entity, this.d(), this.j, this.k, this.l, this.m);
+        if(!entryIsValid || entry.shouldBeRefreshed()) {
+            this.issueSearch(entity, this.d(), this.j, this.k, this.l, this.m);
+        }
         if(entry != null) {
-            PathEntity pE = entry.getPathEntity();
-            if(!entryIsValid && pE != null && !pE.b()) {
-                pE.a();
-            }
-            return pE;
+            return entry.getAdjustedPathEntity();
         }
         return null;
     }
@@ -125,13 +123,11 @@ public class MinetickNavigation extends Navigation {
             }
         }
 
-        this.issueSearch(type, x, y, z, this.d(), this.j, this.k, this.l, this.m);
+        if(!entryIsValid || entry.shouldBeRefreshed()) {
+            this.issueSearch(type, x, y, z, this.d(), this.j, this.k, this.l, this.m);
+        }
         if(entry != null) {
-            PathEntity pE = entry.getPathEntity();
-            if(!entryIsValid && pE != null && !pE.b()) {
-                pE.a();
-            }
-            return pE;
+            return entry.getAdjustedPathEntity();
         }
         return null;
     }
