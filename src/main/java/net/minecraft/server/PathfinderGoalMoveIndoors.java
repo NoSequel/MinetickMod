@@ -1,5 +1,7 @@
 package net.minecraft.server;
 
+import de.minetick.pathsearch.PositionPathSearchType; // Poweruser
+
 public class PathfinderGoalMoveIndoors extends PathfinderGoal {
 
     private EntityCreature a;
@@ -47,10 +49,12 @@ public class PathfinderGoalMoveIndoors extends PathfinderGoal {
             Vec3D vec3d = RandomPositionGenerator.a(this.a, 14, 3, this.a.world.getVec3DPool().create((double) this.b.getIndoorsX() + 0.5D, (double) this.b.getIndoorsY(), (double) this.b.getIndoorsZ() + 0.5D));
 
             if (vec3d != null) {
-                this.a.getNavigation().a(vec3d.c, vec3d.d, vec3d.e, 1.0D);
+                //this.a.getNavigation().a(vec3d.c, vec3d.d, vec3d.e, 1.0D);
+                this.a.getNavigation().a(PositionPathSearchType.MOVEINDOORS, vec3d.c, vec3d.d, vec3d.e, 1.0D); // Poweruser
             }
         } else {
-            this.a.getNavigation().a((double) this.b.getIndoorsX() + 0.5D, (double) this.b.getIndoorsY(), (double) this.b.getIndoorsZ() + 0.5D, 1.0D);
+            //this.a.getNavigation().a((double) this.b.getIndoorsX() + 0.5D, (double) this.b.getIndoorsY(), (double) this.b.getIndoorsZ() + 0.5D, 1.0D);
+            this.a.getNavigation().a(PositionPathSearchType.MOVEINDOORS, (double) this.b.getIndoorsX() + 0.5D, (double) this.b.getIndoorsY(), (double) this.b.getIndoorsZ() + 0.5D, 1.0D); // Poweruser
         }
     }
 
