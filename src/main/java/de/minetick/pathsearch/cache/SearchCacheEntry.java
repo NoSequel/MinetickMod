@@ -44,4 +44,8 @@ public class SearchCacheEntry {
     public boolean hasExpired() {
         return !this.entity.isAlive() || (this.getCurrentTick() - this.tick) > 200;
     }
+
+    public boolean didSearchSucceed() {
+        return this.path != null;
+    }
 }
