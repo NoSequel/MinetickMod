@@ -49,7 +49,9 @@ public class MinetickNavigation extends Navigation {
     @Override
     public void setPathEntity(PathSearchJobNavigationEntity pathSearch) {
         SearchCacheEntry entry = pathSearch.getCacheEntryValue();
-        this.searchCache.put(pathSearch.getCacheEntryKey(), entry);
+        if(entry.didSearchSucceed()) {
+            this.searchCache.put(pathSearch.getCacheEntryKey(), entry);
+        }
     }
 
     private BlockVector createBlockVectorForPosition(int x, int y, int z) {
@@ -59,7 +61,9 @@ public class MinetickNavigation extends Navigation {
     @Override
     public void setPathEntity(PathSearchJobNavigationPosition pathSearch) {
         SearchCacheEntryPosition entry = pathSearch.getCacheEntryValue();
-        this.positionSearchCache.put(pathSearch.getCacheEntryKey(), entry);
+        if(entry.didSearchSucceed()) {
+            this.positionSearchCache.put(pathSearch.getCacheEntryKey(), entry);
+        }
     }
 
     @Override
