@@ -62,7 +62,7 @@ public class EntityExperienceOrb extends Entity {
         //if (this.targetTime < this.a - 20 + this.getId() % 100) {
         // Poweruser start
         EntityHuman foundTarget = null;
-        if (this.targetTime < this.a - (20 + this.getId() % 100)) {
+        if (this.targetTime < this.a - (20 + this.getId() % 40)) {
         // Poweruser end
             if (this.targetPlayer == null || this.targetPlayer.e(this) > d0 * d0) {
                 //this.targetPlayer = this.world.findNearbyPlayer(this, d0);
