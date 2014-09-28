@@ -52,6 +52,7 @@ public class PathSearchThrottlerThread implements Runnable {
     }
 
     private boolean checkPendingJobs() {
+        boolean newSearchesSubmitted = false;
         for(int i = 0; i < this.activeJobs.length && !this.filter.isEmpty(); i++) {
             Future<?> f = this.activeJobs[i];
             if(f == null || f.isDone()) {
@@ -67,13 +68,14 @@ public class PathSearchThrottlerThread implements Runnable {
                 if(job != null) {
                     try {
                         this.activeJobs[i] = this.pathFinder.submit(job);
+                        newSearchesSubmitted = true;
                     } catch (RejectedExecutionException exception) {
 
                     }
                 }
             }
         }
-        return !this.filter.isEmpty();
+        return !this.filter.isEmpty() && newSearchesSubmitted;
     }
 
     @Override
