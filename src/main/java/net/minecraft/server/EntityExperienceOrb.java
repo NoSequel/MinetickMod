@@ -59,9 +59,18 @@ public class EntityExperienceOrb extends Entity {
         this.j(this.locX, (this.boundingBox.b + this.boundingBox.e) / 2.0D, this.locZ);
         double d0 = 8.0D;
 
+        // Poweruser start
+        EntityHuman foundTarget = null;
+        boolean callTargetEvent = false;
+        // Poweruser end
         if (this.targetTime < this.a - 20 + this.getId() % 100) {
             if (this.targetPlayer == null || this.targetPlayer.f(this) > d0 * d0) {
-                this.targetPlayer = this.world.findNearbyPlayer(this, d0);
+                //this.targetPlayer = this.world.findNearbyPlayer(this, d0);
+                // Poweruser start
+                foundTarget = this.world.findNearbyPlayer(this, d0);
+                callTargetEvent = (foundTarget != null && !foundTarget.equals(this.targetPlayer));
+                this.targetPlayer = foundTarget;
+                // Poweruser end
             }
 
             this.targetTime = this.a;
@@ -69,10 +78,18 @@ public class EntityExperienceOrb extends Entity {
 
         if (this.targetPlayer != null) {
             // CraftBukkit start
-            EntityTargetEvent event = CraftEventFactory.callEntityTargetEvent(this, targetPlayer, EntityTargetEvent.TargetReason.CLOSEST_PLAYER);
-            Entity target = event.getTarget() == null ? null : ((org.bukkit.craftbukkit.entity.CraftEntity) event.getTarget()).getHandle();
+            // Poweruser start
+            Entity target = this.targetPlayer;
+            boolean eventIsCancelled = false;
+            if (callTargetEvent) {
+            // Poweruser end
+                EntityTargetEvent event = CraftEventFactory.callEntityTargetEvent(this, targetPlayer, EntityTargetEvent.TargetReason.CLOSEST_PLAYER);
+                target = event.getTarget() == null ? null : ((org.bukkit.craftbukkit.entity.CraftEntity) event.getTarget()).getHandle();
+                eventIsCancelled = event.isCancelled(); // Poweruser
+            }
 
-            if (!event.isCancelled() && target != null) {
+            //if (!event.isCancelled() && target != null) {
+            if (!eventIsCancelled && target != null) { // Poweruser
                 double d1 = (target.locX - this.locX) / d0;
                 double d2 = (target.locY + (double) target.getHeadHeight() - this.locY) / d0;
                 double d3 = (target.locZ - this.locZ) / d0;
