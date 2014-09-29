@@ -52,7 +52,9 @@ public class MinetickNavigation extends Navigation {
     public void setPathEntity(PathSearchJobNavigationEntity pathSearch) {
         SearchCacheEntry entry = pathSearch.getCacheEntryValue();
         if(entry.didSearchSucceed()) {
-            this.searchCache.put(pathSearch.getCacheEntryKey(), entry);
+            synchronized(this.searchCache) {
+                this.searchCache.put(pathSearch.getCacheEntryKey(), entry);
+            }
         }
     }
 
@@ -64,7 +66,9 @@ public class MinetickNavigation extends Navigation {
     public void setPathEntity(PathSearchJobNavigationPosition pathSearch) {
         SearchCacheEntryPosition entry = pathSearch.getCacheEntryValue();
         if(entry.didSearchSucceed()) {
-            this.positionSearchCache.put(pathSearch.getCacheEntryKey(), entry);
+            synchronized(this.positionSearchCache) {
+                this.positionSearchCache.put(pathSearch.getCacheEntryKey(), entry);
+            }
         }
     }
 
@@ -79,12 +83,14 @@ public class MinetickNavigation extends Navigation {
         SearchCacheEntry entry = null;
         UUID id = entity.getUniqueID();
         boolean entryIsValid = false;
-        if(this.searchCache.containsKey(id)) {
-            entry = this.searchCache.get(id);
-            if(entry.isStillValid()) {
-                entryIsValid = true;
-            } else {
-                this.searchCache.remove(id);
+        synchronized(this.searchCache) {
+            if(this.searchCache.containsKey(id)) {
+                entry = this.searchCache.get(id);
+                if(entry.isStillValid()) {
+                    entryIsValid = true;
+                } else {
+                    this.searchCache.remove(id);
+                }
             }
         }
 
@@ -116,12 +122,14 @@ public class MinetickNavigation extends Navigation {
 
         SearchCacheEntryPosition entry = null;
         boolean entryIsValid = false;
-        if(this.positionSearchCache.containsKey(type)) {
-            entry = this.positionSearchCache.get(type);
-            if(entry.isStillValid()) {
-                entryIsValid = true;
-            } else {
-                this.positionSearchCache.remove(type);
+        synchronized(this.positionSearchCache) {
+            if(this.positionSearchCache.containsKey(type)) {
+                entry = this.positionSearchCache.get(type);
+                if(entry.isStillValid()) {
+                    entryIsValid = true;
+                } else {
+                    this.positionSearchCache.remove(type);
+                }
             }
         }
 
@@ -145,18 +153,22 @@ public class MinetickNavigation extends Navigation {
         this.cleanUpDelay++;
         if(this.cleanUpDelay > 100) {
             this.cleanUpDelay = 0;
-            Iterator<Entry<UUID, SearchCacheEntry>> iter = this.searchCache.entrySet().iterator();
-            while(iter.hasNext()) {
-                Entry<UUID, SearchCacheEntry> entry = iter.next();
-                if(entry.getValue().hasExpired()) {
-                    iter.remove();
+            synchronized(this.searchCache) {
+                Iterator<Entry<UUID, SearchCacheEntry>> iter = this.searchCache.entrySet().iterator();
+                while(iter.hasNext()) {
+                    Entry<UUID, SearchCacheEntry> entry = iter.next();
+                    if(entry.getValue().hasExpired()) {
+                        iter.remove();
+                    }
                 }
             }
-            Iterator<Entry<PositionPathSearchType, SearchCacheEntryPosition>> iter2 = this.positionSearchCache.entrySet().iterator();
-            while(iter2.hasNext()) {
-                Entry<PositionPathSearchType, SearchCacheEntryPosition> entry = iter2.next();
-                if(entry.getValue().hasExpired()) {
-                    iter2.remove();
+            synchronized(this.positionSearchCache) {
+                Iterator<Entry<PositionPathSearchType, SearchCacheEntryPosition>> iter2 = this.positionSearchCache.entrySet().iterator();
+                while(iter2.hasNext()) {
+                    Entry<PositionPathSearchType, SearchCacheEntryPosition> entry = iter2.next();
+                    if(entry.getValue().hasExpired()) {
+                        iter2.remove();
+                    }
                 }
             }
         }
