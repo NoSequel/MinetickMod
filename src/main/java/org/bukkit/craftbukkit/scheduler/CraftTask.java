@@ -5,7 +5,7 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitTask;
 
 
-class CraftTask implements BukkitTask, Runnable {
+public class CraftTask implements BukkitTask, Runnable { // Poweruser - added public
 
     private volatile CraftTask next = null;
     /**
@@ -53,7 +53,7 @@ class CraftTask implements BukkitTask, Runnable {
         task.run();
     }
 
-    long getPeriod() {
+    public long getPeriod() { // Poweruser - added public
         return period;
     }
 
@@ -61,7 +61,7 @@ class CraftTask implements BukkitTask, Runnable {
         this.period = period;
     }
 
-    long getNextRun() {
+    public long getNextRun() { // Poweruser - added public
         return nextRun;
     }
 
