@@ -623,11 +623,13 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
         this.f[this.ticks % 100] = tickTime; // Poweruser - just measured the time, a few lines up
         this.methodProfiler.b();
         this.methodProfiler.a("snooper");
-        if (!this.k.d() && this.ticks > 100) {
+        //if (!this.k.d() && this.ticks > 100) {
+        if (getSnooperEnabled() && !this.k.d() && this.ticks > 100) { // Poweruser
             this.k.a();
         }
 
-        if (this.ticks % 6000 == 0) {
+        //if (this.ticks % 6000 == 0) {
+        if (getSnooperEnabled() && this.ticks % 6000 == 0) { // Poweruser
             this.k.b();
         }
 
