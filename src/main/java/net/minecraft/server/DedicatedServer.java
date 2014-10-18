@@ -168,7 +168,8 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
         this.ar();
         this.getEnableCommandBlock();
         this.l();
-        this.getSnooperEnabled();
+        //this.getSnooperEnabled();
+        this.snooperEnabled = this.getSnooperEnabled(); // Poweruser
         this.c(this.propertyManager.getInt("max-build-height", 256));
         this.c((this.getMaxBuildHeight() + 8) / 16 * 16);
         this.c(MathHelper.a(this.getMaxBuildHeight(), 64, 256));
