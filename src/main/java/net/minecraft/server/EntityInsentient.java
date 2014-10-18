@@ -220,6 +220,13 @@ public abstract class EntityInsentient extends EntityLiving {
         nbttagcompound.setString("CustomName", this.getCustomName());
         nbttagcompound.setBoolean("CustomNameVisible", this.getCustomNameVisible());
         nbttagcompound.setBoolean("Leashed", this.bv);
+
+        // Poweruser start
+        if (this.bv && this.bx != null) {
+            this.bP();
+        }
+        // Poweruser end
+
         if (this.bw != null) {
             nbttagcompound1 = new NBTTagCompound();
             if (this.bw instanceof EntityLiving) {
@@ -883,7 +890,11 @@ public abstract class EntityInsentient extends EntityLiving {
                         break;
                     }
                 }
-            } else if (this.bx.hasKeyOfType("X", 99) && this.bx.hasKeyOfType("Y", 99) && this.bx.hasKeyOfType("Z", 99)) {
+            //} else if (this.bx.hasKeyOfType("X", 99) && this.bx.hasKeyOfType("Y", 99) && this.bx.hasKeyOfType("Z", 99)) {
+            // Poweruser start
+            }
+            if(this.bw == null && this.bx.hasKeyOfType("X", 99) && this.bx.hasKeyOfType("Y", 99) && this.bx.hasKeyOfType("Z", 99)) {
+            // Poweruser end
                 int i = this.bx.getInt("X");
                 int j = this.bx.getInt("Y");
                 int k = this.bx.getInt("Z");
@@ -894,7 +905,11 @@ public abstract class EntityInsentient extends EntityLiving {
                 }
 
                 this.bw = entityleash;
-            } else {
+            //} else {
+            // Poweruser start
+            }
+            if(this.bw == null) {
+            // Poweruser end
                 this.world.getServer().getPluginManager().callEvent(new EntityUnleashEvent(this.getBukkitEntity(), UnleashReason.UNKNOWN)); // CraftBukkit
                 this.unleash(false, true);
             }
