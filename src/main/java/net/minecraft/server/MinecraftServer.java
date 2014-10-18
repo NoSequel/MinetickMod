@@ -129,6 +129,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
     private LinkedList<AutoSaveJob> autoSaveWorlds = new LinkedList<AutoSaveJob>();
     private int autoSaveDelay = 0;
     private boolean autoSaveOrdered = false;
+    protected boolean snooperEnabled = false;
 
     public void cancelHeavyCalculationsForAllWorlds(boolean cancel) {
         for(WorldServer ws: this.worlds) {
@@ -641,12 +642,12 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
         this.methodProfiler.b();
         this.methodProfiler.a("snooper");
         //if (!this.l.d() && this.ticks > 100) {
-        if (getSnooperEnabled() && !this.l.d() && this.ticks > 100) { // Poweruser
+        if (this.snooperEnabled && !this.l.d() && this.ticks > 100) { // Poweruser
             this.l.a();
         }
 
         //if (this.ticks % 6000 == 0) {
-        if (getSnooperEnabled() && this.ticks % 6000 == 0) { // Poweruser
+        if (this.snooperEnabled && this.ticks % 6000 == 0) { // Poweruser
             this.l.b();
         }
 
