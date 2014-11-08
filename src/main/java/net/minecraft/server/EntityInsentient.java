@@ -10,6 +10,8 @@ import org.bukkit.event.entity.EntityUnleashEvent;
 import org.bukkit.event.entity.EntityUnleashEvent.UnleashReason;
 // CraftBukkit end
 
+import de.minetick.MinetickMod; // Poweruser
+
 public abstract class EntityInsentient extends EntityLiving {
 
     public int a_;
@@ -391,11 +393,17 @@ public abstract class EntityInsentient extends EntityLiving {
                 double d2 = entityhuman.locZ - this.locZ;
                 double d3 = d0 * d0 + d1 * d1 + d2 * d2;
 
-                if (d3 > 16384.0D) { // CraftBukkit - remove isTypeNotPersistent() check
+                //if (d3 > 16384.0D) { // CraftBukkit - remove isTypeNotPersistent() check
+                if (d3 > MinetickMod.getEntityDeleteRange()) { // Poweruser - variable maximum range for despawning
                     this.die();
                 }
 
-                if (this.aV > 600 && this.random.nextInt(800) == 0 && d3 > 1024.0D) { // CraftBukkit - remove isTypeNotPersistent() check
+                //if (this.aV > 600 && this.random.nextInt(800) == 0 && d3 > 1024.0D) { // CraftBukkit - remove isTypeNotPersistent() check
+                // Poweruser start - quadruple the despawn chance when the height difference is >20 blocks
+                boolean beyondHeightDiff = (d1 < -20.0D || d1 > 20.0D);
+                int chance = (beyondHeightDiff ? 200 : 800);
+                if (this.aV > 600 && this.random.nextInt(chance) == 0 && (d3 > 1024.0D || beyondHeightDiff)) {
+                // Poweruser end
                     this.die();
                 } else if (d3 < 1024.0D) {
                     this.aV = 0;

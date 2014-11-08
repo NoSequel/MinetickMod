@@ -82,6 +82,12 @@ public abstract class EntityLiving extends Entity {
     // CraftBukkit end
 
     // Poweruser start
+    public void skipped() {
+        this.aV++;
+    }
+
+    protected void u() {}
+
     private boolean allowDeletion = false;
     private boolean checkedForDeletion = false;
 

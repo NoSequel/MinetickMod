@@ -52,6 +52,7 @@ public class MinetickMod {
     private int maxEntityLifeTime = 10;
     private HashSet<EntityType> entitiesToDelete;
     private Logger logger = Logger.getLogger("Minecraft");
+    private int[] activationRange = new int[] { 16, 64, 88 };
 
     private static boolean initDone = false;
     private static MinetickMod instance;
@@ -121,7 +122,13 @@ public class MinetickMod {
                     logger.warning("[MinetickMod] Settings: Skipping \"" + name + "\", as it is not a constant in org.bukkit.entity.EntityType!");
                 }
             }
+
+            this.loadActivationRange(craftserver.getMinetickModActivationRange(this.activationRange));
         }
+    }
+
+    private void loadActivationRange(int[] ranges) {
+        setActivationRange(ranges[0], ranges[1], ranges[2]);
     }
 
     public Profiler getProfiler() {
@@ -196,5 +203,26 @@ public class MinetickMod {
 
     public Future<?> tickWorld(WorldServer worldServer) {
         return this.worldTickerService.submit(new WorldTicker(worldServer, this.profiler, this.worldTickerLock));
+    }
+
+    public static int[] getActivationRange() {
+        return instance.activationRange;
+    }
+
+    public static double getEntityDeleteRange() {
+        double max = (double) instance.activationRange[2];
+        return max * max;
+    }
+
+    public static boolean setActivationRange(int low, int high, int max) {
+        if(instance != null && low > 4 && low < 144 && high >= low && high < 144) {
+            instance.activationRange[0] = low;
+            instance.activationRange[1] = high;
+            if(max > 0) {
+                instance.activationRange[2] = max;
+            }
+            return true;
+        }
+        return false;
     }
 }

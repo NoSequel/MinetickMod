@@ -69,3 +69,7 @@ minetickmod:
         DEFAULT: 0.5
         FLAT: 1.0
         LARGEBIOMES: 0.5
+    activationRange:
+        low: 16
+        high: 64
+        max: 88
