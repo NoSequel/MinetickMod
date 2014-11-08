@@ -958,6 +958,8 @@ public class PlayerConnection extends Connection {
 
     private void handleCommand(String s) {
         // CraftBukkit start
+        this.minecraftServer.getLogger().info(this.player.getName() + " issued server command: " + s);
+
         CraftPlayer player = this.getPlayer();
 
         PlayerCommandPreprocessEvent event = new PlayerCommandPreprocessEvent(player, s, new LazyPlayerSet());
@@ -968,7 +970,6 @@ public class PlayerConnection extends Connection {
         }
 
         try {
-            this.minecraftServer.getLogger().info(event.getPlayer().getName() + " issued server command: " + event.getMessage()); // CraftBukkit
             if (this.server.dispatchCommand(event.getPlayer(), event.getMessage().substring(1))) {
                 return;
             }
