@@ -188,7 +188,8 @@ public class TileEntityFurnace extends TileEntity implements IWorldInventory {
 
         if (!this.world.isStatic) {
             // CraftBukkit start - Handle multiple elapsed ticks
-            if (this.burnTime <= 0 && this.canBurn() && this.items[1] != null) { // CraftBukkit - == to <=
+            //if (this.burnTime <= 0 && this.canBurn() && this.items[1] != null) { // CraftBukkit - == to <=
+            if (this.burnTime <= 0 && (this.items[1] != null && this.items[1].getItem().id != Item.BUCKET.id) && this.canBurn()) { // Poweruser
                 CraftItemStack fuel = CraftItemStack.asCraftMirror(this.items[1]);
 
                 FurnaceBurnEvent furnaceBurnEvent = new FurnaceBurnEvent(this.world.getWorld().getBlockAt(this.x, this.y, this.z), fuel, fuelTime(this.items[1]));
