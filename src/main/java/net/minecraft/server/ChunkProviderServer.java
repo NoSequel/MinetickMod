@@ -121,6 +121,10 @@ public class ChunkProviderServer implements IChunkProvider {
     // Poweruser end
 
     // CraftBukkit start - Add async variant, provide compatibility
+    public Chunk getChunkIfLoaded(int x, int z) {
+        return this.chunks.get(LongHash.toLong(x, z));
+    }
+
     public Chunk getChunkAt(int i, int j) {
         return getChunkAt(i, j, null);
     }
@@ -194,6 +198,21 @@ public class ChunkProviderServer implements IChunkProvider {
                  * no way of creating a CraftWorld/CraftServer at that point.
                  */
                 server.getPluginManager().callEvent(new org.bukkit.event.world.ChunkLoadEvent(chunk.bukkitChunk, newChunk));
+            }
+
+            // Update neighbor counts
+            for (int x = -2; x < 3; x++) {
+                for (int z = -2; z < 3; z++) {
+                    if (x == 0 && z == 0) {
+                        continue;
+                    }
+
+                    Chunk neighbor = this.getChunkIfLoaded(chunk.x + x, chunk.z + z);
+                    if (neighbor != null) {
+                        neighbor.setNeighborLoaded(-x, -z);
+                        chunk.setNeighborLoaded(x, z);
+                    }
+                }
             }
             // CraftBukkit end
 
@@ -375,6 +394,21 @@ public class ChunkProviderServer implements IChunkProvider {
                     this.saveChunkNOP(chunk);
                     // this.unloadQueue.remove(integer);
                     this.chunks.remove(chunkcoordinates); // CraftBukkit
+
+                    // Update neighbor counts
+                    for (int x = -2; x < 3; x++) {
+                        for (int z = -2; z < 3; z++) {
+                            if (x == 0 && z == 0) {
+                                continue;
+                            }
+
+                            Chunk neighbor = this.getChunkIfLoaded(chunk.x + x, chunk.z + z);
+                            if (neighbor != null) {
+                                neighbor.setNeighborUnloaded(-x, -z);
+                                chunk.setNeighborUnloaded(x, z);
+                            }
+                        }
+                    }
                 }
             }
             // CraftBukkit end
@@ -404,7 +438,7 @@ public class ChunkProviderServer implements IChunkProvider {
     }
 
     public int getLoadedChunks() {
-        return this.chunks.values().size(); // CraftBukkit
+        return this.chunks.size(); // CraftBukkit
     }
 
     public void recreateStructures(int i, int j) {}

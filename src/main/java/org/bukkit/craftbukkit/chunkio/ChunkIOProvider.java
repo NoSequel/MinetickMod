@@ -28,7 +28,7 @@ class ChunkIOProvider implements AsynchronousExecutor.CallBackProvider<QueuedChu
 
     // sync stuff
     public void callStage2(QueuedChunk queuedChunk, Chunk chunk) throws RuntimeException {
-        if(chunk == null) {
+        if (chunk == null) {
             // If the chunk loading failed just do it synchronously (may generate)
             queuedChunk.provider.getChunkAt(LongHash.msw(queuedChunk.coords), LongHash.lsw(queuedChunk.coords));
             return;
@@ -56,6 +56,21 @@ class ChunkIOProvider implements AsynchronousExecutor.CallBackProvider<QueuedChu
         Server server = queuedChunk.provider.world.getServer();
         if (server != null) {
             server.getPluginManager().callEvent(new org.bukkit.event.world.ChunkLoadEvent(chunk.bukkitChunk, false));
+        }
+
+        // Update neighbor counts
+        for (int xdiff = -2; x < 3; x++) {
+            for (int zdiff = -2; z < 3; z++) {
+                if (x == 0 && z == 0) {
+                    continue;
+                }
+
+                Chunk neighbor = queuedChunk.provider.getChunkIfLoaded(chunk.x + xdiff, chunk.z + zdiff);
+                if (neighbor != null) {
+                    neighbor.setNeighborLoaded(-x, -z);
+                    chunk.setNeighborLoaded(x, z);
+                }
+            }
         }
 
         chunk.a(queuedChunk.provider, queuedChunk.provider, x, z);
