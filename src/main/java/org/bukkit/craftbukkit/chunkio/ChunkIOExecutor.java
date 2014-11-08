@@ -8,11 +8,10 @@ import org.bukkit.craftbukkit.util.AsynchronousExecutor;
 import org.bukkit.craftbukkit.util.LongHash;
 
 public class ChunkIOExecutor {
-    //static final int BASE_THREADS = 2;
-    //static final int PLAYERS_PER_THREAD = 15;
-    // Poweruser - as lots of stuff around chunks is now multithreaded, making sure that this doesnt become a bottleneck
-    static final int BASE_THREADS = 2;
+    //static final int BASE_THREADS = 1;
+    static final int BASE_THREADS = 2; // Poweruser - as lots of stuff around chunks is now multithreaded, making sure that this doesnt become a bottleneck
     static final int PLAYERS_PER_THREAD = 15;
+    static final Object lockObject = new Object(); // Poweruser
 
     private static final AsynchronousExecutor<QueuedChunk, Chunk, Runnable, RuntimeException> instance = new AsynchronousExecutor<QueuedChunk, Chunk, Runnable, RuntimeException>(new ChunkIOProvider(), BASE_THREADS);
 
@@ -21,7 +20,9 @@ public class ChunkIOExecutor {
     }
 
     public static void queueChunkLoad(World world, ChunkRegionLoader loader, ChunkProviderServer provider, int x, int z, Runnable runnable) {
-        instance.add(new QueuedChunk(LongHash.toLong(x, z), loader, world, provider), runnable);
+        synchronized(lockObject) {
+            instance.add(new QueuedChunk(LongHash.toLong(x, z), loader, world, provider), runnable);
+        }
     }
 
     public static void adjustPoolSize(int players) {
