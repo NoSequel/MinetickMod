@@ -13,6 +13,10 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import de.minetick.MinetickMod;
+import de.minetick.profiler.Profile;
+import de.minetick.profiler.WorldProfile;
+
 public class WorldStatsCommand extends Command {
 
     private WorldNameComparator comparator = new WorldNameComparator();
@@ -25,39 +29,45 @@ public class WorldStatsCommand extends Command {
 
     @Override
     public boolean execute(CommandSender sender, String currentAlias, String[] args) {
-        if(!(sender instanceof Player)) { return true; }
-        Player player = (Player) sender;
-        if(!player.isOp()) {
-            player.sendMessage("You are not allowed to use this command!");
+        if(!sender.isOp()) {
+            sender.sendMessage("You are not allowed to use this command!");
             return true;
         }
         if(args.length < 2) {
             boolean allWorlds = args.length == 0;
+            boolean foundWorld = allWorlds;
+            boolean sentHeader = false;
             List<WorldServer> worlds = new LinkedList<WorldServer>();
             worlds.addAll(MinecraftServer.getServer().worlds);
             Collections.sort(worlds, this.comparator);
             InfoHolder overall = null;
             if(allWorlds) { overall = new InfoHolder("TOTAL"); }
-            sender.sendMessage("[MinetickMod]" + ChatColor.GOLD + " WorldStats:");
-            sender.sendMessage(ChatColor.GRAY + "Name " + ChatColor.YELLOW + "Chunks " + ChatColor.GREEN + "Entites " +
-                               ChatColor.BLUE + "TileEntities " + ChatColor.DARK_PURPLE + "Players " + ChatColor.RED + "TickTime");
+
             for(WorldServer ws: worlds) {
                 boolean readWorld = allWorlds;
                 if(!allWorlds) {
                     String name = ws.getWorld().getName();
                     if(name.equalsIgnoreCase(args[0])) {
                         readWorld = true;
+                        foundWorld = true;
                     }
                 }
                 if(readWorld) {
+                    if(!sentHeader) {
+                        sender.sendMessage("[MinetickMod]" + ChatColor.GOLD + " WorldStats:");
+                        sender.sendMessage(ChatColor.GRAY + "Name " + ChatColor.YELLOW + "Chunks " + ChatColor.GREEN + "Entites " +
+                                           ChatColor.BLUE + "TileEntities " + ChatColor.DARK_PURPLE + "Players " + ChatColor.RED + "TickTime");
+                        sentHeader = true;
+                    }
                     InfoHolder worldDetails = this.readWorldDetails(ws);
                     if(allWorlds) { overall.add(worldDetails); }
+                    WorldProfile worldProfile = MinetickMod.getProfilerStatic().getWorldProfile(ws.getWorld().getName());
                     sender.sendMessage(ChatColor.GRAY + worldDetails.name + "  " +
-                                       ChatColor.YELLOW + worldDetails.chunks + "  " +
-                                       ChatColor.GREEN + worldDetails.entities + "  " +
-                                       ChatColor.BLUE + worldDetails.tileEntities + "  " +
-                                       ChatColor.DARK_PURPLE + worldDetails.players + "  " +
-                                       ChatColor.RED + worldDetails.tickTime + "ms");
+                                       ChatColor.YELLOW + worldDetails.chunks + ChatColor.RED + "(" + worldProfile.doTick.getLastAvgFloat() + "|" + worldProfile.chunkLoading.getLastAvgFloat() + ")  " + 
+                                       ChatColor.GREEN + worldDetails.entities + ChatColor.RED + "(" + worldProfile.tickEntities.getLastAvgFloat() + ")  " +
+                                       ChatColor.BLUE + worldDetails.tileEntities + ChatColor.RED + "(" + worldProfile.tickTileEntities.getLastAvgFloat() + ")  " +
+                                       ChatColor.DARK_PURPLE + worldDetails.players + ChatColor.RED + "(" + worldProfile.updatePlayers.getLastAvgFloat() + ")  " +
+                                       ChatColor.RED + "  " + worldProfile.getLastAvgFloat() + "ms");
                 }
             }
             if(allWorlds) {
@@ -66,10 +76,16 @@ public class WorldStatsCommand extends Command {
                         ChatColor.GREEN + overall.entities + "  " +
                         ChatColor.BLUE + overall.tileEntities + "  " +
                         ChatColor.DARK_PURPLE + overall.players);
+            } else if(!foundWorld) {
+                sender.sendMessage("World '" + args[0] + "' was not found!");
+                return false;
             }
             worlds.clear();
+        } else {
+            sender.sendMessage("Command usage: /worldstats [worldName]");
+            return false;
         }
-        return false;
+        return true;
     }
 
     private class WorldNameComparator implements Comparator<WorldServer> {

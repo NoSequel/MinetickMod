@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -31,9 +33,9 @@ import org.bukkit.event.world.WorldSaveEvent;
 // CraftBukkit end
 
 import de.minetick.MinetickMod;
-import de.minetick.ThreadPool;
 import de.minetick.packetbuilder.PacketBuilderThreadPool;
 import de.minetick.profiler.ProfilingComperator;
+import de.minetick.profiler.WorldProfile.WorldProfileSection;
 
 public abstract class MinecraftServer implements ICommandListener, Runnable, IMojangStatistics {
 
@@ -100,6 +102,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
 
     // Poweruser start
     protected MinetickMod minetickMod = new MinetickMod();
+    public List<Future<?>> worldTickers = new ArrayList<Future<?>>();
     private WorldServer sortedWorldsArray[] = null;
     private PriorityQueue<WorldServer> priQueue = new PriorityQueue<WorldServer>(20, new ProfilingComperator());
 
@@ -698,11 +701,12 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
              }
          }
 
-         this.minetickMod.getThreadPool().prepareTick(worldCount);
+         this.worldTickers.clear();
          for(i = 0; i < worldCount; i++) {
              WorldServer worldserver = this.sortedWorldsArray[i];
              worldserver.cancelHeavyCalculations(false);
              worldserver.getVec3DPool().a();
+             this.minetickMod.getProfiler().getWorldProfile(worldserver.getWorld().getName()).start(WorldProfileSection.DO_TICK);
              try {
                  worldserver.doTick();
              } catch (Throwable throwable) {
@@ -710,9 +714,20 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
                  worldserver.a(crashreport);
                  throw new ReportedException(crashreport);
              }
-             this.minetickMod.getThreadPool().tickWorld(worldserver);
+             this.minetickMod.getProfiler().getWorldProfile(worldserver.getWorld().getName()).stop(WorldProfileSection.DO_TICK);
+             this.worldTickers.add(this.minetickMod.tickWorld(worldserver));
          }
-         this.minetickMod.getThreadPool().waitUntilDone();
+         for(Future<?> f: this.worldTickers) {
+             try {
+                 f.get();
+             } catch (InterruptedException e) {
+                 this.h(e.toString());
+                 e.printStackTrace();
+             } catch (ExecutionException e) {
+                 this.h(e.toString());
+                 e.printStackTrace();
+             }
+         }
          this.minetickMod.cancelTimerTask(false);
 
          for(i = 0; i < worldCount; i++) {
