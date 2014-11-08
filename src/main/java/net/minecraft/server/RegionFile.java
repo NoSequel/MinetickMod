@@ -12,7 +12,16 @@ import java.util.zip.DeflaterOutputStream;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.InflaterInputStream;
 
+//Poweruser start
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
+import net.minecraft.server.ChunkCoordIntPair;
+//Poweruser end
+
 public class RegionFile {
+
+    private static final HashMap<File, Set<ChunkCoordIntPair>> existingChunkCache = new HashMap<File, Set<ChunkCoordIntPair>>(); // Poweruser
 
     private static final byte[] a = new byte[4096];
     private final File b;
@@ -87,8 +96,44 @@ public class RegionFile {
         }
     }
 
+    // Poweruser start
+    public static File createRegionFileKey(File cache, int i, int j) {
+        // Copied from RegionFileCache
+        File file2 = new File(cache, "region");
+        return new File(file2, "r." + (i >> 5) + "." + (j >> 5) + ".mca");
+    }
+
+    public static boolean checkChunkExistsCache(File region, int i, int j) {
+        Set<ChunkCoordIntPair> set = getOrCreateSet(region);
+        if(set.contains(new ChunkCoordIntPair(i, j))) {
+            return true;
+        }
+        return false;
+    }
+
+    private static Set<ChunkCoordIntPair> getOrCreateSet(File region) {
+        Set<ChunkCoordIntPair> set = existingChunkCache.get(region);
+        if(set == null) {
+            set = new HashSet<ChunkCoordIntPair>();
+            existingChunkCache.put(region, set);
+        }
+        return set;
+    }
+
+    private void addChunkToCache(int i, int j) {
+        Set<ChunkCoordIntPair> set = getOrCreateSet(this.b);
+        set.add(new ChunkCoordIntPair(i, j));
+    }
+    // Poweruser end
+
     // CraftBukkit start - This is a copy (sort of) of the method below it, make sure they stay in sync
     public synchronized boolean chunkExists(int i, int j) {
+        // Poweruser start
+        if(checkChunkExistsCache(this.b, i, j)) {
+            return true;
+        }
+        // Poweruser end
+
         if (this.d(i, j)) {
             return false;
         } else {
@@ -114,6 +159,7 @@ public class RegionFile {
 
                     byte b0 = this.c.readByte();
                     if (b0 == 1 || b0 == 2) {
+                        this.addChunkToCache(i, j); // Poweruser
                         return true;
                     }
                 }
@@ -154,10 +200,12 @@ public class RegionFile {
                             byte[] abyte;
 
                             if (b0 == 1) {
+                                this.addChunkToCache(i, j); // Poweruser
                                 abyte = new byte[j1 - 1];
                                 this.c.read(abyte);
                                 return new DataInputStream(new BufferedInputStream(new GZIPInputStream(new ByteArrayInputStream(abyte))));
                             } else if (b0 == 2) {
+                                this.addChunkToCache(i, j); // Poweruser
                                 abyte = new byte[j1 - 1];
                                 this.c.read(abyte);
                                 return new DataInputStream(new BufferedInputStream(new InflaterInputStream(new ByteArrayInputStream(abyte))));
@@ -285,5 +333,12 @@ public class RegionFile {
         if (this.c != null) {
             this.c.close();
         }
+        // Poweruser start
+        Set<ChunkCoordIntPair> set = existingChunkCache.get(this.b);
+        if(set != null) {
+            set.clear();
+            existingChunkCache.remove(this.b);
+        }
+        // Poweruser end
     }
 }

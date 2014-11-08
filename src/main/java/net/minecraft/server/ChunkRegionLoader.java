@@ -52,7 +52,15 @@ public class ChunkRegionLoader implements IAsyncChunkSaver, IChunkLoader {
             // Poweruser end
         }
 
-        return RegionFileCache.a(this.d, i, j).chunkExists(i & 31, j & 31);
+        //return RegionFileCache.a(this.d, i, j).chunkExists(i & 31, j & 31);
+        // Poweruser start
+        File region = RegionFile.createRegionFileKey(this.d, i, j);
+        if(RegionFile.checkChunkExistsCache(region, i & 31, j & 31)) {
+            return true;
+        } else {
+            return RegionFileCache.a(this.d, i, j).chunkExists(i & 31, j & 31);
+        }
+        // Poweruser end
     }
     // CraftBukkit end
 
