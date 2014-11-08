@@ -332,7 +332,7 @@ public class ChunkRegionLoader implements IAsyncChunkSaver, IChunkLoader {
             // Poweruser start
             List sliceEntityList = chunk.entitySlices[i];
             for(int j = 0; j < sliceEntityList.size(); j++) {
-                Entity entity = (Entity) sliceEntityList.get(i);
+                Entity entity = (Entity) sliceEntityList.get(j);
             // Poweruser end
                 nbttagcompound1 = new NBTTagCompound();
                 if (entity.d(nbttagcompound1)) {
