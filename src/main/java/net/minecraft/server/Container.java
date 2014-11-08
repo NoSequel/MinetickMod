@@ -13,6 +13,7 @@ import org.bukkit.craftbukkit.inventory.CraftInventory;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.event.Event.Result;
 import org.bukkit.event.inventory.InventoryDragEvent;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.InventoryView;
 // CraftBukkit end
 
@@ -345,8 +346,12 @@ public abstract class Container {
 
                         slot2.f();
                         // CraftBukkit start - Make sure the client has the right slot contents
-                        if (entityhuman instanceof EntityPlayer) {
+                        if (entityhuman instanceof EntityPlayer && slot2.a() != 64) {
                             ((EntityPlayer) entityhuman).playerConnection.sendPacket(new Packet103SetSlot(this.windowId, slot2.g, slot2.getItem()));
+                            // Updating a crafting inventory makes the client reset the result slot, have to send it again
+                            if (this.getBukkitView().getType() == InventoryType.WORKBENCH || this.getBukkitView().getType() == InventoryType.CRAFTING) {
+                                ((EntityPlayer) entityhuman).playerConnection.sendPacket(new Packet103SetSlot(this.windowId, 0, this.getSlot(0).getItem()));
+                            }
                         }
                         // CraftBukkit end
                     }
