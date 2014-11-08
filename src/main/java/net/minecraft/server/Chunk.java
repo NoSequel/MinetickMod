@@ -39,6 +39,16 @@ public class Chunk {
     // Poweruser start
     public boolean newChunk = false;
     public boolean isCorrupt = false;
+    private boolean unloaded = false;
+
+    public boolean wasUnloaded() {
+        return this.unloaded;
+    }
+
+    public void markAsUnloaded() {
+        this.unloaded = true;
+    }
+
     public boolean isNew() {
         boolean out = newChunk;
         this.newChunk = false;

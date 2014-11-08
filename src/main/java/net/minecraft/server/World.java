@@ -144,7 +144,8 @@ public abstract class World implements IBlockAccess {
     //Chunk lastChunkAccessed;
     // Poweruser
     // Setting a valid start value, so we can get rid of the check for null in getChunkAt(..)
-    private Chunk lastChunkAccessed = new EmptyChunk(this, Integer.MIN_VALUE, Integer.MIN_VALUE);
+    private Chunk dummyChunk = new EmptyChunk(this, Integer.MIN_VALUE, Integer.MIN_VALUE);
+    private Chunk lastChunkAccessed = dummyChunk;
     int lastXAccessed = Integer.MIN_VALUE;
     int lastZAccessed = Integer.MIN_VALUE;
     final Object chunkLock = new Object();
@@ -317,22 +318,28 @@ public abstract class World implements IBlockAccess {
         return this.getChunkAt(i >> 4, j >> 4);
     }
 
+    // Poweruser start
+    private void cacheLastChunkAccess(Chunk foundChunk) {
+        this.lastChunkAccessed = ((foundChunk.isEmpty() || foundChunk == null) ? this.dummyChunk : foundChunk);
+    }
+    // Poweruser end
+
     // CraftBukkit start
     public Chunk getChunkAt(int i, int j) {
         Chunk result = null;
         // Poweruser start
         Chunk last = this.lastChunkAccessed;
-        if(last.x == i && last.z == j) {
+        if(last.x == i && last.z == j && !last.wasUnloaded()) {
             result = last;
         } else {
             // Synchronizing shouldnt be necessary for getting loaded chunks
             if(this.chunkProviderServer.isChunkLoaded(i, j)) {
                 result = this.chunkProviderServer.getChunkAt(i, j);
-                this.lastChunkAccessed = result;
+                this.cacheLastChunkAccess(result);
             } else {
                 synchronized (this.chunkLock) {
                     result = this.chunkProvider.getOrCreateChunk(i, j);
-                    this.lastChunkAccessed = result;
+                    this.cacheLastChunkAccess(result);
                 }
             }
         }
@@ -341,7 +348,7 @@ public abstract class World implements IBlockAccess {
             if(!result.isEmpty()) {
                 synchronized(this.chunkLock) {
                     result = this.chunkProvider.getOrCreateChunk(i, j);
-                    this.lastChunkAccessed = result;
+                    this.cacheLastChunkAccess(result);
                 }
             }
         }

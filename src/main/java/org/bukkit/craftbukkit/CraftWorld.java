@@ -178,6 +178,7 @@ public class CraftWorld implements World {
             save = true;
         }
 
+        chunk.markAsUnloaded(); // Poweruser
         chunk.removeEntities(); // Always remove entities - even if discarding, need to get them out of world table
 
         if (save && !(chunk instanceof EmptyChunk)) {
