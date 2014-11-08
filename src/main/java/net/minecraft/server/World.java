@@ -78,6 +78,7 @@ public abstract class World implements IBlockAccess {
     protected LongHashSet chunkTickList = new LongHashSet();
     public long ticksPerAnimalSpawns;
     public long ticksPerMonsterSpawns;
+    private int tickPosition;
     // CraftBukkit end
     private int O;
     int[] H;
@@ -1084,7 +1085,15 @@ public abstract class World implements IBlockAccess {
             this.getChunkAt(i, j).b(entity);
         }
 
-        this.entityList.remove(entity);
+        // CraftBukkit start - Decrement loop variable field if we've already ticked this entity
+        int index = this.entityList.indexOf(entity);
+        if (index != -1) {
+            if (index <= this.tickPosition) {
+                this.tickPosition--;
+            }
+            this.entityList.remove(index);
+        }
+        // CraftBukkit end
         this.b(entity);
     }
 
@@ -1294,8 +1303,9 @@ public abstract class World implements IBlockAccess {
         this.f.clear();
         this.methodProfiler.c("regular");
 
-        for (i = 0; i < this.entityList.size(); ++i) {
-            entity = (Entity) this.entityList.get(i);
+        // CraftBukkit start - Use field for loop variable
+        for (this.tickPosition = 0; this.tickPosition < this.entityList.size(); ++this.tickPosition) {
+            entity = (Entity) this.entityList.get(this.tickPosition);
 
             if (entity.vehicle != null) {
                 if (!entity.vehicle.dead && entity.vehicle.passenger == entity) {
@@ -1342,7 +1352,7 @@ public abstract class World implements IBlockAccess {
                     this.getChunkAt(j, k).b(entity);
                 }
 
-                this.entityList.remove(i--);
+                this.entityList.remove(this.tickPosition--); // CraftBukkit - Use field for loop variable
                 this.b(entity);
             }
 
