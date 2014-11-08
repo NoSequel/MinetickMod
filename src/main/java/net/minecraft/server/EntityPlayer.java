@@ -382,6 +382,12 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
     }
 
     public void b(int i) {
+        // Poweruser start - Players will be queued and teleported after all worlds have been ticked, just like all other entities
+        super.b(i);
+    }
+
+    public void changeDimension(int i) {
+    // Poweruser end
         if (this.dimension == 1 && i == 1) {
             this.a((Statistic) AchievementList.C);
             this.world.kill(this);
