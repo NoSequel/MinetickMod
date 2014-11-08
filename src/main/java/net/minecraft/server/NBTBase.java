@@ -4,11 +4,12 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class NBTBase {
 
     // Poweruser start
-    protected static HashMap<String, String> storedStrings = new HashMap<String, String>();
+    protected static ConcurrentHashMap<String, String> storedStrings = new ConcurrentHashMap<String, String>(16, 0.75f, 2);
 
     public static String getStoredString(String name, boolean store) {
         String str = storedStrings.get(name);
