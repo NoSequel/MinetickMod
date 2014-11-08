@@ -32,7 +32,9 @@ import org.bukkit.event.server.RemoteServerCommandEvent;
 import org.bukkit.event.world.WorldSaveEvent;
 // CraftBukkit end
 
+import de.minetick.AutoSaveJob;
 import de.minetick.MinetickMod;
+import de.minetick.AutoSaveJob.JobDetail;
 import de.minetick.packetbuilder.PacketBuilderThreadPool;
 import de.minetick.profiler.ProfilingComperator;
 import de.minetick.profiler.WorldProfile.WorldProfileSection;
@@ -106,7 +108,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
     private WorldServer sortedWorldsArray[] = null;
     private PriorityQueue<WorldServer> priQueue = new PriorityQueue<WorldServer>(20, new ProfilingComperator());
 
-    private LinkedList<WorldServer> autoSaveWorlds = new LinkedList<WorldServer>();
+    private LinkedList<AutoSaveJob> autoSaveWorlds = new LinkedList<AutoSaveJob>();
     private int autoSaveDelay = 0;
     private boolean autoSaveOrdered = false;
 
@@ -390,11 +392,29 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
             for (int j = 0; j < this.worlds.size(); ++j) {
                 WorldServer worldserver = this.worlds.get(j);
                 if(worldserver != null) {
-                    this.autoSaveWorlds.addLast(worldserver);
+                    this.autoSaveWorlds.addLast(new AutoSaveJob(JobDetail.WORLD_SAVE, worldserver));
+                    this.autoSaveWorlds.addLast(new AutoSaveJob(JobDetail.WORLD_SAVEEVENT, worldserver));
                 }
             }
+            int queuesize = this.autoSaveWorlds.size() / 2;
             this.autoSaveDelay = 0;
             this.autoSaveOrdered = true;
+            getLogger().info("[AutoSave] " + queuesize + " worlds - Starting ...");
+        }
+    }
+
+    private void autoSaveNextWorld() throws ExceptionWorldConflict {
+        if(!this.autoSaveWorlds.isEmpty()) {
+            if(this.autoSaveDelay++ > 20) { // delay of 1 seconds between checks of the autosavejob queue 
+                this.autoSaveDelay = 0;
+                boolean remove = this.autoSaveWorlds.getFirst().process();
+                if(remove) {
+                    this.autoSaveWorlds.removeFirst();
+                }
+            }
+        } else if(this.autoSaveOrdered){
+            getLogger().info("[AutoSave] Done.");
+            this.autoSaveOrdered = false;
         }
     }
     // Poweruser end
@@ -563,30 +583,16 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
         if ((this.autosavePeriod > 0) && ((this.ticks % this.autosavePeriod) == 0)) { // CraftBukkit
             this.methodProfiler.a("save");
             this.t.savePlayers();
-
-            // Poweruser start
             //this.saveChunks(true);
-            this.queueWorldsForAutoSave();
-            // Poweruser end
-
+            this.queueWorldsForAutoSave(); // Poweruser
             this.methodProfiler.b();
         }
 
-        // Poweruser start - Saving one world at a time with a little delay inbetween, and not all worlds between two ticks 
-        if(!this.autoSaveWorlds.isEmpty()) {
-            if(this.autoSaveDelay++ > 100) {
-                this.autoSaveDelay = 0;
-                WorldServer ws = this.autoSaveWorlds.removeFirst();
-                this.getLogger().info("Saving chunks for level \'" + ws.getWorldData().getName() + "\'/" + ws.worldProvider.getName());
-                ws.save(true, (IProgressUpdate) null);
-                ws.saveLevel();
-                WorldSaveEvent event = new WorldSaveEvent(ws.getWorld());
-                this.server.getPluginManager().callEvent(event);
-            }
+        // Poweruser start
+        if(this.autoSaveOrdered) {
+            this.autoSaveNextWorld();
         }
-
         long tickTime = System.nanoTime() - i;
-
         this.minetickMod.checkTickTime(tickTime);
         // Poweruser end
 
