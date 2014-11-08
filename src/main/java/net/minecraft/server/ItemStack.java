@@ -111,14 +111,10 @@ public final class ItemStack {
     public void c(NBTTagCompound nbttagcompound) {
         this.id = nbttagcompound.getShort("id");
         this.count = nbttagcompound.getByte("Count");
-        /* CraftBukkit start - Route through setData for filtering
         this.damage = nbttagcompound.getShort("Damage");
         if (this.damage < 0) {
             this.damage = 0;
         }
-        */
-        this.setData(nbttagcompound.getShort("Damage"));
-        // CraftBukkit end
 
         if (nbttagcompound.hasKey("tag")) {
             // CraftBukkit - make defensive copy as this data may be coming from the save thread
