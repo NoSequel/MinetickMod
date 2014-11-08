@@ -40,7 +40,7 @@ public class MinetickMod {
     private int packetbuilderPoolSize;
     private Profiler profiler;
     private int timerDelay = 45;
-    private ScheduledExecutorService timerService = Executors.newScheduledThreadPool(2, new MinetickThreadFactory("MinetickMod_TimerService"));
+    private ScheduledExecutorService timerService = Executors.newScheduledThreadPool(2, new MinetickThreadFactory(Thread.NORM_PRIORITY + 2, "MinetickMod_TimerService"));
     private ExecutorService worldTickerService = Executors.newCachedThreadPool(new MinetickThreadFactory(Thread.NORM_PRIORITY + 1, "MinetickMod_WorldTicker"));
     private LockObject worldTickerLock = new LockObject();
     private ScheduledFuture<Object> tickTimerTask;
