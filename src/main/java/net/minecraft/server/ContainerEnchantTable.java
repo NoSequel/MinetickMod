@@ -152,6 +152,12 @@ public class ContainerEnchantTable extends Container {
         if (this.costs[i] > 0 && itemstack != null && (entityhuman.expLevel >= this.costs[i] || entityhuman.abilities.canInstantlyBuild)) {
             if (!this.world.isStatic) {
                 List list = EnchantmentManager.b(this.l, itemstack, this.costs[i]);
+                // CraftBukkit start - Provide an empty enchantment list
+                if (list == null) {
+                    list = new java.util.ArrayList<EnchantmentInstance>();
+                }
+                // CraftBukkit end
+
                 boolean flag = itemstack.id == Item.BOOK.id;
 
                 if (list != null) {
@@ -186,7 +192,7 @@ public class ContainerEnchantTable extends Container {
                                 itemstack.id = Item.ENCHANTED_BOOK.id;
                                 break;
                             } else {
-                                item.addEnchantment(entry.getKey(), entry.getValue());
+                                item.addUnsafeEnchantment(entry.getKey(), entry.getValue());
                             }
                         } catch (IllegalArgumentException e) {
                             /* Just swallow invalid enchantments */
