@@ -1340,7 +1340,7 @@ public abstract class World implements IBlockAccess {
                         if(entity instanceof EntityLiving) {
                             EntityLiving ei = (EntityLiving) entity;
                             ei.skipped();
-                            ei.w();
+                            ei.u();
                         }
                     }
                     // Poweruser end
