@@ -629,7 +629,9 @@ public class PlayerConnection extends Connection {
                 return;
             }
 
-            this.player.playerInteractManager.interact(this.player, worldserver, itemstack, i, j, k, l, packet15place.j(), packet15place.k(), packet15place.l());
+            if (!this.player.playerInteractManager.interact(this.player, worldserver, itemstack, i, j, k, l, packet15place.j(), packet15place.k(), packet15place.l())) {
+                always = true; // force Packet103SetSlot to be sent to client to update ItemStack count
+            }
             // CraftBukkit end
 
             flag = true;
