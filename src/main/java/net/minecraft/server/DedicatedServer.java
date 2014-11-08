@@ -146,6 +146,7 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
             worldtype = WorldType.NORMAL;
         }
 
+        this.snooperEnabled = this.getSnooperEnabled(); // Poweruser
         this.d(this.propertyManager.getInt("max-build-height", 256));
         this.d((this.getMaxBuildHeight() + 8) / 16 * 16);
         this.d(MathHelper.a(this.getMaxBuildHeight(), 64, 256));

@@ -111,6 +111,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
     private LinkedList<AutoSaveJob> autoSaveWorlds = new LinkedList<AutoSaveJob>();
     private int autoSaveDelay = 0;
     private boolean autoSaveOrdered = false;
+    protected boolean snooperEnabled = false;
 
     public void broadcastToOnlineOperators(String[] msg) {
         Set ops = this.getPlayerList().getOPs();
@@ -609,11 +610,13 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
         this.I = Packet.p;
         this.methodProfiler.b();
         this.methodProfiler.a("snooper");
-        if (!this.n.d() && this.ticks > 100) {
+        //if (!this.n.d() && this.ticks > 100) {
+        if (this.snooperEnabled && !this.n.d() && this.ticks > 100) { // Poweruser
             this.n.a();
         }
 
-        if (this.ticks % 6000 == 0) {
+        //if (this.ticks % 6000 == 0) {
+        if (this.snooperEnabled && this.ticks % 6000 == 0) { // Poweruser
             this.n.b();
         }
 
