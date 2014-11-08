@@ -23,8 +23,8 @@ public class TPSCommand extends Command {
     }
 
     public boolean execute(CommandSender sender, String currentAlias, String[] args) {
-        if(!(sender instanceof Player)) { return true; }
         Integer[] array = MinetickMod.getTicksPerSecond();
+        boolean runByPlayer = (sender instanceof Player);
         if(array.length == 0) {
             sender.sendMessage(ChatColor.GOLD + "TPS statistic: " + ChatColor.RESET + "No data available yet. Try again later");
             return true;
@@ -43,13 +43,21 @@ public class TPSCommand extends Command {
             }
             for(int j = 0; j < this.steps.length; j++) {
                 if(k > this.steps[j]) {
-                    this.builders[j].append(this.colors[j]);
-                    this.builders[j].append('\u2B1B');
-                    this.builders[j].append(ChatColor.RESET);
+                    if(runByPlayer) {
+                        this.builders[j].append(this.colors[j]);
+                        this.builders[j].append('\u2B1B');
+                        this.builders[j].append(ChatColor.RESET);
+                    } else {
+                        this.builders[j].append("#");
+                    }
                 } else {
-                    this.builders[j].append(ChatColor.BLACK);
-                    this.builders[j].append('\u2B1C');
-                    this.builders[j].append(ChatColor.RESET);
+                    if(runByPlayer) {
+                        this.builders[j].append(ChatColor.BLACK);
+                        this.builders[j].append('\u2B1C');
+                        this.builders[j].append(ChatColor.RESET);
+                    } else {
+                        this.builders[j].append("_");
+                    }
                 }
             }
         }
