@@ -507,13 +507,26 @@ public class TileEntityHopper extends TileEntity implements IHopper {
         return getInventoryAt(ihopper.getWorld(), ihopper.aA(), ihopper.aB() + 1.0D, ihopper.aC());
     }
 
+    // Poweruser start
+    private static boolean isPositionOfHopperInUse(World world, double d0, double d1, double d2) {
+        int i = MathHelper.floor(d0);
+        int j = MathHelper.floor(d1);
+        int k = MathHelper.floor(d2);
+        return (world.isLoaded(i, j, k) && !world.chunkProviderServer.unloadQueue.contains(i >> 4, k >> 4));
+    }
+    // Poweruser end
+
     public static EntityItem getEntityItemAt(World world, double d0, double d1, double d2) {
+        if(!isPositionOfHopperInUse(world, d0, d1, d2)) { return null; } // Poweruser
+
         List list = world.a(EntityItem.class, AxisAlignedBB.a().a(d0, d1, d2, d0 + 1.0D, d1 + 1.0D, d2 + 1.0D), IEntitySelector.a);
 
         return list.size() > 0 ? (EntityItem) list.get(0) : null;
     }
 
     public static IInventory getInventoryAt(World world, double d0, double d1, double d2) {
+        if(!isPositionOfHopperInUse(world, d0, d1, d2)) { return null; } // Poweruser
+
         IInventory iinventory = null;
         int i = MathHelper.floor(d0);
         int j = MathHelper.floor(d1);
