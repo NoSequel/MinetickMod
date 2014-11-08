@@ -14,7 +14,6 @@ public class PacketBuilderThreadPool implements Observer {
     private Object jobLock = new Object();
     private static PacketBuilderThreadPool pool;
     private static int targetPoolSize;
-    private boolean adjustCacheSizes = false;
 
     public PacketBuilderThreadPool(int poolsize) {
         poolsize = Math.max(1, poolsize);
@@ -72,7 +71,9 @@ public class PacketBuilderThreadPool implements Observer {
     }
 
     public static void shutdownStatic() {
-        pool.shutdown();
+        if(pool != null) {
+            pool.shutdown();
+        }
     }
 
     private void shutdown() {

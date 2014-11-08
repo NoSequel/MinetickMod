@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import de.minetick.PlayerChunkManager;
-import de.minetick.PlayerChunkManager.ChunkPosEnum;
 import de.minetick.PlayerChunkSendQueue;
+import de.minetick.packetbuilder.PacketBuilderChunkData;
 import de.minetick.packetbuilder.PacketBuilderThreadPool;
 import de.minetick.packetbuilder.jobs.PBJob51MapChunk;
 
@@ -27,10 +27,6 @@ public class PlayerChunk { // Poweruser - added public
         boolean out = this.newChunk;
         this.newChunk = false;
         return out;
-    }
-
-    public boolean isLoaded() {
-        return this.loaded;
     }
     // Poweruser end
 
@@ -56,11 +52,7 @@ public class PlayerChunk { // Poweruser - added public
 
     public void a(final EntityPlayer entityplayer) { // CraftBukkit - added final to argument
         if (this.b.contains(entityplayer)) {
-            // Poweruser
-            /*
-             * Just skip adding the player to this chunk, if he is already enlisted.
-             */
-            //throw new IllegalStateException("Failed to add player. " + entityplayer + " already is in chunk " + this.location.x + ", " + this.location.z);
+            throw new IllegalStateException("Failed to add player. " + entityplayer + " already is in chunk " + this.location.x + ", " + this.location.z);
         } else {
             if (this.b.isEmpty()) {
                 this.g = PlayerChunkMap.a(this.playerChunkMap).getTime();
@@ -71,8 +63,7 @@ public class PlayerChunk { // Poweruser - added public
             if(!this.loaded) {
                 int x = (int) entityplayer.locX >> 4;
                 int z = (int) entityplayer.locZ >> 4;
-                ChunkPosEnum pos = PlayerChunkManager.isWithinRadius(this.location.x, this.location.z, x, z, 1);
-                if(pos.equals(ChunkPosEnum.INSIDE)) {
+                if(PlayerChunkManager.isWithinRadius(this.location.x, this.location.z, x, z, 1)) {
                     this.playerChunkMap.a().chunkProviderServer.getChunkAt(this.location.x, this.location.z);
                 }
             }
@@ -101,7 +92,7 @@ public class PlayerChunk { // Poweruser - added public
             Chunk chunk = PlayerChunkMap.a(this.playerChunkMap).getChunkAt(this.location.x, this.location.z);
 
             //entityplayer.playerConnection.sendPacket(new Packet51MapChunk(chunk, true, 0));
-            PacketBuilderThreadPool.addJobStatic(new PBJob51MapChunk(entityplayer.playerConnection, entityplayer.chunkQueue, chunk, true, 0)); // Poweruser
+            PacketBuilderThreadPool.addJobStatic(new PBJob51MapChunk(entityplayer.playerConnection, entityplayer.chunkQueue, new PacketBuilderChunkData(chunk, true, 0))); // Poweruser
             //this.b.remove(entityplayer);
             //entityplayer.chunkCoordIntPairQueue.remove(this.location); // Poweruser
             if (this.b.isEmpty()) {
@@ -196,7 +187,7 @@ public class PlayerChunk { // Poweruser - added public
                             }
                         }
                     }
-                    PacketBuilderThreadPool.addJobStatic(new PBJob51MapChunk(players, queues, PlayerChunkMap.a(this.playerChunkMap).getChunkAt(this.location.x, this.location.z), (this.f == 0xFFFF), this.f, true));
+                    PacketBuilderThreadPool.addJobStatic(new PBJob51MapChunk(players, queues, new PacketBuilderChunkData(PlayerChunkMap.a(this.playerChunkMap).getChunkAt(this.location.x, this.location.z), (this.f == 0xFFFF), this.f)));
 
                     /* moved to de.minetick.packetbuilder.jobs.PBJob51MapChunk
                     for (k = 0; k < 16; ++k) {

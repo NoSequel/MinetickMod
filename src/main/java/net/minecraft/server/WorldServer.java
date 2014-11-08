@@ -21,6 +21,7 @@ import org.bukkit.event.weather.LightningStrikeEvent;
 import org.bukkit.event.weather.ThunderChangeEvent;
 import org.bukkit.event.weather.WeatherChangeEvent;
 
+import de.minetick.ChunkGenerationPolicy;
 import de.minetick.antixray.AntiXRay;
 
 public class WorldServer extends World implements org.bukkit.BlockChangeDelegate {
@@ -47,6 +48,7 @@ public class WorldServer extends World implements org.bukkit.BlockChangeDelegate
     // Poweruser start
     private long lastTickAvg = 0L;
     private PriorityQueue<NextTickListEntry> priorityQueue;
+    private ChunkGenerationPolicy chunkGenerationPolicy;
 
     public void setLastTickAvg(long avg) {
         this.lastTickAvg = avg;
@@ -58,6 +60,7 @@ public class WorldServer extends World implements org.bukkit.BlockChangeDelegate
 
     public void cancelHeavyCalculations(boolean cancel) {
         this.cancelHeavyCalculations = cancel;
+        this.manager.skipChunkGeneration(cancel);
     }
 
     public boolean chunkExists(int x, int z) {
@@ -66,20 +69,11 @@ public class WorldServer extends World implements org.bukkit.BlockChangeDelegate
 
     public int loadAndGenerateChunks() {
         if(this.players.size() > 0) {
-            return this.manager.updatePlayers(this.isChunkGenerationAllowed());
+            this.chunkGenerationPolicy.newTick();
+            return this.manager.updatePlayers(this.chunkGenerationPolicy);
         } else {
             return 0;
         }
-    }
-
-    boolean allowChunkGeneration = false;
-    public boolean isChunkGenerationAllowed() {
-        if(this.worldData.getType().equals(WorldType.FLAT)) {
-            return true;
-        } else {
-            this.allowChunkGeneration = !this.allowChunkGeneration;
-        }
-        return this.allowChunkGeneration;
     }
     // Poweruser end
 
@@ -116,6 +110,7 @@ public class WorldServer extends World implements org.bukkit.BlockChangeDelegate
             this.priorityQueue = new PriorityQueue<NextTickListEntry>(1500);
         }
         this.antiXRay = new AntiXRay(this);
+        this.chunkGenerationPolicy = new ChunkGenerationPolicy();
         // Poweruser end
         this.P = new org.bukkit.craftbukkit.CraftTravelAgent(this); // CraftBukkit
         this.scoreboard = new ScoreboardServer(minecraftserver);

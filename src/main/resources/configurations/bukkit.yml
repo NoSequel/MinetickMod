@@ -65,3 +65,7 @@ minetickmod:
     notGeneratingWorlds: []
     maxEntityLifeTime: 10
     entitiesWithLimitedLifeTime: []
+    maxChunkGenerationRates:
+        DEFAULT: 0.5
+        FLAT: 1.0
+        LARGEBIOMES: 0.5

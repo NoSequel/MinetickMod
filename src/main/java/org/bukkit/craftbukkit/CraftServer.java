@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -129,6 +130,8 @@ import com.avaje.ebean.config.dbplatform.SQLitePlatform;
 import com.avaje.ebeaninternal.server.lib.sql.TransactionIsolation;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.MapMaker;
+
+import de.minetick.ChunkGenerationPolicy;
 
 import jline.console.ConsoleReader;
 
@@ -1432,6 +1435,23 @@ public final class CraftServer implements Server {
 
     public List<String> getMinetickModEntitiesWithLimitedLifeTime() {
         return configuration.getStringList("minetickmod.entitiesWithLimitedLifeTime");
+    }
+
+    public Map<org.bukkit.WorldType, Double> getMinetickModMaxChunkGenerationRates() {
+        ConfigurationSection section = configuration.getConfigurationSection("minetickmod.maxChunkGenerationRates");
+        Set<String> subkeys = section.getKeys(false);
+        Map<org.bukkit.WorldType, Double> rateMap = new HashMap<org.bukkit.WorldType, Double>();
+        for(String key: subkeys) {
+            org.bukkit.WorldType type = org.bukkit.WorldType.getByName(key);
+            if(type != null) {
+                double rate = section.getDouble(key, ChunkGenerationPolicy.getDefaultRate(type));
+                if(rate < 0.25D) { rate = 0.25D; }
+                rateMap.put(type, rate);
+            } else {
+                getLogger().warning("[MinetickMod] The WorldType '" + key + "' was not recognized in the setting minetickmod.maxChunkGenerationRates");
+            }
+        }
+        return rateMap;
     }
     // Poweruser end
 }
