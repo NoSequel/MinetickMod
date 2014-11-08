@@ -1,5 +1,8 @@
 package de.minetick;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -15,6 +18,8 @@ import java.util.logging.Logger;
 
 import net.minecraft.server.EntityLiving;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.NBTCompressedStreamTools;
+import net.minecraft.server.NBTTagCompound;
 import net.minecraft.server.Packet51MapChunk;
 import net.minecraft.server.Packet56MapChunkBulk;
 import net.minecraft.server.WorldServer;
@@ -41,6 +46,7 @@ public class MinetickMod {
     private Profiler profiler;
     private int timerDelay = 45;
     private ScheduledExecutorService timerService = Executors.newScheduledThreadPool(2, new MinetickThreadFactory(Thread.NORM_PRIORITY + 2, "MinetickMod_TimerService"));
+    private ExecutorService nbtFileService = Executors.newCachedThreadPool(new MinetickThreadFactory(Thread.NORM_PRIORITY - 2, "MinetickMod_NBTFileSaver"));
     private ExecutorService worldTickerService = Executors.newCachedThreadPool(new MinetickThreadFactory(Thread.NORM_PRIORITY + 1, "MinetickMod_WorldTicker"));
     private LockObject worldTickerLock = new LockObject();
     private ScheduledFuture<Object> tickTimerTask;
@@ -163,6 +169,14 @@ public class MinetickMod {
         this.timerService.shutdown();
         PacketBuilderThreadPool.shutdownStatic();
         AntiXRay.shutdown();
+        this.nbtFileService.shutdown();
+        while(!this.nbtFileService.isTerminated()) {
+            try {
+                if(!this.nbtFileService.awaitTermination(3, TimeUnit.MINUTES)) {
+                    logger.warning("MinetickMod is still waiting for NBT Files to be saved.");
+                }
+            } catch(InterruptedException e) {}
+        }
     }
 
     public void checkTickTime(long tickTime) {
@@ -189,6 +203,44 @@ public class MinetickMod {
     private class TickTimer implements Callable<Object> {
         public Object call() {
             MinecraftServer.getServer().cancelHeavyCalculationsForAllWorlds(true);
+            return null;
+        }
+    }
+
+    public static void saveNBTFileStatic(NBTTagCompound compound, File file) {
+        instance.saveNBTFile(compound, file);
+    }
+
+    public void saveNBTFile(NBTTagCompound compound, File file) {
+        this.nbtFileService.submit(new NBTFileSaver(compound, file));
+    }
+
+    private class NBTFileSaver implements Callable<Object> {
+
+        private NBTTagCompound compound;
+        private File file;
+
+        public NBTFileSaver(NBTTagCompound compound, File file) {
+            this.compound = compound;
+            this.file = file;
+        }
+
+        public Object call() {
+            try {
+                long start = System.currentTimeMillis();
+                FileOutputStream fileoutputstream = new FileOutputStream(this.file);
+                NBTCompressedStreamTools.a(this.compound, (OutputStream) fileoutputstream);
+                fileoutputstream.close();
+                long duration = System.currentTimeMillis() - start;
+                if(duration > 1000L) {
+                    logger.info("Saving the file \"" + this.file.getAbsolutePath() + "\" took " + ((float)(duration/100L) / 10.0F) + " seconds.");
+                }
+            } catch (Exception e) {
+                logger.severe("Error \""+ e.getMessage() +"\" while saving file: " + this.file.getAbsolutePath());
+                e.printStackTrace();
+            }
+            this.compound = null;
+            this.file = null;
             return null;
         }
     }
