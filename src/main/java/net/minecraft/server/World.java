@@ -100,7 +100,6 @@ public abstract class World implements IBlockAccess {
     }
 
     // Poweruser start
-    private HashSet<Long> alreadyCheckedChunks = new HashSet<Long>();
     public AntiXRay antiXRay = null;
     protected boolean cancelHeavyCalculations = false;
     private int nextTickEntityIndex = 0;
@@ -1300,7 +1299,7 @@ public abstract class World implements IBlockAccess {
          * is overloaded. If it wasn't done, the entities at the end of the list would eventually miss
          * several seconds or minutes.
          */
-        this.alreadyCheckedChunks.clear(); // Maybe clear less frequent
+
         /*
         for (i = 0; i < this.entityList.size(); ++i) {
             entity = (Entity) this.entityList.get(i);
@@ -1483,20 +1482,9 @@ public abstract class World implements IBlockAccess {
     public void entityJoinedWorld(Entity entity, boolean flag) {
         int i = MathHelper.floor(entity.locX);
         int j = MathHelper.floor(entity.locZ);
-        //byte b0 = 32;
-        // Poweruser start
-        byte b0 = 4; // It should be enough to check the chunks within a range of 4 blocks, instead of always 25 chunks
-        long hash = LongHash.toLong(i, j);
-        boolean isChunkLoaded = this.alreadyCheckedChunks.contains(hash);
-        if(!isChunkLoaded) {
-            isChunkLoaded = this.e(i - b0, 0, j - b0, i + b0, 0, j + b0);
-            if(isChunkLoaded) {
-                this.alreadyCheckedChunks.add(hash);
-            }
-        }
-        // Poweruser end
+        byte b0 = 32;
 
-        if (!flag || isChunkLoaded) {
+        if (!flag || this.e(i - b0, 0, j - b0, i + b0, 0, j + b0)) {
             entity.U = entity.locX;
             entity.V = entity.locY;
             entity.W = entity.locZ;
