@@ -16,8 +16,17 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
+import net.minecraft.server.Entity;
+import net.minecraft.server.EntityArrow;
+import net.minecraft.server.EntityEnderCrystal;
+import net.minecraft.server.EntityEnderDragon;
+import net.minecraft.server.EntityFireball;
+import net.minecraft.server.EntityGhast;
 import net.minecraft.server.EntityInsentient;
 import net.minecraft.server.EntityLiving;
+import net.minecraft.server.EntityPlayer;
+import net.minecraft.server.EntityProjectile;
+import net.minecraft.server.EntityWither;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.NBTCompressedStreamTools;
 import net.minecraft.server.NBTTagCompound;
@@ -164,6 +173,13 @@ public class MinetickMod {
         return instance.getProfiler();
     }
 
+    public static boolean isImportantEntity(Entity entity) {
+        return (entity instanceof EntityArrow || entity instanceof EntityPlayer ||
+                entity instanceof EntityProjectile || entity instanceof EntityFireball ||
+                entity instanceof EntityWither || entity instanceof EntityEnderCrystal ||
+                entity instanceof EntityEnderDragon || entity instanceof EntityGhast);
+    }
+
     public void startTickTimerTask() {
         this.tickTimerTask = instance.timerService.schedule(this.tickTimerObject, this.timerDelay, TimeUnit.MILLISECONDS);
     }
@@ -270,7 +286,7 @@ public class MinetickMod {
     }
 
     public static boolean isEntityAllowedToBeDeleted(EntityLiving entity) {
-        return !entity.isImportantEntity() && instance.entitiesToDelete.contains(entity.getBukkitEntity().getType());
+        return !isImportantEntity(entity) && instance.entitiesToDelete.contains(entity.getBukkitEntity().getType());
     }
 
     public Future<?> tickWorld(WorldServer worldServer) {

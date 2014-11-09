@@ -14,9 +14,6 @@ public class EntityEnderCrystal extends Entity {
         this.height = this.length / 2.0F;
         this.b = 5;
         this.a = this.random.nextInt(100000);
-
-        // Poweruser
-        this.isImportantEntity = true;
     }
 
     protected boolean e_() {

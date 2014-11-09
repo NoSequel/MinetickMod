@@ -28,9 +28,7 @@ public class EntityArrow extends Entity implements IProjectile {
         this.l = 10.0D;
         this.a(0.5F, 0.5F);
 
-        // Poweruser
-        this.isImportantEntity = true;
-        this.allowedToTeleport = false;
+        this.allowedToTeleport = false; // Poweruser
     }
 
     public EntityArrow(World world, double d0, double d1, double d2) {
@@ -40,9 +38,7 @@ public class EntityArrow extends Entity implements IProjectile {
         this.setPosition(d0, d1, d2);
         this.height = 0.0F;
 
-        // Poweruser
-        this.isImportantEntity = true;
-        this.allowedToTeleport = false;
+        this.allowedToTeleport = false; // Poweruser
     }
 
     public EntityArrow(World world, EntityLiving entityliving, EntityLiving entityliving1, float f, float f1) {
@@ -72,9 +68,7 @@ public class EntityArrow extends Entity implements IProjectile {
             this.shoot(d0, d1 + (double) f4, d2, f, f1);
         }
 
-        // Poweruser
-        this.isImportantEntity = true;
-        this.allowedToTeleport = false;
+        this.allowedToTeleport = false; // Poweruser
     }
 
     public EntityArrow(World world, EntityLiving entityliving, float f) {
@@ -97,9 +91,7 @@ public class EntityArrow extends Entity implements IProjectile {
         this.motY = (double) (-MathHelper.sin(this.pitch / 180.0F * 3.1415927F));
         this.shoot(this.motX, this.motY, this.motZ, f * 1.5F, 1.0F);
 
-        // Poweruser
-        this.isImportantEntity = true;
-        this.allowedToTeleport = false;
+        this.allowedToTeleport = false; // Poweruser
     }
 
     protected void a() {

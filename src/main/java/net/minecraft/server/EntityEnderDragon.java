@@ -45,9 +45,6 @@ public class EntityEnderDragon extends EntityInsentient implements IComplex, IMo
         this.fireProof = true;
         this.i = 100.0D;
         this.am = true;
-
-        // Poweruser
-        this.isImportantEntity = true;
     }
 
     protected void az() {
