@@ -59,16 +59,16 @@ class ChunkIOProvider implements AsynchronousExecutor.CallBackProvider<QueuedChu
         }
 
         // Update neighbor counts
-        for (int xdiff = -2; x < 3; x++) {
-            for (int zdiff = -2; z < 3; z++) {
-                if (x == 0 && z == 0) {
+        for (int xdiff = -2; xdiff < 3; xdiff++) {
+            for (int zdiff = -2; zdiff < 3; zdiff++) {
+                if (xdiff == 0 && zdiff == 0) {
                     continue;
                 }
 
                 Chunk neighbor = queuedChunk.provider.getChunkIfLoaded(chunk.x + xdiff, chunk.z + zdiff);
                 if (neighbor != null) {
-                    neighbor.setNeighborLoaded(-x, -z);
-                    chunk.setNeighborLoaded(x, z);
+                    neighbor.setNeighborLoaded(-xdiff, -zdiff);
+                    chunk.setNeighborLoaded(xdiff, zdiff);
                 }
             }
         }
