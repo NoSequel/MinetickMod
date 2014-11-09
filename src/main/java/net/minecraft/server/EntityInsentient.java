@@ -10,7 +10,10 @@ import org.bukkit.event.entity.EntityUnleashEvent;
 import org.bukkit.event.entity.EntityUnleashEvent.UnleashReason;
 // CraftBukkit end
 
-import de.minetick.MinetickMod; // Poweruser
+// Poweruser start
+import de.minetick.MinetickMod;
+import de.minetick.pathsearch.MinetickNavigation;
+// Poweruser end
 
 public abstract class EntityInsentient extends EntityLiving {
 
@@ -44,7 +47,8 @@ public abstract class EntityInsentient extends EntityLiving {
         this.moveController = new ControllerMove(this);
         this.lookController = new ControllerJump(this);
         this.bn = new EntityAIBodyControl(this);
-        this.navigation = new Navigation(this, world);
+        //this.navigation = new Navigation(this, world);
+        this.navigation = new MinetickNavigation(this, world); // Poweruser
         this.bq = new EntitySenses(this);
 
         for (int i = 0; i < this.dropChances.length; ++i) {
@@ -421,6 +425,7 @@ public abstract class EntityInsentient extends EntityLiving {
 
     protected void bi() {
         ++this.aV;
+        this.navigation.cleanUpExpiredSearches(); // Poweruser
         this.world.methodProfiler.a("checkDespawn");
         this.u();
         this.world.methodProfiler.b();

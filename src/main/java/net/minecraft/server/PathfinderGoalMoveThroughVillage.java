@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import de.minetick.pathsearch.PositionPathSearchType; // Poweruser
+
 public class PathfinderGoalMoveThroughVillage extends PathfinderGoal {
 
     private EntityCreature a;
@@ -37,7 +39,8 @@ public class PathfinderGoalMoveThroughVillage extends PathfinderGoal {
                     boolean flag = this.a.getNavigation().c();
 
                     this.a.getNavigation().b(false);
-                    this.c = this.a.getNavigation().a((double) this.d.locX, (double) this.d.locY, (double) this.d.locZ);
+                    //this.c = this.a.getNavigation().a((double) this.d.locX, (double) this.d.locY, (double) this.d.locZ);
+                    this.c = this.a.getNavigation().a(PositionPathSearchType.MOVETHROUGHVILLAGE, (double) this.d.locX, (double) this.d.locY, (double) this.d.locZ); // Poweruser
                     this.a.getNavigation().b(flag);
                     if (this.c != null) {
                         return true;
@@ -48,7 +51,8 @@ public class PathfinderGoalMoveThroughVillage extends PathfinderGoal {
                             return false;
                         } else {
                             this.a.getNavigation().b(false);
-                            this.c = this.a.getNavigation().a(vec3d.c, vec3d.d, vec3d.e);
+                            //this.c = this.a.getNavigation().a(vec3d.c, vec3d.d, vec3d.e);
+                            this.c = this.a.getNavigation().a(PositionPathSearchType.MOVETHROUGHVILLAGE, vec3d.c, vec3d.d, vec3d.e); // Poweruser
                             this.a.getNavigation().b(flag);
                             return this.c != null;
                         }

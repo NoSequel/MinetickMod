@@ -14,8 +14,14 @@ public class PathfinderGoalMeleeAttack extends PathfinderGoal {
     private int h;
 
     // Poweruser
-    private int failedPathFindingPenalty = 10;
-    private int penalty = 4;
+    private double i;
+    private double j;
+    private double k;
+    private int failedSearches = 0;
+    private boolean targetFound = false;
+    private double originalSearchRange;
+    private double lastAdjustedRange;
+    // Poweruser end
 
     public PathfinderGoalMeleeAttack(EntityCreature entitycreature, Class oclass, double d0, boolean flag) {
         this(entitycreature, d0, flag);
@@ -28,6 +34,10 @@ public class PathfinderGoalMeleeAttack extends PathfinderGoal {
         this.d = d0;
         this.e = flag;
         this.a(3);
+        // Poweruser start
+        this.originalSearchRange = this.b.getAttributeInstance(GenericAttributes.b).getValue();
+        this.lastAdjustedRange = this.originalSearchRange;
+        // Poweruser end
     }
 
     public boolean a() {
@@ -41,33 +51,19 @@ public class PathfinderGoalMeleeAttack extends PathfinderGoal {
             return false;
         } else {
             // Poweruser start
-            if(--h <= 0) {
-                double xdiff = entityliving.locX - this.b.locX;
-                double zdiff = entityliving.locZ - this.b.locZ;
-                if(!entityliving.onGround ||
-                        entityliving.boundingBox.b > this.b.boundingBox.b + 1.9 &&
-                        Math.sqrt(xdiff * xdiff + zdiff * zdiff) < 3) {
-                    return true;
-                }
-                this.f = this.b.getNavigation().a(entityliving);
-                boolean success = false;
-                if(this.b.getNavigation().e() != null) {
-                    PathPoint finalPathPoint = this.b.getNavigation().e().c();
-                    if(finalPathPoint != null) {
-                        double diff = entityliving.f(finalPathPoint.a, finalPathPoint.b, finalPathPoint.c);
-	                    success = diff < 1.5;
-                    }
-                }
-                if(success) {
-                    this.failedPathFindingPenalty = 0;
-                } else if(this.failedPathFindingPenalty < 60) {
-                    this.failedPathFindingPenalty += penalty;
-                }
-                this.h = this.failedPathFindingPenalty + 4 + this.b.aD().nextInt(7);
-                return this.f != null;
+            boolean out = false;
+            double xdiff = entityliving.locX - this.b.locX;
+            double zdiff = entityliving.locZ - this.b.locZ;
+            if(!entityliving.onGround || (xdiff * xdiff + zdiff * zdiff) < 9.0D) {
+                out = true;
             } else {
-                return true;
+                AttributeInstance attr = this.b.getAttributeInstance(GenericAttributes.b);
+                attr.setValue(this.lastAdjustedRange);
+                this.f = this.b.getNavigation().a(entityliving);
+                attr.setValue(this.originalSearchRange);
+                out = this.f != null;
             }
+            return out;
             // Poweruser end
         }
     }
@@ -94,105 +90,54 @@ public class PathfinderGoalMeleeAttack extends PathfinderGoal {
         this.b.getNavigation().h();
     }
 
-    // Spigot start
-    private double pathX;
-    private double pathY;
-    private double pathZ;
-    private boolean prevPathOK;
-    private int fullRangeSearchDelay;
-    // Spigot end
     public void e() {
         EntityLiving entityliving = this.b.getGoalTarget();
 
         this.b.getControllerLook().a(entityliving, 30.0F, 30.0F);
-        double goalDistanceSq = this.b.e( entityliving.locX, entityliving.boundingBox.b, entityliving.locZ ); // Spigot
-        if ((this.e || this.b.getEntitySenses().canSee(entityliving)) && --this.h <= 0) {
-            // Spigot start
-            double targetMovement = entityliving.e( pathX, pathY, pathZ );
-            // If this is true, then we are re-pathing
-            if ( ( this.h <= 0 && targetMovement >= 1.0D ) || ( this.h <= 0 && this.b.aD().nextInt( 200 ) == 0 ) ) /* EntityCreature random instance */
+        double d0 = this.b.e(entityliving.locX, entityliving.boundingBox.b, entityliving.locZ);
+        double d1 = (double) (this.b.width * 2.0F * this.b.width * 2.0F + entityliving.width);
 
-            {
-                AttributeInstance rangeAttr = this.b.getAttributeInstance( GenericAttributes.b );
-                double origRange = rangeAttr.getValue();
-                if ( fullRangeSearchDelay > 0 )
-                {
+        --this.h;
+        if ((this.e || this.b.getEntitySenses().canSee(entityliving)) && this.h <= 0 && (this.i == 0.0D && this.j == 0.0D && this.k == 0.0D || entityliving.e(this.i, this.j, this.k) >= 1.0D || this.b.aD().nextFloat() < 0.05F)) {
+            this.i = entityliving.locX;
+            this.j = entityliving.boundingBox.b;
+            this.k = entityliving.locZ;
+            this.h = 4 + this.b.aD().nextInt(7);
 
-                    double dist = Math.sqrt( goalDistanceSq );
-                    if ( dist <= 8.0D )
-                    {
-                        dist = 8.0D;
-                    }
-                    if ( dist > origRange )
-                    {
-                        dist = origRange;
-                    }
-                    rangeAttr.setValue( dist );
-                }
-
-                prevPathOK = this.b.getNavigation().a( (Entity) entityliving, this.d );
-
-                if ( fullRangeSearchDelay > 0 )
-                {
-                    fullRangeSearchDelay--;
-                    if ( origRange > 40.0D )
-                    {
-                        origRange = 40.0D;
-                    }
-                    rangeAttr.setValue( origRange );
-                }
-
-                pathX = entityliving.locX;
-                pathY = entityliving.boundingBox.b;
-                pathZ = entityliving.locZ;
-
-                // Poweruser start
-                boolean success = false;
-                if(this.b.getNavigation().e() != null) {
-                    PathPoint finalPathPoint = this.b.getNavigation().e().c();
-                    if(finalPathPoint != null) {
-                        double diff = entityliving.f(finalPathPoint.a, finalPathPoint.b, finalPathPoint.c);
-                        success = diff < 1.0;
-                    }
-                }
-                if(success) {
-                    this.failedPathFindingPenalty = 0;
-                } else if(failedPathFindingPenalty < 60) {
-                    this.failedPathFindingPenalty += penalty;
-                }
-                this.h = this.failedPathFindingPenalty + 4 + this.b.aD().nextInt(7);
-                // Poweruser end
-                //this.h = 4 + this.b.aC().nextInt( 7 ); /* EntityCreature random instance */
-
-                if ( goalDistanceSq > 256.0D )
-                {
-                    if ( goalDistanceSq > 1024.0D )
-                    {
-                        this.h += 8;
-                    } else
-                    {
-                        this.h += 16;
-                    }
-                } else if ( !prevPathOK )
-                {
-                    this.h += 24;
-                }
-
-                if ( !prevPathOK || goalDistanceSq <= 256.0D )
-                {
-                    if ( fullRangeSearchDelay <= 0 )
-                    {
-                        fullRangeSearchDelay = 4 + this.b.aD().nextInt( 4 ); /* EntityCreature random instance */
-                    }
-                }
+            if (d0 > 1024.0D) {
+                this.h += 10;
+            } else if (d0 > 256.0D) {
+                this.h += 5;
             }
+
+            // Poweruser start
+            AttributeInstance attr = this.b.getAttributeInstance(GenericAttributes.b);
+            double newRange = this.originalSearchRange;
+            if(this.failedSearches > 0) {
+                double currentRange = attr.getValue();
+                double xdiff = Math.abs(entityliving.locX - this.b.locX);
+                double zdiff = Math.abs(entityliving.locZ - this.b.locZ);
+                newRange = Math.min(Math.max(xdiff, zdiff) + 4.0D, currentRange);
+            }
+            this.lastAdjustedRange = newRange;
+            attr.setValue(newRange);
+            this.targetFound = this.b.getNavigation().a((Entity) entityliving, this.d);
+            attr.setValue(this.originalSearchRange);
+
+            if (!this.targetFound) {
+                this.h += 15;
+                this.failedSearches++;
+            }
+            if(this.targetFound || this.failedSearches >= 10) {
+                this.failedSearches = 0;
+            }
+
+            this.h += 2 * this.failedSearches;
+            // Poweruser end
         }
-        // Spigot end
 
         this.c = Math.max(this.c - 1, 0);
-        double d0 = (double) (this.b.width * 2.0F * this.b.width * 2.0F + entityliving.width);
-
-        if (goalDistanceSq <= d0) { // Spigot
+        if (d0 <= d1 && this.c <= 20) {
             if (this.c <= 0) {
                 this.c = 20;
                 if (this.b.aZ() != null) {

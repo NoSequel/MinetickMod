@@ -16,6 +16,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
+import net.minecraft.server.EntityInsentient;
 import net.minecraft.server.EntityLiving;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.NBTCompressedStreamTools;
@@ -35,6 +36,8 @@ import de.minetick.modcommands.TPSCommand;
 import de.minetick.modcommands.ThreadPoolsCommand;
 import de.minetick.modcommands.WorldStatsCommand;
 import de.minetick.packetbuilder.PacketBuilderThreadPool;
+import de.minetick.pathsearch.PathSearchJob;
+import de.minetick.pathsearch.PathSearchThrottlerThread;
 import de.minetick.profiler.Profiler;
 
 public class MinetickMod {
@@ -48,6 +51,7 @@ public class MinetickMod {
     private ScheduledExecutorService timerService = Executors.newScheduledThreadPool(2, new MinetickThreadFactory(Thread.NORM_PRIORITY + 2, "MinetickMod_TimerService"));
     private ExecutorService nbtFileService = Executors.newCachedThreadPool(new MinetickThreadFactory(Thread.NORM_PRIORITY - 2, "MinetickMod_NBTFileSaver"));
     private ExecutorService worldTickerService = Executors.newCachedThreadPool(new MinetickThreadFactory(Thread.NORM_PRIORITY + 1, "MinetickMod_WorldTicker"));
+    private PathSearchThrottlerThread pathSearchThrottler;
     private LockObject worldTickerLock = new LockObject();
     private ScheduledFuture<Object> tickTimerTask;
     private TickTimer tickTimerObject;
@@ -57,8 +61,10 @@ public class MinetickMod {
     private HashSet<String> notGeneratingWorlds;
     private int maxEntityLifeTime = 10;
     private HashSet<EntityType> entitiesToDelete;
+    private HashSet<EntityType> entitiesWithOffloadedPathSearches;
     private Logger logger = Logger.getLogger("Minecraft");
     private int[] activationRange = new int[] { 16, 64, 88 };
+    private int minimumPathSearchOffloadDistance = 8;
 
     private static boolean initDone = false;
     private static MinetickMod instance;
@@ -72,6 +78,8 @@ public class MinetickMod {
         this.timerService.scheduleAtFixedRate(this.tickCounterObject, 1, 1, TimeUnit.SECONDS);
         this.notGeneratingWorlds = new HashSet<String>();
         this.entitiesToDelete = new HashSet<EntityType>();
+        this.entitiesWithOffloadedPathSearches = new HashSet<EntityType>();
+        this.pathSearchThrottler = new PathSearchThrottlerThread();
         instance = this;
     }
 
@@ -130,6 +138,17 @@ public class MinetickMod {
             }
 
             this.loadActivationRange(craftserver.getMinetickModActivationRange(this.activationRange));
+
+            List<String> entitiesWithOffloadedPathSearches = craftserver.getMinetickModEntitiesWithOffloadedPathSearches();
+            for(String name: entitiesWithOffloadedPathSearches) {
+                try {
+                    EntityType type = EntityType.valueOf(name.toUpperCase());
+                    this.entitiesWithOffloadedPathSearches.add(type);
+                } catch (IllegalArgumentException e) {
+                    logger.warning("[MinetickMod] Settings: Skipping \"" + name + "\", as it is not a constant in org.bukkit.entity.EntityType!");
+                }
+            }
+            this.minimumPathSearchOffloadDistance = craftserver.getMinetickModMinimumTargetDistanceForOffloading(this.minimumPathSearchOffloadDistance);
         }
     }
 
@@ -167,6 +186,7 @@ public class MinetickMod {
 
     public void shutdown() {
         this.timerService.shutdown();
+        this.pathSearchThrottler.shutdown();
         PacketBuilderThreadPool.shutdownStatic();
         AntiXRay.shutdown();
         this.nbtFileService.shutdown();
@@ -257,6 +277,10 @@ public class MinetickMod {
         return this.worldTickerService.submit(new WorldTicker(worldServer, this.profiler, this.worldTickerLock));
     }
 
+    public static void queuePathSearch(PathSearchJob pathSearchJob) {
+        instance.pathSearchThrottler.queuePathSearch(pathSearchJob);
+    }
+
     public static int[] getActivationRange() {
         return instance.activationRange;
     }
@@ -276,5 +300,13 @@ public class MinetickMod {
             return true;
         }
         return false;
+    }
+
+    public static boolean isPathSearchOffloadedFor(EntityInsentient entity) {
+        return instance.entitiesWithOffloadedPathSearches.contains(entity.getBukkitEntity().getType());
+    }
+
+    public static double getMinimumPathSearchOffloadDistance() {
+        return instance.minimumPathSearchOffloadDistance;
     }
 }

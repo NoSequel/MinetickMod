@@ -73,3 +73,16 @@ minetickmod:
         low: 16
         high: 64
         max: 88
+    minimumTargetDistanceForOffloadedPathSearches: 8
+    entitiesWithOffloadedPathSearches:
+    - BAT
+    - CHICKEN
+    - COW
+    - CREEPER
+    - MAGMA_CUBE
+    - PIG
+    - SHEEP
+    - SKELETON
+    - SLIME
+    - SQUID
+    - ZOMBIE

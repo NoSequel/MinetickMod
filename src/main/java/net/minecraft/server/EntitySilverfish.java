@@ -129,7 +129,8 @@ public class EntitySilverfish extends EntityMonster {
                 }
             }
 
-            if (this.target == null && !this.bM()) {
+            //if (this.target == null && !this.bM()) {
+            if (this.target == null && !this.bM() && !this.isSearchingForAPath()) { // Poweruser
                 i = MathHelper.floor(this.locX);
                 j = MathHelper.floor(this.locY + 0.5D);
                 k = MathHelper.floor(this.locZ);
@@ -149,7 +150,8 @@ public class EntitySilverfish extends EntityMonster {
                 } else {
                     this.bK();
                 }
-            } else if (this.target != null && !this.bM()) {
+            //} else if (this.target != null && !this.bM()) {
+            } else if (this.target != null && !this.bM() && !this.isSearchingForAPath()) { // Poweruser
                 this.target = null;
             }
         }

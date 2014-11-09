@@ -8,11 +8,16 @@ import org.bukkit.event.entity.EntityTargetEvent;
 import org.bukkit.event.entity.EntityUnleashEvent;
 // CraftBukkit end
 
+import de.minetick.MinetickMod;
+import de.minetick.pathsearch.PathSearchJobEntity;
+import de.minetick.pathsearch.PathSearchJobPosition;
+
 public abstract class EntityCreature extends EntityInsentient {
 
     public static final UUID h = UUID.fromString("E199AD21-BA8A-4C53-8D13-6182D5C69D3A");
     public static final AttributeModifier i = (new AttributeModifier(h, "Fleeing speed bonus", 2.0D, 2)).a(false);
     public PathEntity pathEntity; // CraftBukkit - private -> public
+    private PathEntity returnedPathEntity; // Poweruser
     public Entity target; // CraftBukkit - protected -> public
     protected boolean bn;
     protected int bo;
@@ -20,6 +25,42 @@ public abstract class EntityCreature extends EntityInsentient {
     private float br = -1.0F;
     private PathfinderGoal bs = new PathfinderGoalMoveTowardsRestriction(this, 1.0D);
     private boolean bt;
+
+    // Poweruser start
+    private boolean searchIssued = false;
+
+    public boolean isSearchingForAPath() {
+        return this.searchIssued;
+    }
+
+    private void issueSearch(int x, int y, int z, float range) {
+        if(!this.searchIssued) {
+            this.searchIssued = true;
+            MinetickMod.queuePathSearch(new PathSearchJobPosition(this, x, y, z, range, true, false, false, true));
+        }
+    }
+
+    private void issueSearch(Entity target, float range) {
+        if(!this.searchIssued) {
+            this.searchIssued = true;
+            MinetickMod.queuePathSearch(new PathSearchJobEntity(this, target, range, true, false, false, true));
+        }
+    }
+
+    public void setPathEntityByTarget(Entity target, PathEntity pathentity) {
+        if(this.searchIssued && this.target != null) {
+            if(this.target.equals(target)) {
+                this.returnedPathEntity = pathentity;
+            }
+            this.searchIssued = false;
+        }
+    }
+
+    public void setPathEntityByPosition(PathEntity pathentity) {
+        this.returnedPathEntity = pathentity;
+        this.searchIssued = false;
+    }
+    // Poweruser end
 
     public EntityCreature(World world) {
         super(world);
@@ -58,7 +99,8 @@ public abstract class EntityCreature extends EntityInsentient {
             // CraftBukkit end
 
             if (this.target != null) {
-                this.pathEntity = this.world.findPath(this, this.target, f11, true, false, false, true);
+                //this.pathEntity = this.world.findPath(this, this.target, f11, true, false, false, true);
+                this.issueSearch(this.target, f11); // Poweruser
             }
         } else if (this.target.isAlive()) {
             float f1 = this.target.d((Entity) this);
@@ -82,8 +124,17 @@ public abstract class EntityCreature extends EntityInsentient {
         }
 
         this.world.methodProfiler.b();
+
+        // Poweruser start
+        if(this.returnedPathEntity != null) {
+            this.pathEntity = this.returnedPathEntity;
+            this.returnedPathEntity = null;
+        }
+        // Poweruser end
+
         if (!this.bn && this.target != null && (this.pathEntity == null || this.random.nextInt(20) == 0)) {
-            this.pathEntity = this.world.findPath(this, this.target, f11, true, false, false, true);
+            //this.pathEntity = this.world.findPath(this, this.target, f11, true, false, false, true);
+            this.issueSearch(this.target, f11); // Poweruser
         } else if (!this.bn && (this.pathEntity == null && this.random.nextInt(180) == 0 || this.random.nextInt(120) == 0 || this.bo > 0) && this.aV < 100) {
             this.bK();
         }
@@ -186,7 +237,8 @@ public abstract class EntityCreature extends EntityInsentient {
         }
 
         if (flag) {
-            this.pathEntity = this.world.a(this, i, j, k, 10.0F, true, false, false, true);
+            //this.pathEntity = this.world.a(this, i, j, k, 10.0F, true, false, false, true);
+            this.issueSearch(i, j, k, 10.0F); // Poweruser
         }
 
         this.world.methodProfiler.b();
