@@ -63,9 +63,10 @@ public class Profile {
                 m = "0" + m;
             }
             int year = c.get(Calendar.YEAR);
-            String path = "Profiler\\" + year + "." + m + "\\" + d;
-            this.folder = new File(path);
-            this.file = new File(path + "\\MTProfiler_" + df.format(new Date()) + "_" + ident + ".txt");
+            File path = new File("Profiler");
+            path = new File(path, year + "." + m);
+            this.folder = new File(path, d);
+            this.file = new File(this.folder, "MTProfiler_" + df.format(new Date()) + "_" + ident + ".txt");
         }
         this.lastIndex = 0;
         this.index = 0;
