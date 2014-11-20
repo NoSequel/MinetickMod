@@ -45,8 +45,7 @@ public class ThreadListCommand extends Command {
             SimpleDateFormat df = new SimpleDateFormat ("yyyy.MM.dd_HH-mm-ss");
             String folderName = "Profiler";
             File folder = new File(folderName);
-            String pathToFile = folderName + "\\ThreadList-" + df.format(new Date()) + ".txt";
-            File file = new File(pathToFile);
+            File file = new File(folder, "ThreadList-" + df.format(new Date()) + ".txt");
             NavigableMap<Long, Thread> rev = map.descendingMap();
             Iterator<Entry<Long, Thread>> iter = rev.entrySet().iterator();
             PrintWriter bw = null;
@@ -72,7 +71,7 @@ public class ThreadListCommand extends Command {
                     }
                 }
                 bw.flush();
-                sender.sendMessage("Thread details logged: "  + pathToFile);
+                sender.sendMessage("Thread details logged: "  + file.getName());
             } catch (IOException e) {
                 sender.sendMessage("An error ocurrred, while logging all Threads: " + e.getMessage());
             } finally {
