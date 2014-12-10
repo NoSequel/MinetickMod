@@ -1,7 +1,6 @@
 package de.minetick.packetbuilder;
 
-public interface PacketBuilderJobInterface {
+public interface PacketBuilderJobInterface extends Runnable {
 
-    public void buildAndSendPacket(PacketBuilderBuffer pbb);
-    public void clear();
+    public void assignBuildBuffer(PacketBuilderBuffer pbb);
 }
