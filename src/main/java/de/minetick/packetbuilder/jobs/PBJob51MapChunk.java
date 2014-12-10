@@ -20,6 +20,8 @@ public class PBJob51MapChunk implements PacketBuilderJobInterface {
     ArrayList<PlayerConnection> validOnes = new ArrayList<PlayerConnection>();
     private boolean multipleConnections;
 
+    private PacketBuilderBuffer pbb;
+
     public PBJob51MapChunk(PlayerConnection connection, PlayerChunkSendQueue chunkQueue, PacketBuilderChunkData chunkData) {
         this.multipleConnections = false;
         this.connection = connection;
@@ -35,10 +37,10 @@ public class PBJob51MapChunk implements PacketBuilderJobInterface {
     }
 
     @Override
-    public void buildAndSendPacket(PacketBuilderBuffer pbb) {
+    public void run() {
         boolean packetSent = false;
         Chunk chunk = this.chunkData.getChunk();
-        Packet51MapChunk packet = new Packet51MapChunk(pbb, chunk, this.chunkData.getSendAllFlag(), this.chunkData.getSectionBitmask());
+        Packet51MapChunk packet = new Packet51MapChunk(this.pbb, chunk, this.chunkData.getSendAllFlag(), this.chunkData.getSectionBitmask());
         if(this.multipleConnections) {
             for(int a = 0; a < this.connections.length; a++) {
                 if(this.chunkQueues[a] != null && this.connections[a] != null) {
@@ -94,5 +96,11 @@ public class PBJob51MapChunk implements PacketBuilderJobInterface {
         }
         this.connection = null;
         this.chunkQueue = null;
+        this.pbb = null;
+    }
+
+    @Override
+    public void assignBuildBuffer(PacketBuilderBuffer pbb) {
+        this.pbb = pbb;
     }
 }

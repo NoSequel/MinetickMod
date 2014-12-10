@@ -1,77 +1,33 @@
 package de.minetick.packetbuilder;
 
-import java.util.Observable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-public class PacketBuilderThread extends Observable implements Runnable {
+import de.minetick.MinetickThreadFactory;
 
-    private static int threadCounter = 0;
-    private PacketBuilderJobInterface job;
-    private boolean active;
-    private Object waitObject;
-    private Thread thread;
+public class PacketBuilderThread {
+
+    private int id;
+    private static volatile int threadCounter = 0;
+    private ExecutorService thread;
     private PacketBuilderBuffer buildBuffer;
 
     public PacketBuilderThread() {
-        this.active = true;
+        this.id = threadCounter++;
+        this.thread = Executors.newSingleThreadExecutor(new MinetickThreadFactory(Thread.NORM_PRIORITY - 2, "MinetickMod_PacketBuilder-" + this.id));
         this.buildBuffer = new PacketBuilderBuffer();
-        this.waitObject = new Object();
-        this.thread = new Thread(this);
-        this.thread.setName("MinetickMod_PacketBuilderThread-" + threadCounter);
-        threadCounter++;
-        /*
-         *  These threads create so much cpu load, that they have an impact on the main thread
-         *  Thread.MIN_PRIORITY = 1
-         *  Thread.NORMAL_PRIORITY = 5
-         *  Thread.MAX_PRIORITY = 10
-         */
-        this.thread.setPriority(Thread.NORM_PRIORITY - 2);
-        this.thread.start();
     }
 
-    public String getName() {
-        return this.thread.getName();
-    }
-
-    @Override
-    public void run() {
-        while(this.active) {
-            if(this.job == null) {
-                synchronized(this.waitObject) {
-                    try {
-                        this.waitObject.wait();
-                    } catch (InterruptedException e) {}
-                }
-            } else {
-                try {
-                    this.job.buildAndSendPacket(this.buildBuffer);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    this.job.clear();
-                }
-                this.job = null;
-                this.setChanged();
-                this.notifyObservers();
-            }
+    public boolean addJob(PacketBuilderJobInterface job) {
+        if(!this.thread.isShutdown()) {
+            job.assignBuildBuffer(this.buildBuffer);
+            this.thread.submit(job);
+            return true;
         }
-        this.buildBuffer.clear();
-        this.buildBuffer = null;
-    }
-
-    public void addJob(PacketBuilderJobInterface job) {
-        this.job = job;
-        synchronized(this.waitObject) {
-            this.waitObject.notifyAll();
-        }
-    }
-
-    public void fastAddJob(PacketBuilderJobInterface job) {
-        this.job = job;
+        return false;
     }
 
     public void shutdown() {
-        this.active = false;
-        synchronized(this.waitObject) {
-            this.waitObject.notifyAll();
-        }
+        this.thread.shutdown();
     }
 }

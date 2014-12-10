@@ -14,6 +14,8 @@ public class PBJob56MapChunkBulk implements PacketBuilderJobInterface {
     private PlayerChunkSendQueue chunkQueue;
     private PacketBuilderChunkDataBulk chunkData;
 
+    private PacketBuilderBuffer pbb;
+
     public PBJob56MapChunkBulk(PlayerConnection connection, PacketBuilderChunkDataBulk chunkData, PlayerChunkSendQueue chunkQueue) {
         this.connection = connection;
         this.chunkData = chunkData;
@@ -21,13 +23,13 @@ public class PBJob56MapChunkBulk implements PacketBuilderJobInterface {
     }
 
     @Override
-    public void buildAndSendPacket(PacketBuilderBuffer pbb) {
+    public void run() {
         if(this.chunkQueue == null || this.connection == null) {
             this.chunkData.clear();
             this.clear();
             return;
         }
-        Packet56MapChunkBulk packet = new Packet56MapChunkBulk(pbb, this.chunkData.getChunks());
+        Packet56MapChunkBulk packet = new Packet56MapChunkBulk(this.pbb, this.chunkData.getChunks());
         boolean allStillListed = this.chunkData.verifyLoadedChunks(this.chunkQueue);
         if(allStillListed) {
             packet.setPendingUses(1);
@@ -48,5 +50,11 @@ public class PBJob56MapChunkBulk implements PacketBuilderJobInterface {
         this.chunkData = null;
         this.connection = null;
         this.chunkQueue = null;
+        this.pbb = null;
+    }
+
+    @Override
+    public void assignBuildBuffer(PacketBuilderBuffer pbb) {
+        this.pbb = pbb;
     }
 }
