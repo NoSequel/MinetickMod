@@ -20,6 +20,8 @@ public class PBJobPlayOutMapChunk implements PacketBuilderJobInterface {
     ArrayList<PlayerConnection> validOnes = new ArrayList<PlayerConnection>();
     private boolean multipleConnections;
 
+    private PacketBuilderBuffer pbb;
+
     public PBJobPlayOutMapChunk(PlayerConnection connection, PlayerChunkSendQueue chunkQueue, PacketBuilderChunkData chunkData) {
         this.multipleConnections = false;
         this.connection = connection;
@@ -35,10 +37,10 @@ public class PBJobPlayOutMapChunk implements PacketBuilderJobInterface {
     }
 
     @Override
-    public void buildAndSendPacket(PacketBuilderBuffer pbb) {
+    public void run() {
         boolean packetSent = false;
         Chunk chunk = this.chunkData.getChunk();
-        PacketPlayOutMapChunk packet = new PacketPlayOutMapChunk(pbb, chunk, this.chunkData.getSendAllFlag(), this.chunkData.getSectionBitmask());
+        PacketPlayOutMapChunk packet = new PacketPlayOutMapChunk(this.pbb, chunk, this.chunkData.getSendAllFlag(), this.chunkData.getSectionBitmask());
         if(this.multipleConnections) {
             for(int a = 0; a < this.connections.length; a++) {
                 if(this.chunkQueues[a] != null && this.connections[a] != null) {
@@ -76,7 +78,7 @@ public class PBJobPlayOutMapChunk implements PacketBuilderJobInterface {
         this.clear();
     }
 
-    public void clear() {
+    private void clear() {
         this.validOnes.clear();
         this.validOnes = null;
         this.chunkData.clear();
@@ -94,5 +96,11 @@ public class PBJobPlayOutMapChunk implements PacketBuilderJobInterface {
         }
         this.connection = null;
         this.chunkQueue = null;
+        this.pbb = null;
+    }
+
+    @Override
+    public void assignBuildBuffer(PacketBuilderBuffer pbb) {
+        this.pbb = pbb;
     }
 }
