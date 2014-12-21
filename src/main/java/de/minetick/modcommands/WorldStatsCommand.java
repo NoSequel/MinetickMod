@@ -29,7 +29,7 @@ public class WorldStatsCommand extends Command {
 
     @Override
     public boolean execute(CommandSender sender, String currentAlias, String[] args) {
-        if(!sender.isOp()) {
+        if(!sender.hasPermission("minetickmod.commands.worldstats")) {
             sender.sendMessage("You are not allowed to use this command!");
             return true;
         }
