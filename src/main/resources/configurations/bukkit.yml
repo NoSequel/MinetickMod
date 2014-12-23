@@ -62,6 +62,11 @@ minetickmod:
     antixrayThreadPoolSize: -1
     packetBuilderThreadPoolSize: -1
     packetsPerTick: 1
+    packetChunkRates:
+        HIGHEST: 5
+        HIGH: 3
+        MODERATE: 2
+        LOW: 1
     notGeneratingWorlds: []
     maxEntityLifeTime: 10
     entitiesWithLimitedLifeTime: []

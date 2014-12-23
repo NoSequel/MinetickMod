@@ -37,6 +37,7 @@ import net.minecraft.server.WorldServer;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.EntityType;
 
+import de.minetick.MinetickChunkCoordComparator.ChunkPriority;
 import de.minetick.antixray.AntiXRay;
 import de.minetick.modcommands.AntiXRayCommand;
 import de.minetick.modcommands.PacketCompressionCommand;
@@ -131,6 +132,8 @@ public class MinetickMod {
                 packets = 1;
             }
             PlayerChunkManager.packetsPerTick = packets;
+            craftserver.getMinetickModPacketChunkRates(ChunkPriority.values());
+
             List<String> worlds = craftserver.getMinetickModNotGeneratingWorlds();
             for(String w: worlds) {
                 this.notGeneratingWorlds.add(w.toLowerCase());

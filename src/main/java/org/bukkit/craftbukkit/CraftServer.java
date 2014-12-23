@@ -131,7 +131,11 @@ import com.avaje.ebeaninternal.server.lib.sql.TransactionIsolation;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.MapMaker;
 
+// Poweruser start
+import net.minecraft.server.Packet56MapChunkBulk;
 import de.minetick.ChunkGenerationPolicy;
+import de.minetick.MinetickChunkCoordComparator.ChunkPriority;
+// Poweruser end
 
 import jline.console.ConsoleReader;
 
@@ -1467,6 +1471,23 @@ public final class CraftServer implements Server {
 
     public int getMinetickModMinimumTargetDistanceForOffloading(int defaultDistance) {
         return configuration.getInt("minetickmod.minimumTargetDistanceForOffloadedPathSearches", defaultDistance);
+    }
+
+    public void getMinetickModPacketChunkRates(ChunkPriority[] values) {
+        ConfigurationSection section = configuration.getConfigurationSection("minetickmod.packetChunkRates");
+        Set<String> subkeys = section.getKeys(false);
+        for(String key: subkeys) {
+            int chunkCount = section.getInt(key);
+            if(chunkCount >= 1 && chunkCount <= 5) {
+                ChunkPriority priority = ChunkPriority.findEntry(key);
+                if(priority != null) {
+                    priority.setChunksPerPacket(chunkCount);
+                } else {
+                    getLogger().warning("[MinetickMod] The config entry minetickmod.packetChunkRates." + key + " is invalid. Removing it from the config.");
+                    section.set(key, null);
+                }
+            }
+        }
     }
     // Poweruser end
 }
