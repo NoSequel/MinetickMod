@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
 
+import de.minetick.MinetickChunkCoordComparator.ChunkPriority;
 import de.minetick.packetbuilder.PacketBuilderChunkDataBulk;
 import de.minetick.packetbuilder.PacketBuilderThreadPool;
 import de.minetick.packetbuilder.jobs.PBJobPlayOutMapChunkBulk;
@@ -172,6 +173,10 @@ public class PlayerChunkManager {
                             if(chunk.k()) {
                                 chunkData.addChunk(chunk);
                                 chunkQueue.removeFirst(true);
+                                ChunkPriority priority = buff.comp.getChunkPriority(chunkcoordintpair);
+                                if(chunkData.size() >= priority.getChunksPerPacket()) {
+                                    break;
+                                }
                             } else {
                                 chunkQueue.skipFirst();
                                 skipped++;
