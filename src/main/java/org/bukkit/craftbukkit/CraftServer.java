@@ -1742,9 +1742,9 @@ public final class CraftServer implements Server {
     }
 
     public int[] getMinetickModActivationRange(int[] defaultRanges) {
-        int low = configuration.getInt("minetickmod.activationrange.low", defaultRanges[0]);
-        int high = configuration.getInt("minetickmod.activationrange.high", defaultRanges[1]);
-        int max = configuration.getInt("minetickmod.activationrange.max", defaultRanges[2]);
+        int low = configuration.getInt("minetickmod.activationRange.low", defaultRanges[0]);
+        int high = configuration.getInt("minetickmod.activationRange.high", defaultRanges[1]);
+        int max = configuration.getInt("minetickmod.activationRange.max", defaultRanges[2]);
         return new int[] {low, high, max};
     }
 
