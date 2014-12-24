@@ -18,14 +18,17 @@ import java.util.logging.Logger;
 
 import net.minecraft.server.Entity;
 import net.minecraft.server.EntityArrow;
+import net.minecraft.server.EntityComplexPart;
 import net.minecraft.server.EntityEnderCrystal;
 import net.minecraft.server.EntityEnderDragon;
 import net.minecraft.server.EntityFireball;
+import net.minecraft.server.EntityFireworks;
 import net.minecraft.server.EntityGhast;
 import net.minecraft.server.EntityInsentient;
 import net.minecraft.server.EntityLiving;
 import net.minecraft.server.EntityPlayer;
 import net.minecraft.server.EntityProjectile;
+import net.minecraft.server.EntityWeather;
 import net.minecraft.server.EntityWither;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.NBTCompressedStreamTools;
@@ -180,7 +183,9 @@ public class MinetickMod {
         return (entity instanceof EntityArrow || entity instanceof EntityPlayer ||
                 entity instanceof EntityProjectile || entity instanceof EntityFireball ||
                 entity instanceof EntityWither || entity instanceof EntityEnderCrystal ||
-                entity instanceof EntityEnderDragon || entity instanceof EntityGhast);
+                entity instanceof EntityEnderDragon || entity instanceof EntityGhast ||
+                entity instanceof EntityFireworks || entity instanceof EntityComplexPart ||
+                entity instanceof EntityWeather);
     }
 
     public void startTickTimerTask() {
