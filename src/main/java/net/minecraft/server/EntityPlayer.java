@@ -28,6 +28,8 @@ import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 // CraftBukkit end
 
+import de.minetick.MinetickMod;
+import de.minetick.PlayerChunkBuffer;
 import de.minetick.PlayerChunkSendQueue;
 
 public class EntityPlayer extends EntityHuman implements ICrafting {
@@ -69,6 +71,18 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
     // CraftBukkit end
 
     // Poweruser start
+    private int clientViewDistance;
+
+    public void setViewDistance(int distance) {
+        this.clientViewDistance = Math.max(distance, MinetickMod.minimumViewDistance());
+        this.clientViewDistance = Math.min(this.clientViewDistance, 15);
+        MinetickMod.setPlayerViewDistance(this.getName(), this.clientViewDistance);
+    }
+
+    public int getViewDistance() {
+        return this.clientViewDistance;
+    }
+
     public PlayerChunkSendQueue chunkQueue;
     public ConcurrentLinkedQueue<Chunk> chunksForTracking = new ConcurrentLinkedQueue<Chunk>();
 
@@ -115,7 +129,10 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
         this.maxHealthCache = this.getMaxHealth();
         // CraftBukkit end
 
-        this.isPlayer = true; // Poweruser
+        // Poweruser start
+        this.isPlayer = true;
+        this.clientViewDistance = MinetickMod.getPlayerViewDistance(this.getName(), worldserver.getPlayerChunkMap());
+        // Poweruser end
     }
 
     public void a(NBTTagCompound nbttagcompound) {
@@ -998,6 +1015,8 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
         if (i > 3 && i < 15) {
             this.bV = i;
         }
+
+        this.setViewDistance(packetplayinsettings.d()); // Poweruser
 
         this.bW = packetplayinsettings.e();
         this.bX = packetplayinsettings.f();
