@@ -2,6 +2,8 @@ package de.minetick;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Collections;
 import java.util.HashSet;
@@ -35,8 +37,11 @@ import net.minecraft.server.NBTCompressedStreamTools;
 import net.minecraft.server.NBTTagCompound;
 import net.minecraft.server.Packet51MapChunk;
 import net.minecraft.server.Packet56MapChunkBulk;
+import net.minecraft.server.PlayerChunkMap;
 import net.minecraft.server.WorldServer;
 
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.EntityType;
 
@@ -78,6 +83,8 @@ public class MinetickMod {
     private Logger logger = Logger.getLogger("Minecraft");
     private int[] activationRange = new int[] { 16, 64, 88 };
     private int minimumPathSearchOffloadDistance = 8;
+    private File configFile;
+    private FileConfiguration modConfig;
 
     private static boolean initDone = false;
     private static MinetickMod instance;
@@ -93,6 +100,7 @@ public class MinetickMod {
         this.entitiesToDelete = new HashSet<EntityType>();
         this.entitiesWithOffloadedPathSearches = new HashSet<EntityType>();
         this.pathSearchThrottler = new PathSearchThrottlerThread();
+        this.configFile = new File("viewdistance.yml");
         instance = this;
     }
 
@@ -164,6 +172,16 @@ public class MinetickMod {
                 }
             }
             this.minimumPathSearchOffloadDistance = craftserver.getMinetickModMinimumTargetDistanceForOffloading(this.minimumPathSearchOffloadDistance);
+
+            try {
+                if(!this.configFile.exists()) {
+                    this.configFile.createNewFile();
+                }
+                this.modConfig = YamlConfiguration.loadConfiguration(this.configFile);
+            } catch (IOException e) {
+                log.error(e.toString());
+                e.printStackTrace();
+            }
         }
     }
 
@@ -220,6 +238,14 @@ public class MinetickMod {
                     logger.warning("MinetickMod is still waiting for NBT Files to be saved.");
                 }
             } catch(InterruptedException e) {}
+        }
+        try {
+            if(this.modConfig != null) {
+                this.modConfig.save(this.configFile);
+            }
+        } catch (IOException e){
+            log.error("Exception while saving view distance settings");
+            e.printStackTrace();
         }
     }
 
@@ -332,5 +358,27 @@ public class MinetickMod {
 
     public static double getMinimumPathSearchOffloadDistance() {
         return instance.minimumPathSearchOffloadDistance;
+    }
+
+    public static int minimumViewDistance() {
+        return 3;
+    }
+
+    public static boolean setPlayerViewDistance(String playerName, int viewDistance) {
+        if(instance.modConfig != null) {
+            instance.modConfig.set(playerName.toLowerCase(), Math.max(viewDistance, minimumViewDistance()));
+            return true;
+        }
+        return false;
+    }
+
+    public static int getPlayerViewDistance(String playerName, PlayerChunkMap map) {
+        int defaultVD = map.getViewDistance();
+        if(instance.modConfig != null) {
+            int playerVD = instance.modConfig.getInt(playerName.toLowerCase(), defaultVD);
+            playerVD = Math.max(playerVD, minimumViewDistance());
+            return Math.min(playerVD, defaultVD);
+        }
+        return defaultVD;
     }
 }

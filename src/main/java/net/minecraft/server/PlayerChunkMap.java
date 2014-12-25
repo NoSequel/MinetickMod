@@ -153,14 +153,13 @@ public class PlayerChunkMap {
         PlayerChunkBuffer buffer = this.playerChunkManager.addPlayer(entityplayer);
         PlayerChunkSendQueue sendQueue = buffer.getPlayerChunkSendQueue();
         entityplayer.setPlayerChunkSendQueue(sendQueue);
-        // Poweruser end
         // CraftBukkit start - Load nearby chunks first
         //List<ChunkCoordIntPair> chunkList = new LinkedList<ChunkCoordIntPair>();
         List<ChunkCoordIntPair> chunkList = new ArrayList<ChunkCoordIntPair>(450); // Poweruser
         boolean areaExists = this.playerChunkManager.doAllCornersOfPlayerAreaExist(i, j, this.f);
-        for (int k = i - this.f; k <= i + this.f; ++k) {
-            for (int l = j - this.f; l <= j + this.f; ++l) {
-                // Poweruser start
+        int playersVD = entityplayer.getViewDistance();
+        for (int k = i - playersVD; k <= i + playersVD; ++k) {
+            for (int l = j - playersVD; l <= j + playersVD; ++l) {
                 ChunkCoordIntPair ccip = new ChunkCoordIntPair(k, l);
                 sendQueue.addToServer(k, l);
                 if(areaExists) {
@@ -173,9 +172,9 @@ public class PlayerChunkMap {
                 } else {
                     buffer.addLowPriorityChunk(ccip);
                 }
-                // Poweruser end
             }
         }
+        // Poweruser end
 
         //Collections.sort(chunkList, new ChunkCoordComparator(entityplayer));
         for (ChunkCoordIntPair pair : chunkList) {

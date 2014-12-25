@@ -28,6 +28,7 @@ public class PlayerChunkBuffer {
     private int[] playerRegionCenter;
     private int[] lastMovement;
     private ArrayDeque<PlayerMovement> movement;
+    private int oldViewDistance;
 
     public PlayerChunkBuffer(PlayerChunkManager playerChunkManager, EntityPlayer ent) {
         this.playerChunkManager = playerChunkManager;
@@ -39,6 +40,9 @@ public class PlayerChunkBuffer {
         this.playerRegionCenter = new int[] { MathHelper.floor(ent.locX) >> 4, MathHelper.floor(ent.locZ) >> 4 };
         this.lastMovement = new int[] { 0, 0 };
         this.movement = new ArrayDeque<PlayerMovement>();
+        int savedVD = MinetickMod.getPlayerViewDistance(ent.getName(), this.playerChunkManager.getPlayerChunkMap());
+        this.oldViewDistance = savedVD;
+        ent.setViewDistance(savedVD);
     }
 
     public PlayerChunkSendQueue getPlayerChunkSendQueue() {
@@ -63,13 +67,14 @@ public class PlayerChunkBuffer {
             if(diffX == 0 && diffZ == 0) {
                 return this.comp;
             }
-            int radius = pcm.getViewDistance();
+            int currentViewDistance = entityplayer.getViewDistance();
+            int radius = Math.max(this.oldViewDistance, currentViewDistance);
             int added = 0, removed = 0;
             boolean areaExists = this.playerChunkManager.doAllCornersOfPlayerAreaExist(newCenterX, newCenterZ, radius);
             for (int pointerX = newCenterX - radius; pointerX <= newCenterX + radius; pointerX++) {
                 for (int pointerZ = newCenterZ - radius; pointerZ <= newCenterZ + radius; pointerZ++) {
                     ChunkCoordIntPair ccip;
-                    if(!PlayerChunkManager.isWithinRadius(pointerX, pointerZ, oldCenterX, oldCenterZ, radius)) {
+                    if(!PlayerChunkManager.isWithinRadius(pointerX, pointerZ, oldCenterX, oldCenterZ, this.oldViewDistance)) {
                         ccip = new ChunkCoordIntPair(pointerX, pointerZ);
                         if(!this.sendQueue.alreadyLoaded(ccip) && !this.sendQueue.isOnServer(ccip)) {
                             added++;
@@ -82,7 +87,7 @@ public class PlayerChunkBuffer {
                         }
                     }
 
-                    if(!PlayerChunkManager.isWithinRadius(pointerX - diffX, pointerZ - diffZ, newCenterX, newCenterZ, radius)) {
+                    if(!PlayerChunkManager.isWithinRadius(pointerX - diffX, pointerZ - diffZ, newCenterX, newCenterZ, currentViewDistance)) {
                         removed++;
                         ccip = new ChunkCoordIntPair(pointerX - diffX, pointerZ - diffZ);
                         this.sendQueue.removeFromServer(ccip.x, ccip.z);
@@ -94,6 +99,9 @@ public class PlayerChunkBuffer {
                         }
                     }
                 }
+            }
+            if(this.oldViewDistance != currentViewDistance) {
+                this.oldViewDistance = currentViewDistance;
             }
         }
         return this.comp;
