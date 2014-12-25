@@ -2128,7 +2128,8 @@ public abstract class World implements IBlockAccess {
             entityhuman = (EntityHuman) this.players.get(i);
             j = MathHelper.floor(entityhuman.locX / 16.0D);
             k = MathHelper.floor(entityhuman.locZ / 16.0D);
-            l = this.p();
+            //l = this.p();
+            l = Math.min(this.p(), ((EntityPlayer)entityhuman).getViewDistance() - 1); // Poweruser
 
             for (int i1 = -l; i1 <= l; ++i1) {
                 for (int j1 = -l; j1 <= l; ++j1) {
