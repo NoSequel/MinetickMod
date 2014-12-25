@@ -301,7 +301,11 @@ public class EntityTrackerEntry {
             double d0 = entityplayer.locX - (double) (this.xLoc / 32);
             double d1 = entityplayer.locZ - (double) (this.zLoc / 32);
 
-            if (d0 >= (double) (-this.b) && d0 <= (double) this.b && d1 >= (double) (-this.b) && d1 <= (double) this.b) {
+            //if (d0 >= (double) (-this.b) && d0 <= (double) this.b && d1 >= (double) (-this.b) && d1 <= (double) this.b) {
+            // Poweruser start
+            double range = (double) Math.min(this.b, (entityplayer.getViewDistance() - 1) * 16);
+            if (d0 >= -range && d0 <= range && d1 >= -range && d1 <= range) {
+            // Poweruser end
                 if (!this.trackedPlayers.contains(entityplayer) && (this.d(entityplayer) || this.tracker.p)) {
                     // CraftBukkit start
                     if (this.tracker instanceof EntityPlayer) {
