@@ -124,7 +124,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
 
         // Poweruser start
         this.isPlayer = true;
-        this.clientViewDistance = MinetickMod.getPlayerViewDistance(this.getName(), worldserver.getPlayerChunkMap());
+        this.clientViewDistance = MinetickMod.getPlayerViewDistance(this.getName(), ((WorldServer)world).getPlayerChunkMap());
         // Poweruser end
     }
 
@@ -900,7 +900,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
             this.bU = i;
         }
 
-        this.setViewDistance(packetplayinsettings.f()); // Poweruser
+        this.setViewDistance(packet204localeandviewdistance.f()); // Poweruser
 
         this.bV = packet204localeandviewdistance.g();
         this.bW = packet204localeandviewdistance.h();

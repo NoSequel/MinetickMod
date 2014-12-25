@@ -179,7 +179,7 @@ public class MinetickMod {
                 }
                 this.modConfig = YamlConfiguration.loadConfiguration(this.configFile);
             } catch (IOException e) {
-                log.error(e.toString());
+                logger.severe(e.toString());
                 e.printStackTrace();
             }
         }
@@ -244,7 +244,7 @@ public class MinetickMod {
                 this.modConfig.save(this.configFile);
             }
         } catch (IOException e){
-            log.error("Exception while saving view distance settings");
+            logger.severe("Exception while saving view distance settings");
             e.printStackTrace();
         }
     }
