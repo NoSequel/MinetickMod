@@ -50,7 +50,8 @@ public final class SpawnerCreature {
                         // CraftBukkit start
                         long chunkCoords = LongHash.toLong(l + k, i1 + j);
 
-                        if (!flag3) {
+                        //if (!flag3) {
+                        if (!flag3 && worldserver.isChunkLoaded(l + k, i1 + j)) { // Poweruser
                             this.a.put(chunkCoords, false);
                         } else if (!this.a.containsKey(chunkCoords)) {
                             this.a.put(chunkCoords, true);
