@@ -886,7 +886,8 @@ public abstract class EntityInsentient extends EntityLiving {
                     EntityLiving entityliving = (EntityLiving) iterator.next();
 
                     if (entityliving.getUniqueID().equals(uuid)) {
-                        this.bw = entityliving;
+                        //this.bw = entityliving;
+                        this.setLeashHolder(entityliving, true); // Poweruser
                         break;
                     }
                 }
@@ -904,7 +905,8 @@ public abstract class EntityInsentient extends EntityLiving {
                     entityleash = EntityLeash.a(this.world, i, j, k);
                 }
 
-                this.bw = entityleash;
+                //this.bw = entityleash;
+                this.setLeashHolder(entityleash, true); // Poweruser
             //} else {
             // Poweruser start
             }
