@@ -238,12 +238,6 @@ public abstract class EntityInsentient extends EntityLiving {
         nbttagcompound.setBoolean("CustomNameVisible", this.getCustomNameVisible());
         nbttagcompound.setBoolean("Leashed", this.bv);
 
-        // Poweruser start
-        if(this.bv && this.bx != null) {
-            this.bJ();
-        }
-        // Poweruser end
-
         if (this.bw != null) {
             nbttagcompound1 = new NBTTagCompound("Leash");
             if (this.bw instanceof EntityLiving) {
@@ -259,6 +253,11 @@ public abstract class EntityInsentient extends EntityLiving {
 
             nbttagcompound.set("Leash", nbttagcompound1);
         }
+        // Poweruser start
+        else if(this.bx != null) {
+            nbttagcompound.set("Leash", this.bx);
+        }
+        // Poweruser end
     }
 
     public void a(NBTTagCompound nbttagcompound) {
