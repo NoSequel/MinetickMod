@@ -179,12 +179,19 @@ public class EntityWolf extends EntityTameableAnimal {
         } else {
             Entity entity = damagesource.getEntity();
 
-            this.bp.setSitting(false);
+            //this.bp.setSitting(false);
             if (entity != null && !(entity instanceof EntityHuman) && !(entity instanceof EntityArrow)) {
                 f = (f + 1.0F) / 2.0F;
             }
 
-            return super.damageEntity(damagesource, f);
+            //return super.damageEntity(damagesource, f);
+            // Poweruser start
+            boolean damageTaken = super.damageEntity(damagesource, f);
+            if(damageTaken) {
+                this.bp.setSitting(false);
+            }
+            return damageTaken;
+            // Poweruser end
         }
     }
 

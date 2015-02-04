@@ -101,8 +101,17 @@ public class EntityOcelot extends EntityTameableAnimal {
         if (this.isInvulnerable()) {
             return false;
         } else {
+            /*
             this.bp.setSitting(false);
             return super.damageEntity(damagesource, f);
+            */
+            // Poweruser start
+            boolean damageTaken = super.damageEntity(damagesource, f);
+            if(damageTaken) {
+                this.bp.setSitting(false);
+            }
+            return damageTaken;
+            // Poweruser end
         }
     }
 
