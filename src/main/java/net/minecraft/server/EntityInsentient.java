@@ -399,12 +399,7 @@ public abstract class EntityInsentient extends EntityLiving {
                     this.die();
                 }
 
-                //if (this.aU > 600 && this.random.nextInt(800) == 0 && d3 > 1024.0D) { // CraftBukkit - remove isTypeNotPersistent() check
-                // Poweruser start - quadruple the despawn chance when the height difference is >20 blocks
-                boolean beyondHeightDiff = (d1 < -20.0D || d1 > 20.0D);
-                int chance = (beyondHeightDiff ? 200 : 800);
-                if (this.aU > 600 && this.random.nextInt(chance) == 0 && (d3 > 1024.0D || beyondHeightDiff)) {
-                // Poweruser end
+                if (this.aU > 600 && this.random.nextInt(800) == 0 && d3 > 1024.0D) { // CraftBukkit - remove isTypeNotPersistent() check
                     this.die();
                 } else if (d3 < 1024.0D) {
                     this.aU = 0;
