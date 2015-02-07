@@ -38,6 +38,8 @@ import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.util.Vector;
 // CraftBukkit end
 
+import de.minetick.MinetickMod; // Poweruser
+
 public abstract class PlayerList {
 
     public static final File a = new File("banned-players.json");
@@ -100,6 +102,12 @@ public abstract class PlayerList {
         if (networkmanager.getSocketAddress() != null) {
             s1 = networkmanager.getSocketAddress().toString();
         }
+
+        // Poweruser start
+        if(MinetickMod.isBungeeCordSupportEnabled() && networkmanager.getRawAddress() != null) {
+            s1 = "BC-Forwarded: " + networkmanager.getRawAddress().toString();
+        }
+        // Poweruser end
 
         // CraftBukkit - Moved message to after join
         // g.info(entityplayer.getName() + "[" + s1 + "] logged in with entity id " + entityplayer.getId() + " at (" + entityplayer.locX + ", " + entityplayer.locY + ", " + entityplayer.locZ + ")");
@@ -350,6 +358,12 @@ public abstract class PlayerList {
         // in the event, check with plugins to see if it's ok, and THEN kick
         // depending on the outcome.
         SocketAddress socketaddress = loginlistener.networkManager.getSocketAddress();
+
+        // Poweruser start
+        if(MinetickMod.isBungeeCordSupportEnabled()) {
+            socketaddress = loginlistener.networkManager.getRawAddress();
+        }
+        // Poweruser end
 
         EntityPlayer entity = new EntityPlayer(this.server, this.server.getWorldServer(0), gameprofile, new PlayerInteractManager(this.server.getWorldServer(0)));
         Player player = entity.getBukkitEntity();

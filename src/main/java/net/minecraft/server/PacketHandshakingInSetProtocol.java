@@ -13,7 +13,8 @@ public class PacketHandshakingInSetProtocol extends Packet {
 
     public void a(PacketDataSerializer packetdataserializer) throws IOException { // CraftBukkit - added throws
         this.a = packetdataserializer.a();
-        this.b = packetdataserializer.c(255);
+        //this.b = packetdataserializer.c(255);
+        this.b = packetdataserializer.c(Short.MAX_VALUE); // Poweruser - Spigot's BungeeCord support
         this.c = packetdataserializer.readUnsignedShort();
         this.d = EnumProtocol.a(packetdataserializer.a());
     }

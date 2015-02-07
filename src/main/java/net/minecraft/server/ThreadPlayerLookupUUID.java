@@ -37,8 +37,7 @@ class ThreadPlayerLookupUUID extends Thread {
             // Poweruser start
                 allowedToEnter = (LoginListener.d(this.a) != null);
             } else {
-                gameprofile = this.a.a(gameprofile);
-                LoginListener.a(this.a, gameprofile);
+                a.initUUID();
             }
             if(allowedToEnter) {
             // Poweruser end

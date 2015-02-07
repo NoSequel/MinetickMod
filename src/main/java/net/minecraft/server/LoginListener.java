@@ -59,10 +59,38 @@ public class LoginListener implements PacketLoginInListener {
         }
     }
 
+    // Poweruser start - Spigot's BungeeCord support
+    public void initUUID()
+    {
+        UUID uuid;
+        if ( networkManager.spoofedUUID != null )
+        {
+            uuid = networkManager.spoofedUUID;
+        } else
+        {
+            uuid = UUID.nameUUIDFromBytes( ( "OfflinePlayer:" + this.i.getName() ).getBytes( Charsets.UTF_8 ) );
+        }
+
+        this.i = new GameProfile( uuid, this.i.getName() );
+
+        if (networkManager.spoofedProfile != null)
+        {
+            for ( net.minecraft.util.com.mojang.authlib.properties.Property property : networkManager.spoofedProfile )
+            {
+                this.i.getProperties().put( property.getName(), property );
+            }
+        }
+    }
+    // Poweruser end
+
     public void c() {
+        // Poweruser start - moved to initUUID
+        /*
         if (!this.i.isComplete()) {
             this.i = this.a(this.i);
         }
+        */
+        // Poweruser end
 
         // CraftBukkit start - fire PlayerLoginEvent
         EntityPlayer s = this.server.getPlayerList().attemptLogin(this, this.i, this.hostname);

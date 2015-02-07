@@ -121,6 +121,12 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         }
     }
 
+    // Poweruser start - Spigot's BungeeCord support
+    public InetSocketAddress getRawAddress() {
+        return (InetSocketAddress) getHandle().playerConnection.networkManager.getRawAddress();
+    }
+    // Poweruser end
+
     @Override
     public double getEyeHeight() {
         return getEyeHeight(false);

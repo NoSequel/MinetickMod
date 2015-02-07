@@ -193,6 +193,7 @@ import net.minecraft.server.PacketPlayOutMapChunkBulk;
 import java.util.HashMap;
 import de.minetick.ChunkGenerationPolicy;
 import de.minetick.MinetickChunkCoordComparator.ChunkPriority;
+import de.minetick.MinetickMod;
 // Poweruser end
 
 import jline.console.ConsoleReader;
@@ -649,7 +650,14 @@ public final class CraftServer implements Server {
     }
 
     public long getConnectionThrottle() {
-        return this.configuration.getInt("settings.connection-throttle");
+        //return this.configuration.getInt("settings.connection-throttle");
+        // Poweruser start - Spigot's BungeeCord support - Automatically set connection throttle for bungee configurations
+        if (MinetickMod.isBungeeCordSupportEnabled()) {
+            return -1;
+        } else {
+            return this.configuration.getInt("settings.connection-throttle");
+        }
+        // Poweruser end
     }
 
     public int getTicksPerAnimalSpawns() {
@@ -1771,6 +1779,10 @@ public final class CraftServer implements Server {
                 }
             }
         }
+    }
+
+    public boolean getMinetickModBungeeCordSupport() {
+        return configuration.getBoolean("minetickmod.bungeeCordSupport");
     }
     // Poweruser end
 }

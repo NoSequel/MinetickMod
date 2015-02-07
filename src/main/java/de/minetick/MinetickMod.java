@@ -96,6 +96,7 @@ public class MinetickMod {
     private int minimumPathSearchOffloadDistance = 8;
     private File configFile;
     private FileConfiguration modConfig;
+    private boolean bungeeCordSupport;
 
     public MinetickMod() {
         this.availableProcessors = Runtime.getRuntime().availableProcessors();
@@ -193,6 +194,8 @@ public class MinetickMod {
                 log.error(e.toString());
                 e.printStackTrace();
             }
+
+            this.bungeeCordSupport = craftserver.getMinetickModBungeeCordSupport();
         }
     }
 
@@ -424,5 +427,9 @@ public class MinetickMod {
             return Math.min(playerVD, defaultVD);
         }
         return defaultVD;
+    }
+
+    public static boolean isBungeeCordSupportEnabled() {
+        return instance.bungeeCordSupport;
     }
 }

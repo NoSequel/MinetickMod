@@ -91,3 +91,4 @@ minetickmod:
     - SLIME
     - SQUID
     - ZOMBIE
+    bungeeCordSupport: false

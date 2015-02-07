@@ -37,7 +37,12 @@ public class NetworkManager extends SimpleChannelInboundHandler {
     private final Queue k = Queues.newConcurrentLinkedQueue();
     private final Queue l = Queues.newConcurrentLinkedQueue();
     private Channel m;
-    private SocketAddress n;
+    //private SocketAddress n;
+    // Poweruser start - Spigot's BungeeCord support
+    public SocketAddress n;
+    public java.util.UUID spoofedUUID;
+    public net.minecraft.util.com.mojang.authlib.properties.Property[] spoofedProfile;
+    // Poweruser end
     private PacketListener o;
     private EnumProtocol p;
     private IChatBaseComponent q;
@@ -207,4 +212,11 @@ public class NetworkManager extends SimpleChannelInboundHandler {
     static Channel a(NetworkManager networkmanager) {
         return networkmanager.m;
     }
+
+    // Poweruser start - Spigot's BungeeCord support
+    public SocketAddress getRawAddress()
+    {
+        return this.m.remoteAddress();
+    }
+    // Poweruser end
 }
