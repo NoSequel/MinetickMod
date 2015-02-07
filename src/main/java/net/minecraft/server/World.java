@@ -1325,6 +1325,7 @@ public abstract class World implements IBlockAccess {
                     int[] range = MinetickMod.getActivationRange();
                     int activationRange = (this.cancelHeavyCalculations ? range[0] : range[1]);
                     float tickChance = (100.0f / (float) this.entityList.size()) * (this.cancelHeavyCalculations ? 0.5f : 1.0f);
+                    int previousTicksLived = entity.ticksLived;
                     if(entity.isImportantEntity() || playerIsPassenger || entity.ticksLived < 120 || this.findNearbyPlayer(entity, (activationRange)) != null || this.random.nextFloat() < tickChance) {
                         if(entity.isPlayer() || playerIsPassenger) {
                             synchronized(LockObject.playerTickLock) {
@@ -1333,12 +1334,11 @@ public abstract class World implements IBlockAccess {
                         } else {
                             this.playerJoinedWorld(entity);
                         }
-                    } else {
-                        if(entity instanceof EntityLiving) {
-                            EntityLiving ei = (EntityLiving) entity;
-                            ei.skipped();
-                            ei.w();
-                        }
+                    }
+                    if(previousTicksLived == entity.ticksLived && entity instanceof EntityLiving) {
+                        EntityLiving ei = (EntityLiving) entity;
+                        ei.skipped();
+                        ei.w();
                     }
                     // Poweruser end
                 } catch (Throwable throwable1) {
