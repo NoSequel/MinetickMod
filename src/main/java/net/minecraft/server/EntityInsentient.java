@@ -412,7 +412,7 @@ public abstract class EntityInsentient extends EntityLiving {
                 double d3 = d0 * d0 + d1 * d1 + d2 * d2;
 
                 //if (d3 > 16384.0D) { // CraftBukkit - remove isTypeNotPersistent() check
-                if (d3 > MinetickMod.getEntityDeleteRange()) { // Poweruser - variable maximum range for despawning
+                if (this.isTypeNotPersistent() && d3 > MinetickMod.getEntityDeleteRange()) { // Poweruser - variable maximum range for despawning, readd isTypeNotPersistent() check
                     this.die();
                 }
 
