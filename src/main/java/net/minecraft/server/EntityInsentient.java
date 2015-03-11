@@ -411,16 +411,17 @@ public abstract class EntityInsentient extends EntityLiving {
                 double d2 = entityhuman.locZ - this.locZ;
                 double d3 = d0 * d0 + d1 * d1 + d2 * d2;
 
-                //if (d3 > 16384.0D) { // CraftBukkit - remove isTypeNotPersistent() check
-                if (this.isTypeNotPersistent() && d3 > MinetickMod.getEntityDeleteRange()) { // Poweruser - variable maximum range for despawning, readd isTypeNotPersistent() check
-                    this.die();
-                }
-
-                if (this.aV > 600 && this.random.nextInt(800) == 0 && d3 > 1024.0D) { // CraftBukkit - remove isTypeNotPersistent() check
-                    this.die();
-                } else if (d3 < 1024.0D) {
+                // Poweruser start
+                if (d3 < 1024.0D) {
                     this.aV = 0;
+                } else if (this.isTypeNotPersistent()) {
+                    if (d3 > MinetickMod.getEntityDeleteRange()) { // variable maximum range for despawning
+                        this.die();
+                    } else if (this.aV > 600 && this.random.nextInt(800) == 0 && d3 > 1024.0D) {
+                        this.die();
+                    }
                 }
+                // Poweruser end
             }
         }
     }
