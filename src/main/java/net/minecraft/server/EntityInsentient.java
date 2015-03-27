@@ -403,26 +403,27 @@ public abstract class EntityInsentient extends EntityLiving {
         if (this.persistent) {
             this.aV = 0;
         } else {
+            double d3 = Double.MAX_VALUE; // Poweruser
             EntityHuman entityhuman = this.world.findNearbyPlayer(this, -1.0D);
 
             if (entityhuman != null) {
                 double d0 = entityhuman.locX - this.locX;
                 double d1 = entityhuman.locY - this.locY;
                 double d2 = entityhuman.locZ - this.locZ;
-                double d3 = d0 * d0 + d1 * d1 + d2 * d2;
-
-                // Poweruser start
-                if (d3 < 1024.0D) {
-                    this.aV = 0;
-                } else if (this.isTypeNotPersistent()) {
-                    if (d3 > MinetickMod.getEntityDeleteRange()) { // variable maximum range for despawning
-                        this.die();
-                    } else if (this.aV > 600 && this.random.nextInt(800) == 0 && d3 > 1024.0D) {
-                        this.die();
-                    }
-                }
-                // Poweruser end
+            // Poweruser start
+                d3 = d0 * d0 + d1 * d1 + d2 * d2;
             }
+
+            if (d3 < 1024.0D) {
+                this.aV = 0;
+            } else if (this.isTypeNotPersistent()) {
+                if (d3 > MinetickMod.getEntityDeleteRange()) { // variable maximum range for despawning
+                    this.die();
+                } else if (this.aV > 600 && this.random.nextInt(800) == 0 && d3 > 1024.0D) {
+                    this.die();
+                }
+            }
+            // Poweruser end
         }
     }
 
