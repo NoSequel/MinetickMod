@@ -361,8 +361,15 @@ public class EntityWolf extends EntityTameableAnimal {
         return this.datawatcher.getByte(19) == 1;
     }
 
+    // Poweruser start
+    @Override
+    protected boolean mayDespawn() {
+        return super.mayDespawn() && (this.aV > 1200 || this.ticksLived > 1200);
+    }
+    // Poweruser end
+
     protected boolean isTypeNotPersistent() {
-        return !this.isTamed() && this.aV > 2400;
+        return !this.isTamed() /*&& this.ticksLived > 2400*/; // CraftBukkit
     }
 
     public boolean a(EntityLiving entityliving, EntityLiving entityliving1) {

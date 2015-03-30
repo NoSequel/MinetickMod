@@ -416,7 +416,7 @@ public abstract class EntityInsentient extends EntityLiving {
 
             if (d3 < 1024.0D) {
                 this.aV = 0;
-            } else if (this.isTypeNotPersistent()) {
+            } else if (this.mayDespawn()) {
                 if (d3 > MinetickMod.getEntityDeleteRange()) { // variable maximum range for despawning
                     this.die();
                 } else if (this.aV > 600 && this.random.nextInt(800) == 0 && d3 > 1024.0D) {
@@ -932,4 +932,10 @@ public abstract class EntityInsentient extends EntityLiving {
 
         this.bx = null;
     }
+
+    // Poweruser start
+    protected boolean mayDespawn() {
+        return !this.persistent && this.isTypeNotPersistent();
+    }
+    // Poweruser end
 }
