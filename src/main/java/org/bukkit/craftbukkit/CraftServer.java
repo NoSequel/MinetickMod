@@ -1646,10 +1646,6 @@ public final class CraftServer implements Server {
         return configuration.getStringList("minetickmod.orebfuscatedWorlds");
     }
 
-    public int getMinetickModAntiXRayPoolSize() {
-        return configuration.getInt("minetickmod.antixrayThreadPoolSize");
-    }
-
     public int getMinetickModPacketBuilderPoolSize() {
         return configuration.getInt("minetickmod.packetBuilderThreadPoolSize");
     }

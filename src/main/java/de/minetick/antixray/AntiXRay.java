@@ -1,19 +1,10 @@
 package de.minetick.antixray;
 
-import java.lang.ref.WeakReference;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import org.bukkit.World.Environment;
-
-import de.minetick.MinetickMod;
-import de.minetick.MinetickThreadFactory;
 
 import net.minecraft.server.Block;
 import net.minecraft.server.Blocks;
@@ -33,21 +24,10 @@ public class AntiXRay {
                                                                   {-3, 0,0},{ 0,0, 3},{ 0,0,-3}};
     private static List<String> configWorlds = new LinkedList<String>();
     private Random random = new Random();
-    private static ScheduledExecutorService scheduledExecutorService;
 
     public static void setWorldsFromConfig(List<String> list) {
         configWorlds.clear();
         configWorlds.addAll(list);
-    }
-
-    public static void adjustThreadPoolSize(int size) {
-        ScheduledExecutorService service = new ScheduledThreadPoolExecutor (
-                size, new MinetickThreadFactory(Thread.MIN_PRIORITY, "MinetickMod_AntiXRay"));
-        ScheduledExecutorService oldOne = scheduledExecutorService;
-        scheduledExecutorService = service;
-        if(oldOne != null) {
-            oldOne.shutdown();
-        }
     }
 
     public boolean isNether(WorldServer world) {
@@ -105,22 +85,57 @@ public class AntiXRay {
 
         // just the lower 4 sections should be enough, thats up to height 64
         int sectionsCount = 4;
-        Future<Boolean>[] tasks = new Future[sectionsCount];
         int sectionStart = 0;
         for(int sectionID = 0; sectionID < sectionsCount; sectionID++) {
             if((chunkSectionsBitMask & (1 << sectionID)) != 0) {
-                tasks[sectionID] = this.scheduledExecutorService.submit(new SectionChecker(sectionID, buildBuffer, dataLength, chunk, sectionStart));
+                this.orebfuscateSection(sectionID, buildBuffer, dataLength, chunk, sectionStart);
                 sectionStart += 4096;
             }
         }
-        for(int i = 0; i < tasks.length; i++) {
-            if(tasks[i] != null) {
-                try {
-                    tasks[i].get();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                } catch (ExecutionException e) {
-                    e.printStackTrace();
+    }
+
+    private void orebfuscateSection(int sectionID, byte[] buildBuffer, int dataLength, Chunk chunk, int sectionStart) {
+        int index = sectionStart;
+        WorldServer worldServer = (WorldServer) chunk.world;
+        for(int y = 0; y < 16; y++) {
+            for(int z = 0; z < 16; z++) {
+                for(int x = 0; x < 16; x++) {
+                    if(index >= dataLength) {
+                        //System.out.println("out of range: " + index + " > " + dataLength);
+                        return;
+                    }
+                    int blockID = buildBuffer[index] & 255;
+                    if(isOverworld(worldServer)) {
+                        if(blocksToHide[blockID]) {
+                            if(hasOnlySolidBlockNeighbours(chunk, sectionID, x, y, z, 1)) {
+                                buildBuffer[index] = 1; // stone
+                            }
+                        } else if(isEnabled()) {
+                            if(isOverworld(worldServer) && blockID == Block.b(Blocks.STONE)) {
+                                double r = random.nextDouble();
+                                if(r < 0.15D) {
+                                    if(hasOnlySolidBlockNeighbours(chunk, sectionID, x, y, z, 2)) {
+                                        if(r < 0.03D) {
+                                            buildBuffer[index] = 56; // diamond ore
+                                        } else if(r < 0.06D) {
+                                            buildBuffer[index] = 15; // iron ore
+                                        } else if(r < 0.09D) {
+                                            buildBuffer[index] = 14; // gold ore
+                                        } else if(r < 0.12D) {
+                                            buildBuffer[index] = 74; // redstone or
+                                        } else if(r < 0.15D) {
+                                            buildBuffer[index] = 48; // mossy cobble
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } else if(isNether(worldServer)) {
+                        if(blocksToHide[blockID] && hasOnlySolidBlockNeighbours(chunk, sectionID, x, y, z, 1)) {
+                            buildBuffer[index] = 87; // nether rack
+                        }
+                    }
+                    index++;
                 }
             }
         }
@@ -218,83 +233,5 @@ public class AntiXRay {
 
     public void disable() {
         this.enabled = false;
-    }
-
-    private class SectionChecker implements Callable<Boolean> {
-
-        private int sectionID;
-        private int sectionStart;
-        private WeakReference<byte[]> buildBuffer;
-        private int dataLength;
-        private Chunk chunk;
-
-        public SectionChecker(int sectionID, byte[] buildBuffer, int dataLength, Chunk chunk, int sectionStart) {
-            this.sectionID = sectionID;
-            this.buildBuffer = new WeakReference<byte[]>(buildBuffer);
-            this.sectionStart = sectionStart;
-            this.dataLength = dataLength;
-            this.chunk = chunk;
-        }
-
-        private Boolean cleanup() {
-            this.chunk = null;
-            this.buildBuffer = null;
-            return true;
-        }
-
-        @Override
-        public Boolean call() throws Exception {
-            int index = this.sectionStart;
-            byte[] buildBuffer = this.buildBuffer.get();
-            WorldServer worldServer = (WorldServer) this.chunk.world;
-            for(int y = 0; y < 16; y++) {
-                for(int z = 0; z < 16; z++) {
-                    for(int x = 0; x < 16; x++) {
-                        if(index >= dataLength) {
-                            //System.out.println("out of range: " + index + " > " + dataLength);
-                            return this.cleanup();
-                        }
-                        int blockID = buildBuffer[index] & 255;
-                        if(isOverworld(worldServer)) {
-                            if(blocksToHide[blockID]) {
-                                if(hasOnlySolidBlockNeighbours(chunk, sectionID, x, y, z, 1)) {
-                                    buildBuffer[index] = 1; // stone
-                                }
-                            } else if(isEnabled()) {
-                                
-                                if(isOverworld(worldServer) && blockID == Block.b(Blocks.STONE)) {
-                                    double r = random.nextDouble();
-                                    if(r < 0.15D) {
-                                        if(hasOnlySolidBlockNeighbours(chunk, sectionID, x, y, z, 2)) {
-                                            if(r < 0.03D) {
-                                                buildBuffer[index] = 56; // diamond ore
-                                            } else if(r < 0.06D) {
-                                                buildBuffer[index] = 15; // iron ore
-                                            } else if(r < 0.09D) {
-                                                buildBuffer[index] = 14; // gold ore
-                                            } else if(r < 0.12D) {
-                                                buildBuffer[index] = 74; // redstone or
-                                            } else if(r < 0.15D) {
-                                                buildBuffer[index] = 48; // mossy cobble
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        } else if(isNether(worldServer)) {
-                            if(blocksToHide[blockID] && hasOnlySolidBlockNeighbours(chunk, sectionID, x, y, z, 1)) {
-                                buildBuffer[index] = 87; // nether rack
-                            }
-                        }
-                        index++;
-                    }
-                }
-            }
-            return this.cleanup();
-        }
-    }
-
-    public static void shutdown() {
-        scheduledExecutorService.shutdown();
     }
 }
