@@ -131,12 +131,6 @@ public class MinetickMod {
                     craftserver.getMinetickModProfilerWriteInterval());
             AntiXRay.setWorldsFromConfig(craftserver.getMinetickModOrebfuscatedWorlds());
             ChunkGenerationPolicy.setRatesFromConfig(craftserver.getMinetickModMaxChunkGenerationRates());
-            int axrps = craftserver.getMinetickModAntiXRayPoolSize();
-            if(axrps <= 0 || axrps > 64) {
-                axrps = this.availableProcessors;
-            }
-            this.antixrayPoolSize = axrps;
-            AntiXRay.adjustThreadPoolSize(this.antixrayPoolSize);
             int pbps = craftserver.getMinetickModPacketBuilderPoolSize();
             if(pbps <= 0 || pbps > 64) {
                 pbps = this.availableProcessors;
@@ -249,7 +243,6 @@ public class MinetickMod {
         this.timerService.shutdown();
         this.pathSearchThrottler.shutdown();
         PacketBuilderThreadPool.shutdownStatic();
-        AntiXRay.shutdown();
         this.nbtFileService.shutdown();
         while(!this.nbtFileService.isTerminated()) {
             try {

@@ -43,12 +43,10 @@ public class ThreadPoolsCommand extends Command {
                     }
                 }
                 if(newSize > 0 && newSize <= 64) {
-                    if(pool.equalsIgnoreCase("antixray")) {
-                        AntiXRay.adjustThreadPoolSize(newSize);
-                    } else if(pool.equalsIgnoreCase("packetbuilder")) {
+                    if(pool.equalsIgnoreCase("packetbuilder")) {
                         PacketBuilderThreadPool.adjustPoolSize(newSize);
+                        sender.sendMessage("Packetbuilder pool size adjusted to " + newSize + " threads.");
                     }
-                    sender.sendMessage("Pool size adjusted to " + newSize + " threads.");
                 } else {
                     sender.sendMessage("Set a value between 1 and 64");
                 }
@@ -62,10 +60,9 @@ public class ThreadPoolsCommand extends Command {
 
     private void sendHelp(CommandSender sender) {
         sender.sendMessage("Usage: /threadpools <poolName> <threadCount>");
-        sender.sendMessage("Example: /theadpools antixray 8  -  Sets 8 threads for orebfuscating");
+        sender.sendMessage("Example: /theadpools packetbuilder 4  -  Sets 4 threads for orebfuscating");
         sender.sendMessage("What you set here is not written to the bukkit.yml settings file. You need to do that manually.");
         sender.sendMessage("Possible thread pool names:");
-        sender.sendMessage("  antixray  - This pool is responsible for orebfuscating the chunks sent to the clients");
-        sender.sendMessage("  packetbuilder  -  This pool creates and compresses the chunk network packets");
+        sender.sendMessage("  packetbuilder  -  This pool creates, orebfuscates and compresses the chunk network packets");
     }
 }
