@@ -248,8 +248,8 @@ public class EntityTrackerEntry {
         }
 
         if (this.tracker instanceof EntityLiving) {
-            AttributeMapServer attributemapserver = (AttributeMapServer) ((EntityLiving) this.tracker).bb();
-            Set set = attributemapserver.b();
+            AttributeMapServer attributemapserver = (AttributeMapServer) ((EntityLiving) this.tracker).getAttributeMap();
+            Set set = attributemapserver.getAttributes();
 
             if (!set.isEmpty()) {
                 // CraftBukkit start - Send scaled max health
@@ -308,7 +308,7 @@ public class EntityTrackerEntry {
             double range = (double) Math.min(this.b, (entityplayer.getViewDistance() - 1) * 16);
             if (d0 >= -range && d0 <= range && d1 >= -range && d1 <= range) {
             // Poweruser end
-                if (!this.trackedPlayers.contains(entityplayer) && (this.d(entityplayer) || this.tracker.n)) {
+                if (!this.trackedPlayers.contains(entityplayer) && (this.d(entityplayer) || this.tracker.attachedToPlayer)) {
                     // CraftBukkit start - respect vanish API
                     if (this.tracker instanceof EntityPlayer) {
                         Player player = ((EntityPlayer) this.tracker).getBukkitEntity();
@@ -329,7 +329,7 @@ public class EntityTrackerEntry {
                     }
 
                     if (this.tracker instanceof EntityLiving) {
-                        AttributeMapServer attributemapserver = (AttributeMapServer) ((EntityLiving) this.tracker).bb();
+                        AttributeMapServer attributemapserver = (AttributeMapServer) ((EntityLiving) this.tracker).getAttributeMap();
                         Collection collection = attributemapserver.c();
 
                         // CraftBukkit start - If sending own attributes send scaled health instead of current maximum health
@@ -487,7 +487,7 @@ public class EntityTrackerEntry {
                 } else if (this.tracker instanceof EntityFallingBlock) {
                     EntityFallingBlock entityfallingblock = (EntityFallingBlock) this.tracker;
 
-                    return new PacketPlayOutSpawnEntity(this.tracker, 70, Block.b(entityfallingblock.f()) | entityfallingblock.data << 16);
+                    return new PacketPlayOutSpawnEntity(this.tracker, 70, Block.getId(entityfallingblock.f()) | entityfallingblock.data << 16);
                 } else if (this.tracker instanceof EntityPainting) {
                     return new PacketPlayOutSpawnEntityPainting((EntityPainting) this.tracker);
                 } else if (this.tracker instanceof EntityItemFrame) {

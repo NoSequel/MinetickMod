@@ -408,7 +408,7 @@ public class CraftWorld implements World {
             break;
         }
 
-        return gen.a(world, rand, loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
+        return gen.generate(world, rand, loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
     }
 
     public boolean generateTree(Location loc, TreeType type, BlockChangeDelegate delegate) {
@@ -705,7 +705,7 @@ public class CraftWorld implements World {
     }
 
     public void setDifficulty(Difficulty difficulty) {
-        this.getHandle().difficulty = EnumDifficulty.a(difficulty.getValue());
+        this.getHandle().difficulty = EnumDifficulty.getById(difficulty.getValue());
     }
 
     public Difficulty getDifficulty() {
@@ -843,8 +843,8 @@ public class CraftWorld implements World {
         double y = location.getBlockY() + 0.5;
         double z = location.getBlockZ() + 0.5;
 
-        EntityFallingBlock entity = new EntityFallingBlock(world, x, y, z, net.minecraft.server.Block.e(material.getId()), data);
-        entity.b = 1; // ticksLived
+        EntityFallingBlock entity = new EntityFallingBlock(world, x, y, z, net.minecraft.server.Block.getById(material.getId()), data);
+        entity.ticksLived = 1;
 
         world.addEntity(entity, SpawnReason.CUSTOM);
         return (FallingBlock) entity.getBukkitEntity();
@@ -878,7 +878,7 @@ public class CraftWorld implements World {
             int type = world.getTypeId((int) x, (int) y, (int) z);
             int data = world.getData((int) x, (int) y, (int) z);
 
-            entity = new EntityFallingBlock(world, x + 0.5, y + 0.5, z + 0.5, net.minecraft.server.Block.e(type), data);
+            entity = new EntityFallingBlock(world, x + 0.5, y + 0.5, z + 0.5, net.minecraft.server.Block.getById(type), data);
         } else if (Projectile.class.isAssignableFrom(clazz)) {
             if (Snowball.class.isAssignableFrom(clazz)) {
                 entity = new EntitySnowball(world, x, y, z);
@@ -1041,7 +1041,7 @@ public class CraftWorld implements World {
                 entity = new EntityItemFrame(world, (int) x, (int) y, (int) z, dir);
             } else if (LeashHitch.class.isAssignableFrom(clazz)) {
                 entity = new EntityLeash(world, (int) x, (int) y, (int) z);
-                entity.n = true;
+                entity.attachedToPlayer = true;
             }
 
             if (entity != null && !((EntityHanging) entity).survives()) {
@@ -1063,7 +1063,7 @@ public class CraftWorld implements World {
 
         if (entity != null) {
             if (entity instanceof EntityInsentient) {
-                ((EntityInsentient) entity).a((GroupDataEntity) null); // Should be prepare?
+                ((EntityInsentient) entity).prepare((GroupDataEntity) null);
             }
 
             world.addEntity(entity, reason);
@@ -1280,11 +1280,11 @@ public class CraftWorld implements World {
     }
 
     public String[] getGameRules() {
-        return getHandle().getGameRules().b();
+        return getHandle().getGameRules().getGameRules();
     }
 
     public boolean isGameRule(String rule) {
-        return getHandle().getGameRules().e(rule);
+        return getHandle().getGameRules().contains(rule);
     }
 
     public void processChunkGC() {

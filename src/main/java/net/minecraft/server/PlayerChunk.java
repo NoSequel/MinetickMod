@@ -107,7 +107,7 @@ public class PlayerChunk { // Poweruser
 
             Chunk chunk = PlayerChunkMap.a(this.playerChunkMap).getChunkAt(this.location.x, this.location.z);
 
-            if (chunk.k()) {
+            if (chunk.isReady()) {
                 //entityplayer.playerConnection.sendPacket(new PacketPlayOutMapChunk(chunk, true, 0));
                 PacketBuilderThreadPool.addJobStatic(new PBJobPlayOutMapChunk(entityplayer.playerConnection, entityplayer.chunkQueue, new PacketBuilderChunkData(chunk, true, 0))); // Poweruser
             }

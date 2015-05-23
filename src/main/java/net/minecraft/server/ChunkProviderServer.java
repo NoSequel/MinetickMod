@@ -237,7 +237,7 @@ public class ChunkProviderServer implements IChunkProvider {
                 }
             }
             // CraftBukkit end
-            chunk.a(this, this, i, j);
+            chunk.loadNearby(this, this, i, j);
         }
 
         return chunk;
@@ -274,7 +274,7 @@ public class ChunkProviderServer implements IChunkProvider {
                 Chunk chunk = this.f.a(this.world, i, j);
 
                 if (chunk != null) {
-                    chunk.p = this.world.getTime();
+                    chunk.lastSaved = this.world.getTime();
                     if (this.chunkProvider != null) {
                         this.chunkProvider.recreateStructures(i, j);
                     }
@@ -303,7 +303,7 @@ public class ChunkProviderServer implements IChunkProvider {
         //if (this.f != null) {
         if (this.f != null && !chunk.isCorrupt() && !chunk.isEmpty()) { // Poweruser
             try {
-                chunk.p = this.world.getTime();
+                chunk.lastSaved = this.world.getTime();
                 this.f.a(this.world, chunk);
                 // CraftBukkit start - IOException to Exception
             } catch (Exception ioexception) {
@@ -423,6 +423,21 @@ public class ChunkProviderServer implements IChunkProvider {
 
                     // this.unloadQueue.remove(olong);
                     // this.chunks.remove(olong.longValue());
+
+                    // Update neighbor counts
+                    for (int x = -2; x < 3; x++) {
+                        for (int z = -2; z < 3; z++) {
+                            if (x == 0 && z == 0) {
+                                continue;
+                            }
+
+                            Chunk neighbor = this.getChunkIfLoaded(chunk.locX + x, chunk.locZ + z);
+                            if (neighbor != null) {
+                                neighbor.setNeighborUnloaded(-x, -z);
+                                chunk.setNeighborUnloaded(x, z);
+                            }
+                        }
+                    }
                 }
             }
             // CraftBukkit end

@@ -5,9 +5,9 @@ import java.util.List;
 
 // CraftBukkit start
 import org.bukkit.block.BlockState;
+import org.bukkit.craftbukkit.event.CraftEventFactory;
 import org.bukkit.craftbukkit.util.BlockStateListPopulator;
 import org.bukkit.event.entity.EntityCreatePortalEvent;
-import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.EntityRegainHealthEvent;
 import org.bukkit.event.entity.EntityTargetEvent;
@@ -49,9 +49,9 @@ public class EntityEnderDragon extends EntityInsentient implements IComplex, IMo
         this.ak = true;
     }
 
-    protected void aC() {
-        super.aC();
-        this.getAttributeInstance(GenericAttributes.a).setValue(200.0D);
+    protected void aD() {
+        super.aD();
+        this.getAttributeInstance(GenericAttributes.maxHealth).setValue(200.0D);
     }
 
     protected void c() {
@@ -302,15 +302,9 @@ public class EntityEnderDragon extends EntityInsentient implements IComplex, IMo
         if (this.bC != null) {
             if (this.bC.dead) {
                 if (!this.world.isStatic) {
-                    // CraftBukkit start
-                    EntityDamageEvent event = new EntityDamageEvent(this.getBukkitEntity(), org.bukkit.event.entity.EntityDamageEvent.DamageCause.ENTITY_EXPLOSION, 10.0F);
-                    Bukkit.getPluginManager().callEvent(event);
-
-                    if (!event.isCancelled()) {
-                        getBukkitEntity().setLastDamageCause(event);
-                        this.a(this.bq, DamageSource.explosion((Explosion) null), (float) event.getDamage());
-                    }
-                    // CraftBukkit end
+                    CraftEventFactory.entityDamage = this.bC; // CraftBukkit
+                    this.a(this.bq, DamageSource.explosion((Explosion) null), 10.0F);
+                    CraftEventFactory.entityDamage = null; // CraftBukkit
                 }
 
                 this.bC = null;
@@ -524,7 +518,7 @@ public class EntityEnderDragon extends EntityInsentient implements IComplex, IMo
         return super.damageEntity(damagesource, f);
     }
 
-    protected void aE() {
+    protected void aF() {
         if (this.dead) return; // CraftBukkit - can't kill what's already dead
         ++this.bB;
         if (this.bB >= 180 && this.bB <= 200) {
@@ -550,7 +544,23 @@ public class EntityEnderDragon extends EntityInsentient implements IComplex, IMo
             }
 
             if (this.bB == 1) {
-                this.world.b(1018, (int) this.locX, (int) this.locY, (int) this.locZ, 0);
+                // CraftBukkit start - Use relative location for far away sounds
+                //this.world.b(1018, (int) this.locX, (int) this.locY, (int) this.locZ, 0);
+                int viewDistance = ((WorldServer) this.world).getServer().getViewDistance() * 16;
+                for (EntityPlayer player : (List<EntityPlayer>) this.world.players) {
+                    double deltaX = this.locX - player.locX;
+                    double deltaZ = this.locZ - player.locZ;
+                    double distanceSquared = deltaX * deltaX + deltaZ * deltaZ;
+                    if (distanceSquared > viewDistance * viewDistance) {
+                        double deltaLength = Math.sqrt(distanceSquared);
+                        double relativeX = player.locX + (deltaX / deltaLength) * viewDistance;
+                        double relativeZ = player.locZ + (deltaZ / deltaLength) * viewDistance;
+                        player.playerConnection.sendPacket(new PacketPlayOutWorldEvent(1018, (int) relativeX, (int) this.locY, (int) relativeZ, 0, true));
+                    } else {
+                        player.playerConnection.sendPacket(new PacketPlayOutWorldEvent(1018, (int) this.locX, (int) this.locY, (int) this.locZ, 0, true));
+                    }
+                }
+                // CraftBukkit end
             }
         }
 
@@ -638,11 +648,11 @@ public class EntityEnderDragon extends EntityInsentient implements IComplex, IMo
 
     protected void w() {}
 
-    public Entity[] as() {
+    public Entity[] at() {
         return this.children;
     }
 
-    public boolean Q() {
+    public boolean R() {
         return false;
     }
 
@@ -654,11 +664,11 @@ public class EntityEnderDragon extends EntityInsentient implements IComplex, IMo
         return "mob.enderdragon.growl";
     }
 
-    protected String aS() {
+    protected String aT() {
         return "mob.enderdragon.hit";
     }
 
-    protected float be() {
+    protected float bf() {
         return 5.0F;
     }
 
