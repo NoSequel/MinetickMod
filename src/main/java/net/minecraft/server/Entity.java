@@ -125,8 +125,12 @@ public abstract class Entity {
         return this.targetDimension;
     }
 
+    private boolean isPassengerImportant() {
+        return this.passenger != null && this.passenger.isImportantEntity();
+    }
+
     public boolean isImportantEntity() {
-        return this.isImportantEntity;
+        return this.isImportantEntity || this.isPassengerImportant();
     }
 
     public boolean isPlayer() {
