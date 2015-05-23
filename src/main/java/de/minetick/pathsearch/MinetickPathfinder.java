@@ -75,7 +75,7 @@ public class MinetickPathfinder extends Pathfinder {
                                 return 0;
                             }
 
-                            if (!entity.O()) {
+                            if (!entity.P()) {
                                 return -2;
                             }
                         }

@@ -111,7 +111,7 @@ public class AntiXRay {
                                 buildBuffer[index] = 1; // stone
                             }
                         } else if(isEnabled()) {
-                            if(isOverworld(worldServer) && blockID == Block.b(Blocks.STONE)) {
+                            if(isOverworld(worldServer) && blockID == Block.getId(Blocks.STONE)) {
                                 double r = random.nextDouble();
                                 if(r < 0.15D) {
                                     if(hasOnlySolidBlockNeighbours(chunk, sectionID, x, y, z, 2)) {
@@ -215,7 +215,7 @@ public class AntiXRay {
         } else {
             WorldServer worldServer = (WorldServer) c.world;
             if(worldServer.isLoaded(absX, y, absZ)) {
-                block = Block.e(worldServer.getTypeId(absX, section*16 + y, absZ));
+                block = Block.getById(worldServer.getTypeId(absX, section*16 + y, absZ));
             } else {
                 return false;
             }

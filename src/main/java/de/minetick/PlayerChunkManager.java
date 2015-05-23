@@ -170,7 +170,7 @@ public class PlayerChunkManager {
                     if (chunkcoordintpair != null && chunkQueue.isOnServer(chunkcoordintpair)) {
                         if(this.world.isLoaded(chunkcoordintpair.x << 4, 0, chunkcoordintpair.z << 4)) {
                             Chunk chunk = this.world.getChunkAt(chunkcoordintpair.x, chunkcoordintpair.z);
-                            if(chunk.k()) {
+                            if(chunk.isReady()) {
                                 chunkData.addChunk(chunk);
                                 chunkQueue.removeFirst(true);
                                 ChunkPriority priority = buff.comp.getChunkPriority(chunkcoordintpair);
