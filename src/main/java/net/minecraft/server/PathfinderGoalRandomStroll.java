@@ -23,9 +23,9 @@ public class PathfinderGoalRandomStroll extends PathfinderGoal {
             return true;
         } else
         // Poweruser end
-        if (this.a.aM() >= 100) {
+        if (this.a.aN() >= 100) {
             return false;
-        } else if (this.a.aH().nextInt(120) != 0) {
+        } else if (this.a.aI().nextInt(120) != 0) {
             return false;
         } else {
             Vec3D vec3d = RandomPositionGenerator.a(this.a, 10, 7);

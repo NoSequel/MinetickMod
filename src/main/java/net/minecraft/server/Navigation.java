@@ -1,8 +1,10 @@
 package net.minecraft.server;
 
+// Poweruser start
 import de.minetick.pathsearch.PathSearchJobNavigationEntity;
 import de.minetick.pathsearch.PathSearchJobNavigationPosition;
 import de.minetick.pathsearch.PositionPathSearchType;
+// Poweruser end
 
 public class Navigation {
 
@@ -212,7 +214,7 @@ public class Navigation {
     }
 
     private int k() {
-        if (this.a.L() && this.m) {
+        if (this.a.M() && this.m) {
             int i = (int) this.a.boundingBox.b;
             Block block = this.b.getType(MathHelper.floor(this.a.locX), i, MathHelper.floor(this.a.locZ));
             int j = 0;
@@ -235,11 +237,11 @@ public class Navigation {
 
     //private boolean l() {
     protected boolean l() { // Poweruser
-        return this.a.onGround || this.m && this.m() || this.a.al() && this.a instanceof EntityZombie && this.a.vehicle instanceof EntityChicken;
+        return this.a.onGround || this.m && this.m() || this.a.am() && this.a instanceof EntityZombie && this.a.vehicle instanceof EntityChicken;
     }
 
     private boolean m() {
-        return this.a.L() || this.a.O();
+        return this.a.M() || this.a.P();
     }
 
     private void n() {
@@ -339,7 +341,7 @@ public class Navigation {
                             return false;
                         }
 
-                        if (material == Material.WATER && !this.a.L()) {
+                        if (material == Material.WATER && !this.a.M()) {
                             return false;
                         }
 
