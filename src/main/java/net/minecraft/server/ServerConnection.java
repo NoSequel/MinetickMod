@@ -59,6 +59,11 @@ public class ServerConnection {
                 NetworkManager networkmanager = (NetworkManager) iterator.next();
 
                 if (!networkmanager.isConnected()) {
+                    // Poweruser start
+                    if(networkmanager.preparing) {
+                        continue;
+                    }
+                    // Poweruser end
                     iterator.remove();
                     if (networkmanager.f() != null) {
                         networkmanager.getPacketListener().a(networkmanager.f());
