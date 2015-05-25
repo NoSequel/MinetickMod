@@ -42,6 +42,7 @@ public class NetworkManager extends SimpleChannelInboundHandler {
     public SocketAddress n;
     public java.util.UUID spoofedUUID;
     public net.minecraft.util.com.mojang.authlib.properties.Property[] spoofedProfile;
+    public boolean preparing = true;
     // Poweruser end
     private PacketListener o;
     private EnumProtocol p;
@@ -56,6 +57,7 @@ public class NetworkManager extends SimpleChannelInboundHandler {
         super.channelActive(channelhandlercontext);
         this.m = channelhandlercontext.channel();
         this.n = this.m.remoteAddress();
+        this.preparing = false; // Poweruser
         this.a(EnumProtocol.HANDSHAKING);
     }
 
@@ -173,6 +175,7 @@ public class NetworkManager extends SimpleChannelInboundHandler {
     }
 
     public void close(IChatBaseComponent ichatbasecomponent) {
+        this.preparing = false; // Poweruser
         if (this.m.isOpen()) {
             this.m.close();
             this.q = ichatbasecomponent;
