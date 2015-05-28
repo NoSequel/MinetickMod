@@ -171,6 +171,7 @@ public class BiomeDecorator {
 
         int l;
         int i1;
+        int height; // Poweruser
 
         for (j = 0; j < i; ++j) {
             k = this.c + this.b.nextInt(16) + 8;
@@ -193,41 +194,69 @@ public class BiomeDecorator {
         for (j = 0; j < this.y; ++j) {
             k = this.c + this.b.nextInt(16) + 8;
             l = this.d + this.b.nextInt(16) + 8;
-            i1 = this.b.nextInt(this.a.getHighestBlockYAt(k, l) + 32);
-            String s = biomebase.a(this.b, k, i1, l);
-            BlockFlowers blockflowers = BlockFlowers.e(s);
+            //i1 = this.b.nextInt(this.a.getHighestBlockYAt(k, l) + 32);
+            // Poweruser start
+            height = this.a.getHighestBlockYAt(k, l) + 32;
+            if(height > 0) {
+                i1 = this.b.nextInt(height);
+                String s = biomebase.a(this.b, k, i1, l);
+                BlockFlowers blockflowers = BlockFlowers.e(s);
 
-            if (blockflowers.getMaterial() != Material.AIR) {
-                this.p.a(blockflowers, BlockFlowers.f(s));
-                this.p.generate(this.a, this.b, k, i1, l);
+                if (blockflowers.getMaterial() != Material.AIR) {
+                    this.p.a(blockflowers, BlockFlowers.f(s));
+                    this.p.generate(this.a, this.b, k, i1, l);
+                }
             }
+            // Poweruser end
         }
 
         for (j = 0; j < this.z; ++j) {
             k = this.c + this.b.nextInt(16) + 8;
             l = this.d + this.b.nextInt(16) + 8;
-            i1 = this.b.nextInt(this.a.getHighestBlockYAt(k, l) * 2);
-            WorldGenerator worldgenerator = biomebase.b(this.b);
+            //i1 = this.b.nextInt(this.a.getHighestBlockYAt(k, l) * 2);
+            // Poweruser start
+            height = this.a.getHighestBlockYAt(k, l) * 2;
+            if(height > 0) {
+                i1 = this.b.nextInt(height);
+                WorldGenerator worldgenerator = biomebase.b(this.b);
 
-            worldgenerator.generate(this.a, this.b, k, i1, l);
+                worldgenerator.generate(this.a, this.b, k, i1, l);
+            }
+            // Poweruser end
         }
 
         for (j = 0; j < this.A; ++j) {
             k = this.c + this.b.nextInt(16) + 8;
             l = this.d + this.b.nextInt(16) + 8;
-            i1 = this.b.nextInt(this.a.getHighestBlockYAt(k, l) * 2);
-            (new WorldGenDeadBush(Blocks.DEAD_BUSH)).generate(this.a, this.b, k, i1, l);
+            //i1 = this.b.nextInt(this.a.getHighestBlockYAt(k, l) * 2);
+            // Poweruser start
+            height = this.a.getHighestBlockYAt(k, l) * 2;
+            if(height > 0) {
+                i1 = this.b.nextInt(height);
+                (new WorldGenDeadBush(Blocks.DEAD_BUSH)).generate(this.a, this.b, k, i1, l);
+            }
+            // Poweruser end
         }
 
         for (j = 0; j < this.w; ++j) {
             k = this.c + this.b.nextInt(16) + 8;
             l = this.d + this.b.nextInt(16) + 8;
 
+            /*
             for (i1 = this.b.nextInt(this.a.getHighestBlockYAt(k, l) * 2); i1 > 0 && this.a.isEmpty(k, i1 - 1, l); --i1) {
                 ;
             }
-
-            this.v.generate(this.a, this.b, k, i1, l);
+            */
+            // Poweruser start
+            height = this.a.getHighestBlockYAt(k, l) * 2;
+            if(height > 0) {
+                i1 = this.b.nextInt(height);
+                while(i1 > 0 && this.a.isEmpty(k, i1 - 1, l)) {
+                    --i1;
+                }
+                this.v.generate(this.a, this.b, k, i1, l);
+            }
+            // Poweruser end
         }
 
         for (j = 0; j < this.B; ++j) {
@@ -241,51 +270,93 @@ public class BiomeDecorator {
             if (this.b.nextInt(8) == 0) {
                 k = this.c + this.b.nextInt(16) + 8;
                 l = this.d + this.b.nextInt(16) + 8;
-                i1 = this.b.nextInt(this.a.getHighestBlockYAt(k, l) * 2);
-                this.r.generate(this.a, this.b, k, i1, l);
+                //i1 = this.b.nextInt(this.a.getHighestBlockYAt(k, l) * 2);
+                // Poweruser start
+                height = this.a.getHighestBlockYAt(k, l) * 2;
+                if(height > 0) {
+                    i1 = this.b.nextInt(height);
+                    this.r.generate(this.a, this.b, k, i1, l);
+                }
+                // Poweruser end
             }
         }
 
         if (this.b.nextInt(4) == 0) {
             j = this.c + this.b.nextInt(16) + 8;
             k = this.d + this.b.nextInt(16) + 8;
-            l = this.b.nextInt(this.a.getHighestBlockYAt(j, k) * 2);
-            this.q.generate(this.a, this.b, j, l, k);
+            //l = this.b.nextInt(this.a.getHighestBlockYAt(j, k) * 2);
+            // Poweruser start
+            height = this.a.getHighestBlockYAt(j, k) * 2;
+            if(height > 0) {
+                l = this.b.nextInt(height);
+                this.q.generate(this.a, this.b, j, l, k);
+            }
+            // Poweruser end
         }
 
         if (this.b.nextInt(8) == 0) {
             j = this.c + this.b.nextInt(16) + 8;
             k = this.d + this.b.nextInt(16) + 8;
-            l = this.b.nextInt(this.a.getHighestBlockYAt(j, k) * 2);
-            this.r.generate(this.a, this.b, j, l, k);
+            //l = this.b.nextInt(this.a.getHighestBlockYAt(j, k) * 2);
+            // Poweruser start
+            height = this.a.getHighestBlockYAt(j, k) * 2;
+            if(height > 0) {
+                l = this.b.nextInt(height);
+                this.r.generate(this.a, this.b, j, l, k);
+            }
+            // Poweruser end
         }
 
         for (j = 0; j < this.C; ++j) {
             k = this.c + this.b.nextInt(16) + 8;
             l = this.d + this.b.nextInt(16) + 8;
-            i1 = this.b.nextInt(this.a.getHighestBlockYAt(k, l) * 2);
-            this.t.generate(this.a, this.b, k, i1, l);
+            //i1 = this.b.nextInt(this.a.getHighestBlockYAt(k, l) * 2);
+            // Poweruser start
+            height = this.a.getHighestBlockYAt(k, l) * 2;
+            if(height > 0) {
+                i1 = this.b.nextInt(height);
+                this.t.generate(this.a, this.b, k, i1, l);
+            }
+            // Poweruser end
         }
 
         for (j = 0; j < 10; ++j) {
             k = this.c + this.b.nextInt(16) + 8;
             l = this.d + this.b.nextInt(16) + 8;
-            i1 = this.b.nextInt(this.a.getHighestBlockYAt(k, l) * 2);
-            this.t.generate(this.a, this.b, k, i1, l);
+            //i1 = this.b.nextInt(this.a.getHighestBlockYAt(k, l) * 2);
+            // Poweruser start
+            height = this.a.getHighestBlockYAt(k, l) * 2;
+            if(height > 0) {
+                i1 = this.b.nextInt(height);
+                this.t.generate(this.a, this.b, k, i1, l);
+            }
+            // Poweruser end
         }
 
         if (this.b.nextInt(32) == 0) {
             j = this.c + this.b.nextInt(16) + 8;
             k = this.d + this.b.nextInt(16) + 8;
-            l = this.b.nextInt(this.a.getHighestBlockYAt(j, k) * 2);
-            (new WorldGenPumpkin()).generate(this.a, this.b, j, l, k);
+            //l = this.b.nextInt(this.a.getHighestBlockYAt(j, k) * 2);
+            // Poweruser start
+            height = this.a.getHighestBlockYAt(j, k) * 2;
+            if(height > 0) {
+                l = this.b.nextInt(height);
+                (new WorldGenPumpkin()).generate(this.a, this.b, j, l, k);
+            }
+            // Poweruser end
         }
 
         for (j = 0; j < this.D; ++j) {
             k = this.c + this.b.nextInt(16) + 8;
             l = this.d + this.b.nextInt(16) + 8;
-            i1 = this.b.nextInt(this.a.getHighestBlockYAt(k, l) * 2);
-            this.u.generate(this.a, this.b, k, i1, l);
+            //i1 = this.b.nextInt(this.a.getHighestBlockYAt(k, l) * 2);
+            // Poweruser start
+            height = this.a.getHighestBlockYAt(k, l) * 2;
+            if(height > 0) {
+                i1 = this.b.nextInt(height);
+                this.u.generate(this.a, this.b, k, i1, l);
+            }
+            // Poweruser end
         }
 
         if (this.I) {
