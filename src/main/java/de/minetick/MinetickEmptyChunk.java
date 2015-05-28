@@ -29,7 +29,7 @@ public class MinetickEmptyChunk extends Chunk {
     }
 
     public int b(int i, int j) {
-        return 1;
+        return 0;
     }
 
     public void initLighting() {}

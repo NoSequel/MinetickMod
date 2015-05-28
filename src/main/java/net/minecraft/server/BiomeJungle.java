@@ -36,9 +36,17 @@ public class BiomeJungle extends BiomeBase {
         super.a(world, random, i, j);
         int k = i + random.nextInt(16) + 8;
         int l = j + random.nextInt(16) + 8;
-        int i1 = random.nextInt(world.getHighestBlockYAt(k, l) * 2);
+        //int i1 = random.nextInt(world.getHighestBlockYAt(k, l) * 2);
+        // Poweruser start
+        int i1;
+        int height = world.getHighestBlockYAt(k, l) * 2;
+        if(height > 0) {
+            i1 = random.nextInt(height);
+            (new WorldGenMelon()).a(world, random, k, i1, l);
+        }
+        // Poweruser end
 
-        (new WorldGenMelon()).a(world, random, k, i1, l);
+
         WorldGenVines worldgenvines = new WorldGenVines();
 
         for (l = 0; l < 50; ++l) {
