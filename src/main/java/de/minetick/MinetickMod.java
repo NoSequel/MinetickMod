@@ -31,6 +31,7 @@ import de.minetick.modcommands.AntiXRayCommand;
 import de.minetick.modcommands.LoadedChunksCommand;
 import de.minetick.modcommands.PacketCompressionCommand;
 import de.minetick.modcommands.PacketsPerTickCommand;
+import de.minetick.modcommands.ReloadSettingsCommand;
 import de.minetick.modcommands.SetEntityActivationRange;
 import de.minetick.modcommands.TPSCommand;
 import de.minetick.modcommands.ThreadListCommand;
@@ -108,6 +109,7 @@ public class MinetickMod {
             craftserver.getCommandMap().register("threadlist", "MinetickMod", new ThreadListCommand("threadlist"));
             craftserver.getCommandMap().register("loadedchunks", "MinetickMod", new LoadedChunksCommand("loadedchunks"));
             craftserver.getCommandMap().register("setentityactivationrange", "MinetickMod", new SetEntityActivationRange("setentityactivationrange"));
+            craftserver.getCommandMap().register("minetickmod-reload", "MinetickMod", new ReloadSettingsCommand("minetickmod-reload"));
             this.profiler = new Profiler(this.mainConfig.getProfilerLogInterval(), this.mainConfig.getProfilerWriteEnabled(), this.mainConfig.getProfilerWriteInterval());
             this.packetBuilderPool = new PacketBuilderThreadPool(this.mainConfig.getPacketBuilderPoolSize());
         }

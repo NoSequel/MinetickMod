@@ -7,7 +7,7 @@ import de.minetick.MinetickMod;
 
 public class ReloadSettingsCommand extends Command {
 
-    protected ReloadSettingsCommand(String name) {
+    public ReloadSettingsCommand(String name) {
         super(name);
         this.usageMessage = "/minetickmod-reload";
         this.description = "Reloads the configurations of MinetickMod from its settings file minetickmod.yml";
