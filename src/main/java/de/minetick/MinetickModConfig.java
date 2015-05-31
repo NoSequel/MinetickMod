@@ -305,7 +305,7 @@ public class MinetickModConfig {
 
     public int getCustomOreRates(Block block, int def) {
         Integer out = null;
-        if(this.customOreRates != null || (out = this.customOreRates.get(block)) != null) {
+        if(this.customOreRates != null && (out = this.customOreRates.get(block)) != null) {
             return out.intValue();
         }
         return def;
