@@ -49,6 +49,6 @@ public class PacketsPerTickCommand extends Command {
         sender.sendMessage("Usage: /packetspertick <rate>");
         sender.sendMessage("Allowed levels: 1(slow chunkloading, low cpu load) - 20(fast chunkloading, high cpu load)");
         sender.sendMessage("Example: /packetspertick 1  -  Sets the creation rate to 1 chunk packet per tick for each player");
-        sender.sendMessage("What you set here is not written to the bukkit.yml settings file. You need to do that manually.");
+        sender.sendMessage("What you set here is not written to the minetickmod.yml settings file. You need to do that manually.");
     }
 }

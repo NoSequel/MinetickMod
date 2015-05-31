@@ -1483,10 +1483,10 @@ public abstract class EntityLiving extends Entity {
         // Poweruser start
         if(!this.checkedForDeletion) {
             this.checkedForDeletion = true;
-            this.allowDeletion = MinetickMod.isEntityAllowedToBeDeleted(this);
+            this.allowDeletion = MinetickMod.getConfig().isEntityAllowedToBeDeleted(this);
         }
         if(this.allowDeletion && !this.isImportantEntity) {
-            this.killIfLongerAliveThan(MinetickMod.getMaxEntityLifeTime());
+            this.killIfLongerAliveThan(MinetickMod.getConfig().getMaxEntityLifeTime());
         }
         // Poweruser end
     }

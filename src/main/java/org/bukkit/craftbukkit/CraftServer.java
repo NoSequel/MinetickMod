@@ -684,7 +684,7 @@ public final class CraftServer implements Server {
     public long getConnectionThrottle() {
         //return this.configuration.getInt("settings.connection-throttle");
         // Poweruser start - Spigot's BungeeCord support - Automatically set connection throttle for bungee configurations
-        if (MinetickMod.isBungeeCordSupportEnabled()) {
+        if (MinetickMod.getConfig().isBungeeCordSupportEnabled()) {
             return -1;
         } else {
             return this.configuration.getInt("settings.connection-throttle");
@@ -1783,103 +1783,4 @@ public final class CraftServer implements Server {
     public UnsafeValues getUnsafe() {
         return CraftMagicNumbers.INSTANCE;
     }
-
-    // Poweruser start
-    public boolean getMinetickModProfilerWriteEnabled() {
-        return configuration.getBoolean("minetickmod.profiler-write-log");
-    }
-
-    public int getMinetickModProfilerWriteInterval() {
-        return configuration.getInt("minetickmod.profiler-write-interval");
-    }
-
-    public int getMinetickModProfilerLogInterval() {
-        return configuration.getInt("minetickmod.profiler-log-interval");
-    }
-
-    public List<String> getMinetickModOrebfuscatedWorlds() {
-        return configuration.getStringList("minetickmod.orebfuscatedWorlds");
-    }
-
-    public int getMinetickModPacketBuilderPoolSize() {
-        return configuration.getInt("minetickmod.packetBuilderThreadPoolSize");
-    }
-
-    public int getMinetickModCompressionLevel() {
-        return configuration.getInt("minetickmod.packetCompressionLevel");
-    }
-
-    public int getMinetickModPacketsPerTick() {
-        return configuration.getInt("minetickmod.packetsPerTick");
-    }
-
-    public List<String> getMinetickModNotGeneratingWorlds() {
-        return configuration.getStringList("minetickmod.notGeneratingWorlds");
-    }
-
-    public int getMinetickModMaxEntityLifeTime() {
-        return configuration.getInt("minetickmod.maxEntityLifeTime");
-    }
-
-    public List<String> getMinetickModEntitiesWithLimitedLifeTime() {
-        return configuration.getStringList("minetickmod.entitiesWithLimitedLifeTime");
-    }
-
-    public List<String> getMinetickModCustomOreRates() {
-        return configuration.getStringList("minetickmod.customOreRates");
-    }
-
-    public Map<org.bukkit.WorldType, Double> getMinetickModMaxChunkGenerationRates() {
-        ConfigurationSection section = configuration.getConfigurationSection("minetickmod.maxChunkGenerationRates");
-        Set<String> subkeys = section.getKeys(false);
-        Map<org.bukkit.WorldType, Double> rateMap = new HashMap<org.bukkit.WorldType, Double>();
-        for(String key: subkeys) {
-            org.bukkit.WorldType type = org.bukkit.WorldType.getByName(key);
-            if(type != null) {
-                double rate = section.getDouble(key, ChunkGenerationPolicy.getDefaultRate(type));
-                if(rate < 0.25D) { rate = 0.25D; }
-                rateMap.put(type, rate);
-            } else {
-                logger.warning("[MinetickMod] The WorldType '" + key + "' was not recognized in the setting minetickmod.maxChunkGenerationRates");
-            }
-        }
-        return rateMap;
-    }
-
-    public int[] getMinetickModActivationRange(int[] defaultRanges) {
-        int low = configuration.getInt("minetickmod.activationRange.low", defaultRanges[0]);
-        int high = configuration.getInt("minetickmod.activationRange.high", defaultRanges[1]);
-        int max = configuration.getInt("minetickmod.activationRange.max", defaultRanges[2]);
-        return new int[] {low, high, max};
-    }
-
-    public List<String> getMinetickModEntitiesWithOffloadedPathSearches() {
-        return configuration.getStringList("minetickmod.entitiesWithOffloadedPathSearches");
-    }
-
-    public int getMinetickModMinimumTargetDistanceForOffloading(int defaultDistance) {
-        return configuration.getInt("minetickmod.minimumTargetDistanceForOffloadedPathSearches", defaultDistance);
-    }
-
-    public void getMinetickModPacketChunkRates(ChunkPriority[] values) {
-        ConfigurationSection section = configuration.getConfigurationSection("minetickmod.packetChunkRates");
-        Set<String> subkeys = section.getKeys(false);
-        for(String key: subkeys) {
-            int chunkCount = section.getInt(key);
-            if(chunkCount >= 1 && chunkCount <= PacketPlayOutMapChunkBulk.c()) {
-                ChunkPriority priority = ChunkPriority.findEntry(key);
-                if(priority != null) {
-                    priority.setChunksPerPacket(chunkCount);
-                } else {
-                    logger.warning("[MinetickMod] The config entry minetickmod.packetChunkRates." + key + " is invalid. Removing it from the config.");
-                    section.set(key, null);
-                }
-            }
-        }
-    }
-
-    public boolean getMinetickModBungeeCordSupport() {
-        return configuration.getBoolean("minetickmod.bungeeCordSupport");
-    }
-    // Poweruser end
 }

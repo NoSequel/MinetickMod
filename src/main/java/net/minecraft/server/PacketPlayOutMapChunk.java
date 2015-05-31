@@ -31,7 +31,7 @@ public class PacketPlayOutMapChunk extends Packet {
     };
 
     private AtomicInteger pendingUses;
-    private static int targetCompressionLevel = MinetickMod.defaultPacketCompression;
+    private static int targetCompressionLevel = 7;
 
     public static void changeCompressionLevel(int level) {
         if(level < Deflater.BEST_SPEED || level > Deflater.BEST_COMPRESSION) {
