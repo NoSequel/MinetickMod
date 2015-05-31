@@ -166,12 +166,12 @@ public class MinetickModConfig {
 
     public int getPacketBuilderPoolSize() {
         int threadcount = configuration.getInt("minetickmod.packetBuilderThreadPoolSize", 1);
-        return Math.min(1, Math.max(threadcount, 32));
+        return Math.max(1, Math.min(threadcount, 32));
     }
 
     public int getCompressionLevel() {
         int level = configuration.getInt("minetickmod.packetCompressionLevel", 7);
-        return Math.min(1, Math.max(level, 9));
+        return Math.max(1, Math.min(level, 9));
     }
 
     public int getPacketsPerTick() {
