@@ -24,6 +24,7 @@ minetickmod:
         low: 16
         high: 64
         max: 88
+    pathSearchThreadPoolSize: 2
     minimumTargetDistanceForOffloadedPathSearches: 0
     entitiesWithOffloadedPathSearches:
     - BAT

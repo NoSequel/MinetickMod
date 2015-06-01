@@ -85,6 +85,7 @@ public class MinetickModConfig {
         ChunkGenerationPolicy.setRatesFromConfig(this.getMaxChunkGenerationRates());
         AntiXRay.setWorldsFromConfig(this.getOrebfuscatedWorlds());
         PacketBuilderThreadPool.adjustPoolSize(this.getPacketBuilderPoolSize());
+        PathSearchThrottlerThread.adjustPoolSize(this.getPathSearchPoolSize());
         PlayerChunkManager.packetsPerTick = this.getPacketsPerTick();
     }
 
@@ -167,6 +168,11 @@ public class MinetickModConfig {
 
     public int getPacketBuilderPoolSize() {
         int threadcount = configuration.getInt("minetickmod.packetBuilderThreadPoolSize", 1);
+        return Math.max(1, Math.min(threadcount, 32));
+    }
+
+    public int getPathSearchPoolSize() {
+        int threadcount = configuration.getInt("minetickmod.pathSearchThreadPoolSize", 2);
         return Math.max(1, Math.min(threadcount, 32));
     }
 

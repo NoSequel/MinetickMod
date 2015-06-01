@@ -3,91 +3,71 @@ package de.minetick.pathsearch;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map.Entry;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import de.minetick.MinetickThreadFactory;
 
-public class PathSearchThrottlerThread implements Runnable {
+public class PathSearchThrottlerThread extends ThreadPoolExecutor {
 
-    private static final int POOL_SIZE = 2;
-    private ExecutorService pathFinder = Executors.newScheduledThreadPool(POOL_SIZE, new MinetickThreadFactory(Thread.MIN_PRIORITY, "MinetickMod_PathFinder"));
-    private Future<?>[] activeJobs;
-    private Object waitObject;
+    private int queueLimit;
     private LinkedHashMap<PathSearchJob, PathSearchJob> filter;
-    private Thread thread;
-    private boolean running;
+    private static PathSearchThrottlerThread instance;
 
-    public PathSearchThrottlerThread() {
-        this.waitObject = new Object();
+    public PathSearchThrottlerThread(int poolSize) {
+        super(poolSize, poolSize, 1L, TimeUnit.MINUTES, new LinkedBlockingQueue<Runnable>(), new MinetickThreadFactory(Thread.MIN_PRIORITY, "MinetickMod_PathFinder"));
+        instance = this;
+        adjustPoolSize(poolSize);
         this.filter = new LinkedHashMap<PathSearchJob, PathSearchJob>();
-        this.activeJobs = new Future<?>[POOL_SIZE * 8];
-        this.thread = new Thread(this);
-        this.running = true;
-        this.thread.setName("MinetickMod_PathSearchThrottlerThread");
-        this.thread.setPriority(Thread.MIN_PRIORITY + 1);
-        this.thread.start();
     }
 
-    public void queuePathSearch(PathSearchJob job) {
+    public void queuePathSearch(PathSearchJob newJob) {
+        if(newJob != null) {
+            synchronized(this.filter) {
+                if(this.filter.containsKey(newJob) || this.filter.size() < 1000) {
+                    this.filter.put(newJob, newJob);
+                }
+            }
+        }
+        PathSearchJob jobToExecute = null;
         synchronized(this.filter) {
-            if(this.filter.containsKey(job) || this.filter.size() < 1000) {
-                this.filter.put(job, job);
-            }
-        }
-        this.wakeUp();
-    }
-
-    public void wakeUp() {
-        synchronized(this.waitObject) {
-            this.waitObject.notifyAll();
-        }
-    }
-
-    public void shutdown() {
-        this.running = false;
-        this.pathFinder.shutdownNow();
-    }
-
-    private boolean checkPendingJobs() {
-        boolean newSearchesSubmitted = false;
-        for(int i = 0; i < this.activeJobs.length && !this.filter.isEmpty(); i++) {
-            Future<?> f = this.activeJobs[i];
-            if(f == null || f.isDone()) {
-                this.activeJobs[i] = null;
-                PathSearchJob job = null;
-                synchronized(this.filter) {
-                    Iterator<Entry<PathSearchJob, PathSearchJob>> iter = this.filter.entrySet().iterator();
-                    if(iter.hasNext()) {
-                        job = iter.next().getValue();
-                        iter.remove();
-                    }
+            Iterator<Entry<PathSearchJob, PathSearchJob>> iter = this.filter.entrySet().iterator();
+            while(iter.hasNext() && this.getQueue().size() < this.queueLimit) {
+                jobToExecute = iter.next().getValue();
+                iter.remove();
+                if(jobToExecute != null) {
+                    this.execute(jobToExecute);
                 }
-                if(job != null) {
-                    try {
-                        this.activeJobs[i] = this.pathFinder.submit(job);
-                        newSearchesSubmitted = true;
-                    } catch (RejectedExecutionException exception) {
-
-                    }
+                if(newJob != null) {
+                    break;
                 }
             }
         }
-        return !this.filter.isEmpty() && newSearchesSubmitted;
     }
 
     @Override
-    public void run() {
-        while(this.running) {
-            if(!this.checkPendingJobs()) {
-                synchronized(this.waitObject) {
-                    try {
-                        this.waitObject.wait(1L);
-                    } catch (InterruptedException e) {}
-                }
+    public void shutdown() {
+        this.getQueue().clear();
+        super.shutdown();
+    }
+
+    @Override
+    protected void afterExecute(Runnable runnable, Throwable throwable) {
+        super.afterExecute(runnable, throwable);
+        this.queuePathSearch(null);
+    }
+
+    public static void adjustPoolSize(int size) {
+        if(instance != null) {
+            if(size > instance.getMaximumPoolSize()) {
+                instance.setMaximumPoolSize(size);
+                instance.setCorePoolSize(size);
+            } else if(size < instance.getMaximumPoolSize()) {
+                instance.setCorePoolSize(size);
+                instance.setMaximumPoolSize(size);
             }
+            instance.queueLimit = size * 8;
         }
     }
 }

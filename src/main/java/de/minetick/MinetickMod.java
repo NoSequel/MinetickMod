@@ -91,8 +91,8 @@ public class MinetickMod {
         this.tickCounterObject = new TickCounter();
         this.ticksPerSecond = Collections.synchronizedList(new LinkedList<Integer>());
         this.timerService.scheduleAtFixedRate(this.tickCounterObject, 1, 1, TimeUnit.SECONDS);
-        this.pathSearchThrottler = new PathSearchThrottlerThread();
         this.mainConfig = new MinetickModConfig(new File("minetickmod.yml"));
+        this.pathSearchThrottler = new PathSearchThrottlerThread(this.mainConfig.getPathSearchPoolSize());
         instance = this;
     }
 
