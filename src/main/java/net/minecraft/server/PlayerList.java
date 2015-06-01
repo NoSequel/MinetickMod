@@ -104,7 +104,7 @@ public abstract class PlayerList {
         }
 
         // Poweruser start
-        if(MinetickMod.isBungeeCordSupportEnabled() && networkmanager.getRawAddress() != null) {
+        if(MinetickMod.getConfig().isBungeeCordSupportEnabled() && networkmanager.getRawAddress() != null) {
             s1 = "BC-Forwarded: " + networkmanager.getRawAddress().toString();
         }
         // Poweruser end
@@ -360,7 +360,7 @@ public abstract class PlayerList {
         SocketAddress socketaddress = loginlistener.networkManager.getSocketAddress();
 
         // Poweruser start
-        if(MinetickMod.isBungeeCordSupportEnabled()) {
+        if(MinetickMod.getConfig().isBungeeCordSupportEnabled()) {
             socketaddress = loginlistener.networkManager.getRawAddress();
         }
         // Poweruser end

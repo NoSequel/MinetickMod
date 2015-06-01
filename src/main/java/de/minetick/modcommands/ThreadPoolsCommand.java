@@ -61,7 +61,7 @@ public class ThreadPoolsCommand extends Command {
     private void sendHelp(CommandSender sender) {
         sender.sendMessage("Usage: /threadpools <poolName> <threadCount>");
         sender.sendMessage("Example: /theadpools packetbuilder 4  -  Sets 4 threads for orebfuscating");
-        sender.sendMessage("What you set here is not written to the bukkit.yml settings file. You need to do that manually.");
+        sender.sendMessage("What you set here is not written to the minetickmod.yml settings file. You need to do that manually.");
         sender.sendMessage("Possible thread pool names:");
         sender.sendMessage("  packetbuilder  -  This pool creates, orebfuscates and compresses the chunk network packets");
     }

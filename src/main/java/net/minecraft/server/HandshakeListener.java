@@ -77,7 +77,7 @@ public class HandshakeListener implements PacketHandshakingInListener {
             } else {
                 this.b.a((PacketListener) (new LoginListener(this.a, this.b)));
                 // Poweruser start - Spigot's BungeeCord support
-                if (MinetickMod.isBungeeCordSupportEnabled()) {
+                if (MinetickMod.getConfig().isBungeeCordSupportEnabled()) {
                     String[] split = packethandshakinginsetprotocol.b.split("\00");
                     if ( split.length == 3 || split.length == 4 ) {
                         packethandshakinginsetprotocol.b = split[0];

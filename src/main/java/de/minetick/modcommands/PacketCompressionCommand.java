@@ -49,6 +49,6 @@ public class PacketCompressionCommand extends Command {
         sender.sendMessage("Usage: /packetcompression <compressionlevel>");
         sender.sendMessage("Allowed levels: 1(low, fast) - 9(high, slow)");
         sender.sendMessage("Example: /packetcompression 6  -  Sets the compressionLevel to 6");
-        sender.sendMessage("What you set here is not written to the bukkit.yml settings file. You need to do that manually.");
+        sender.sendMessage("What you set here is not written to the minetickmod.yml settings file. You need to do that manually.");
     }
 }

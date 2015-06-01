@@ -40,7 +40,7 @@ public class PlayerChunkBuffer {
         this.playerRegionCenter = new int[] { MathHelper.floor(ent.locX) >> 4, MathHelper.floor(ent.locZ) >> 4 };
         this.lastMovement = new int[] { 0, 0 };
         this.movement = new ArrayDeque<PlayerMovement>();
-        int savedVD = MinetickMod.getPlayerViewDistance(ent.getName(), this.playerChunkManager.getPlayerChunkMap());
+        int savedVD = MinetickMod.getConfig().getPlayerViewDistance(ent.getName(), this.playerChunkManager.getPlayerChunkMap());
         this.oldViewDistance = savedVD;
         ent.setViewDistance(savedVD);
     }

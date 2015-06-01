@@ -36,7 +36,7 @@ public class MinetickNavigation extends Navigation {
         this.positionSearchCache = new HashMap<PositionPathSearchType, SearchCacheEntryPosition>();
         this.offloadSearches = false;
         this.offloadSearchesConfigChecked = false;
-        double minDist = MinetickMod.getMinimumPathSearchOffloadDistance();
+        double minDist = MinetickMod.getConfig().getMinimumTargetDistanceForOffloading();
         this.minimumDistanceForOffloadingSquared = minDist * minDist;
     }
 
@@ -176,7 +176,7 @@ public class MinetickNavigation extends Navigation {
 
     private boolean offloadSearches() {
         if(!this.offloadSearchesConfigChecked) {
-            this.offloadSearches = MinetickMod.isPathSearchOffloadedFor(this.a);
+            this.offloadSearches = MinetickMod.getConfig().isPathSearchOffloadedFor(this.a);
             this.offloadSearchesConfigChecked = true;
         }
         return this.offloadSearches;

@@ -1,0 +1,40 @@
+minetickmod:
+    profiler-log-interval: 30
+    profiler-write-log: false
+    profiler-write-interval: 10
+    orebfuscatedWorlds: []
+    packetCompressionLevel: 7
+    packetBuilderThreadPoolSize: -1
+    packetsPerTick: 1
+    packetChunkRates:
+        HIGHEST: 5
+        HIGH: 3
+        MODERATE: 2
+        LOW: 1
+    notGeneratingWorlds: []
+    maxEntityLifeTime: 10
+    entitiesWithLimitedLifeTime: []
+    customOreRates: []
+    maxChunkGenerationRates:
+        DEFAULT: 0.5
+        FLAT: 1.0
+        LARGEBIOMES: 0.5
+        AMPLIFIED: 0.5
+    activationRange:
+        low: 16
+        high: 64
+        max: 88
+    minimumTargetDistanceForOffloadedPathSearches: 0
+    entitiesWithOffloadedPathSearches:
+    - BAT
+    - CHICKEN
+    - COW
+    - CREEPER
+    - MAGMA_CUBE
+    - PIG
+    - SHEEP
+    - SKELETON
+    - SLIME
+    - SQUID
+    - ZOMBIE
+    bungeeCordSupport: false
