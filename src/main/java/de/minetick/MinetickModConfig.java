@@ -31,6 +31,7 @@ import com.google.common.base.Charsets;
 import de.minetick.MinetickChunkCoordComparator.ChunkPriority;
 import de.minetick.antixray.AntiXRay;
 import de.minetick.packetbuilder.PacketBuilderThreadPool;
+import de.minetick.pathsearch.MinetickNavigation;
 import de.minetick.pathsearch.PathSearchThrottlerThread;
 
 public class MinetickModConfig {
@@ -84,6 +85,7 @@ public class MinetickModConfig {
         this.loadCustomOreRates(this.getCustomOreRates());
         this.loadNotGeneratingWorlds(this.getNotGeneratingWorlds());
         this.loadEntitiesWithOffloadedPathSearches(this.getEntitiesWithOffloadedPathSearches());
+        MinetickNavigation.setMinimumDistanceForOffloading(this.getMinimumTargetDistanceForOffloading());
         this.loadEntitiesToDelete(this.getEntitiesWithLimitedLifeTime());
         this.applyPacketChunkRates(ChunkPriority.values());
         this.applyPacketCompression(this.getCompressionLevel());
