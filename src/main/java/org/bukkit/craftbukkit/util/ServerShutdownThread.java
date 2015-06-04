@@ -13,7 +13,9 @@ public class ServerShutdownThread extends Thread {
     @Override
     public void run() {
         try {
-            server.stop();
+            if(!server.isStopped()) { // Poweruser
+                server.stop();
+            }
         } catch (ExceptionWorldConflict ex) {
             ex.printStackTrace();
         } finally {
