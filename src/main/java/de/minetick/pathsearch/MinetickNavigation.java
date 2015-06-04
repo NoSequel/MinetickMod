@@ -25,19 +25,17 @@ public class MinetickNavigation extends Navigation {
 
     private HashMap<UUID, SearchCacheEntry> searchCache;
     private HashMap<PositionPathSearchType, SearchCacheEntryPosition> positionSearchCache;
-    private boolean offloadSearches;
-    private boolean offloadSearchesConfigChecked;
-    private double minimumDistanceForOffloadingSquared;
+    private static double minimumDistanceForOffloadingSquared = 0.0D;
     private int cleanUpDelay = 0;
 
     public MinetickNavigation(EntityInsentient entityinsentient, World world) {
         super(entityinsentient, world);
         this.searchCache = new HashMap<UUID, SearchCacheEntry>();
         this.positionSearchCache = new HashMap<PositionPathSearchType, SearchCacheEntryPosition>();
-        this.offloadSearches = false;
-        this.offloadSearchesConfigChecked = false;
-        double minDist = MinetickMod.getConfig().getMinimumTargetDistanceForOffloading();
-        this.minimumDistanceForOffloadingSquared = minDist * minDist;
+    }
+
+    public static void setMinimumDistanceForOffloading(double distance) {
+        minimumDistanceForOffloadingSquared = distance * distance;
     }
 
     private void issueSearch(Entity target, float range, boolean j, boolean k, boolean l, boolean m) {
@@ -74,7 +72,7 @@ public class MinetickNavigation extends Navigation {
 
     @Override
     public PathEntity a(Entity entity) {
-        if(!this.offloadSearches() || this.a.e(entity) < this.minimumDistanceForOffloadingSquared) {
+        if(!this.offloadSearches() || this.a.e(entity) < minimumDistanceForOffloadingSquared) {
             return super.a(entity);
         }
         if(!this.l()) {
@@ -110,7 +108,7 @@ public class MinetickNavigation extends Navigation {
 
     @Override
     public PathEntity a(PositionPathSearchType type, double d0, double d1, double d2) {
-        if(!this.offloadSearches() || this.a.e(d0, d1, d2) < this.minimumDistanceForOffloadingSquared) {
+        if(!this.offloadSearches() || this.a.e(d0, d1, d2) < minimumDistanceForOffloadingSquared) {
             return super.a(d0, d1, d2);
         }
         if(!this.l()) {
@@ -175,10 +173,6 @@ public class MinetickNavigation extends Navigation {
     }
 
     private boolean offloadSearches() {
-        if(!this.offloadSearchesConfigChecked) {
-            this.offloadSearches = MinetickMod.getConfig().isPathSearchOffloadedFor(this.a);
-            this.offloadSearchesConfigChecked = true;
-        }
-        return this.offloadSearches;
+        return MinetickMod.getConfig().isPathSearchOffloadedFor(this.a);
     }
 }
