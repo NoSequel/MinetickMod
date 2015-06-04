@@ -88,10 +88,8 @@ public abstract class EntityLiving extends Entity {
 
     protected void w() {}
 
-    private boolean allowDeletion = false;
-    private boolean checkedForDeletion = false;
     private void killIfLongerAliveThan(int minutes) {
-        if(this.allowDeletion && this.ticksLived >= minutes * 1200) {
+        if(this.ticksLived >= minutes * 1200) {
             this.die();
         }
     }
@@ -1381,12 +1379,8 @@ public abstract class EntityLiving extends Entity {
         this.aY += f2;
 
         // Poweruser start
-        if(!this.checkedForDeletion) {
-            this.checkedForDeletion = true;
-            this.allowDeletion = MinetickMod.isEntityAllowedToBeDeleted(this); // Poweruser
-        }
-        if(this.allowDeletion && !this.isImportantEntity) {
-            this.killIfLongerAliveThan(MinetickMod.getMaxEntityLifeTime());
+        if(!this.isImportantEntity && MinetickMod.getConfig().isEntityAllowedToBeDeleted(this)) {
+            this.killIfLongerAliveThan(MinetickMod.getConfig().getMaxEntityLifeTime());
         }
         // Poweruser end
     }

@@ -116,7 +116,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
     // CraftBukkit end
 
     // Poweruser start
-    protected MinetickMod minetickMod = new MinetickMod();
+    protected MinetickMod minetickMod;
     private WorldServer sortedWorldsArray[] = null;
     private PriorityQueue<WorldServer> priQueue = new PriorityQueue<WorldServer>(20, new ProfilingComperator());
     private LinkedList<AutoSaveJob> autoSaveWorlds = new LinkedList<AutoSaveJob>();
@@ -134,6 +134,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
     public MinecraftServer(OptionSet options, Proxy proxy) { // CraftBukkit - signature file -> OptionSet
         i = this;
         this.c = proxy;
+        this.minetickMod = new MinetickMod(); // Poweruser
         // this.universe = file1; // CraftBukkit
         this.o = new ServerConnection(this);
         this.n = new CommandDispatcher();

@@ -175,7 +175,7 @@ public class ChunkProviderServer implements IChunkProvider {
                 if (this.chunkProvider == null) {
                     chunk = this.emptyChunk;
                 // Poweruser start
-                } else if (MinetickMod.doesWorldNotGenerateChunks(this.world.getWorld().getName())) {
+                } else if (MinetickMod.getConfig().doesWorldNotGenerateChunks(this.world.getWorld().getName())) {
                     return this.mtmEmptyChunk;
                 // Poweruser end
                 } else {

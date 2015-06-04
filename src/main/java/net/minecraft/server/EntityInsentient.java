@@ -417,7 +417,7 @@ public abstract class EntityInsentient extends EntityLiving {
             if (d3 < 1024.0D) {
                 this.aV = 0;
             } else if (this.mayDespawn()) {
-                if (d3 > MinetickMod.getEntityDeleteRange()) { // variable maximum range for despawning
+                if (d3 > MinetickMod.getConfig().getEntityDeleteRange()) { // variable maximum range for despawning
                     this.die();
                 } else if (this.aV > 600 && this.random.nextInt(800) == 0 && d3 > 1024.0D) {
                     this.die();

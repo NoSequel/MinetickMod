@@ -74,9 +74,9 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
     private int clientViewDistance;
 
     public void setViewDistance(int distance) {
-        this.clientViewDistance = Math.max(distance, MinetickMod.minimumViewDistance());
+        this.clientViewDistance = Math.max(distance, MinetickMod.getConfig().getMinimumViewDistance());
         this.clientViewDistance = Math.min(this.clientViewDistance, ((WorldServer)this.world).getPlayerChunkMap().getViewDistance());
-        MinetickMod.setPlayerViewDistance(this.getName(), this.clientViewDistance);
+        MinetickMod.getConfig().setPlayerViewDistance(this.getName(), this.clientViewDistance);
     }
 
     public int getViewDistance() {
@@ -131,7 +131,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
 
         // Poweruser start
         this.isPlayer = true;
-        this.clientViewDistance = MinetickMod.getPlayerViewDistance(this.getName(), worldserver.getPlayerChunkMap());
+        this.clientViewDistance = MinetickMod.getConfig().getPlayerViewDistance(this.getName(), worldserver.getPlayerChunkMap());
         // Poweruser end
     }
 

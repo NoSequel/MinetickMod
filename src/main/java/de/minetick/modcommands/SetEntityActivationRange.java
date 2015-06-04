@@ -37,7 +37,7 @@ public class SetEntityActivationRange extends Command {
                     }
                 }
                 if(!error) {
-                    if(!MinetickMod.setActivationRange(low, high, max)) {
+                    if(!MinetickMod.getConfig().setActivationRange(low, high, max)) {
                         sender.sendMessage("Invalid min/max values.   4 < min < 144   and   min <= max < 144");
                     } else {
                         String maxStr = "";

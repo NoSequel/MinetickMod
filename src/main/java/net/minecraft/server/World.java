@@ -1318,7 +1318,7 @@ public abstract class World implements IBlockAccess {
                 try {
                     //this.playerJoinedWorld(entity);
                     // Poweruser start
-                    int[] range = MinetickMod.getActivationRange();
+                    int[] range = MinetickMod.getConfig().getActivationRange();
                     int activationRange = (this.cancelHeavyCalculations ? range[0] : range[1]);
                     float tickChance = (100.0f / (float) this.entityList.size()) * (this.cancelHeavyCalculations ? 0.5f : 1.0f);
                     int previousTicksLived = entity.ticksLived;
