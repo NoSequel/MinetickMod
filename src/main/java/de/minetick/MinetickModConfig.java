@@ -21,6 +21,7 @@ import net.minecraft.server.PlayerChunkMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.EntityType;
@@ -46,7 +47,7 @@ public class MinetickModConfig {
     private File viewdistanceConfigFile;
     private FileConfiguration viewdistanceConfig;
 
-    public MinetickModConfig(File configFile) {
+    public MinetickModConfig(File configFile) throws InvalidConfigurationException {
         this.configFile = configFile;
         this.configuration = this.loadConfig(configFile);
         try {
@@ -70,9 +71,13 @@ public class MinetickModConfig {
         }
     }
 
-    public void reload() {
+    public FileConfiguration[] reload() throws InvalidConfigurationException {
+        FileConfiguration[] configs = new FileConfiguration[2];
+        configs[0] = this.configuration;
         this.configuration = this.loadConfig(this.configFile);
+        configs[1] = this.configuration;
         this.loadConfigContent();
+        return configs;
     }
 
     private void loadConfigContent() {
@@ -122,7 +127,7 @@ public class MinetickModConfig {
         }
     }
 
-    private FileConfiguration loadConfig(File file) {
+    private FileConfiguration loadConfig(File file) throws InvalidConfigurationException {
         YamlConfiguration config;
         if(file.exists() && file.isFile()) {
             config = YamlConfiguration.loadConfiguration(file);

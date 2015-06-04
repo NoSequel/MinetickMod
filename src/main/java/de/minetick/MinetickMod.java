@@ -20,6 +20,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.craftbukkit.CraftServer;
@@ -85,20 +86,31 @@ public class MinetickMod {
     private PacketBuilderThreadPool packetBuilderPool;
     private final Logger log = LogManager.getLogger();
     private MinetickModConfig mainConfig;
+    private boolean failedToLoadConfig = false;
 
     public MinetickMod() {
         this.tickTimerObject = new TickTimer();
         this.tickCounterObject = new TickCounter();
         this.ticksPerSecond = Collections.synchronizedList(new LinkedList<Integer>());
         this.timerService.scheduleAtFixedRate(this.tickCounterObject, 1, 1, TimeUnit.SECONDS);
-        this.mainConfig = new MinetickModConfig(new File("minetickmod.yml"));
-        this.pathSearchThrottler = new PathSearchThrottlerThread(this.mainConfig.getPathSearchPoolSize());
         instance = this;
+        try {
+            this.mainConfig = new MinetickModConfig(new File("minetickmod.yml"));
+            this.pathSearchThrottler = new PathSearchThrottlerThread(this.mainConfig.getPathSearchPoolSize());
+        } catch (InvalidConfigurationException e) {
+            this.failedToLoadConfig = true;
+        } catch (NullPointerException e) {
+            // Bukkit's logger is not yet initialized at this point and throws an NPE when trying to log an yaml load fail
+            this.failedToLoadConfig = true;
+        }
     }
 
     public void init() {
         if(!this.initDone) {
             this.initDone = true;
+            if(this.failedToLoadConfig) {
+                throw new IllegalStateException("MinetickMod's config file minetickmod.yml could not be loaded. Check it for syntax errors.");
+            }
             CraftServer craftserver = MinecraftServer.getServer().server;
             craftserver.getCommandMap().register("tps", "MinetickMod", new TPSCommand("tps"));
             craftserver.getCommandMap().register("packetspertick", "MinetickMod", new PacketsPerTickCommand("packetspertick"));
@@ -134,7 +146,9 @@ public class MinetickMod {
 
     public void shutdown() {
         this.timerService.shutdown();
-        this.pathSearchThrottler.shutdown();
+        if(this.pathSearchThrottler != null) {
+            this.pathSearchThrottler.shutdown();
+        }
         PacketBuilderThreadPool.shutdownStatic();
         this.nbtFileService.shutdown();
         while(!this.nbtFileService.isTerminated()) {
@@ -144,7 +158,9 @@ public class MinetickMod {
                 }
             } catch(InterruptedException e) {}
         }
-        getConfig().saveViewDistances();
+        if(getConfig() != null) {
+            getConfig().saveViewDistances();
+        }
     }
 
     public void checkTickTime(long tickTime) {         
