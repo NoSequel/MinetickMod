@@ -122,7 +122,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
     // CraftBukkit end
 
     // Poweruser start
-    protected MinetickMod minetickMod = new MinetickMod();
+    protected MinetickMod minetickMod;
     public List<Future<?>> worldTickers = new ArrayList<Future<?>>();
     private WorldServer sortedWorldsArray[] = null;
     private PriorityQueue<WorldServer> priQueue = new PriorityQueue<WorldServer>(20, new ProfilingComperator());
@@ -142,6 +142,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
         this.X = new UserCache(this, a);
         j = this;
         this.d = proxy;
+        this.minetickMod = new MinetickMod(); // Poweruser
         // this.universe = file1; // CraftBukkit
         this.p = new ServerConnection(this);
         this.o = new CommandDispatcher();
