@@ -39,3 +39,4 @@ minetickmod:
     - SQUID
     - ZOMBIE
     bungeeCordSupport: false
+    keepConnectionsAlive: false

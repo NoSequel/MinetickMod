@@ -62,6 +62,7 @@ import net.minecraft.server.EntityWither;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.NBTCompressedStreamTools;
 import net.minecraft.server.NBTTagCompound;
+import net.minecraft.server.NetworkManager;
 import net.minecraft.server.PacketPlayOutMapChunk;
 import net.minecraft.server.PacketPlayOutMapChunkBulk;
 import net.minecraft.server.PlayerChunkMap;
@@ -150,6 +151,7 @@ public class MinetickMod {
             this.pathSearchThrottler.shutdown();
         }
         PacketBuilderThreadPool.shutdownStatic();
+        NetworkManager.setKeepConnectionsAlive(false);
         this.nbtFileService.shutdown();
         while(!this.nbtFileService.isTerminated()) {
             try {
