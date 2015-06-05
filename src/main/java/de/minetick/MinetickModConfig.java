@@ -96,6 +96,7 @@ public class MinetickModConfig {
         PacketBuilderThreadPool.adjustPoolSize(this.getPacketBuilderPoolSize());
         PathSearchThrottlerThread.adjustPoolSize(this.getPathSearchPoolSize());
         PlayerChunkManager.packetsPerTick = this.getPacketsPerTick();
+        NetworkManager.setKeepConnectionsAlive(this.getKeepConnectionsAlive());
     }
 
     private void loadEntitiesToDelete(List<String> entitiesToDelete) {
@@ -374,5 +375,9 @@ public class MinetickModConfig {
     
     public int getConnectionFlushInterval() {
         return this.configuration.getInt("minetickmod.connectionFlushInterval", 100);
+    }
+
+    public boolean getKeepConnectionsAlive() {
+        return configuration.getBoolean("minetickmod.keepConnectionsAlive");
     }
 }
