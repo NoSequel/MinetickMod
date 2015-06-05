@@ -14,6 +14,7 @@ import net.minecraft.server.Block;
 import net.minecraft.server.EntityInsentient;
 import net.minecraft.server.EntityLiving;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.NetworkManager;
 import net.minecraft.server.PacketPlayOutMapChunk;
 import net.minecraft.server.PacketPlayOutMapChunkBulk;
 import net.minecraft.server.PlayerChunkMap;
@@ -94,6 +95,7 @@ public class MinetickModConfig {
         PacketBuilderThreadPool.adjustPoolSize(this.getPacketBuilderPoolSize());
         PathSearchThrottlerThread.adjustPoolSize(this.getPathSearchPoolSize());
         PlayerChunkManager.packetsPerTick = this.getPacketsPerTick();
+        NetworkManager.setKeepConnectionsAlive(this.getKeepConnectionsAlive());
     }
 
     private void loadEntitiesToDelete(List<String> entitiesToDelete) {
@@ -368,5 +370,9 @@ public class MinetickModConfig {
 
     public boolean isEntityAllowedToBeDeleted(EntityLiving entity) {
         return !MinetickMod.isImportantEntity(entity) && this.entitiesToDelete.contains(entity.getBukkitEntity().getType());
+    }
+
+    public boolean getKeepConnectionsAlive() {
+        return configuration.getBoolean("minetickmod.keepConnectionsAlive");
     }
 }

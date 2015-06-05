@@ -22,6 +22,15 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.Marker;
 import org.apache.logging.log4j.MarkerManager;
 
+// Poweruser start
+import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+import de.minetick.MinetickThreadFactory;
+// Poweruser end
+
 public class NetworkManager extends SimpleChannelInboundHandler {
 
     private static final Logger i = LogManager.getLogger();
@@ -43,6 +52,10 @@ public class NetworkManager extends SimpleChannelInboundHandler {
     public java.util.UUID spoofedUUID;
     public net.minecraft.util.com.mojang.authlib.properties.Property[] spoofedProfile;
     public boolean preparing = true;
+    private static boolean keepConnectionsAlive = false;
+    private static ScheduledExecutorService packetsender;
+    private final SendTask sendTask = new SendTask();
+    private final KeepAliveTask keepAliveTask = new KeepAliveTask();
     // Poweruser end
     private PacketListener o;
     private EnumProtocol p;
@@ -102,11 +115,17 @@ public class NetworkManager extends SimpleChannelInboundHandler {
     }
 
     public void handle(Packet packet, GenericFutureListener... agenericfuturelistener) {
-        if (this.m != null && this.m.isOpen()) {
+        //if (this.m != null && this.m.isOpen()) {
+        if (!keepConnectionsAlive && this.m != null && this.m.isOpen()) { // Poweruser
             this.i();
             this.b(packet, agenericfuturelistener);
         } else {
             this.l.add(new QueuedPacket(packet, agenericfuturelistener));
+            // Poweruser start
+            if(keepConnectionsAlive && !this.sendTask.isSubmitted()) {
+                this.sendTask.submit();
+            }
+            // Poweruser end
         }
     }
 
@@ -128,6 +147,7 @@ public class NetworkManager extends SimpleChannelInboundHandler {
         } else {
             this.m.eventLoop().execute(new QueuedProtocolSwitch(this, enumprotocol, enumprotocol1, packet, agenericfuturelistener));
         }
+        this.keepAliveTask.markTimeOfLastSentPacket(); // Poweruser
     }
 
     private void i() {
@@ -141,7 +161,15 @@ public class NetworkManager extends SimpleChannelInboundHandler {
     }
 
     public void a() {
-        this.i();
+        //this.i();
+        // Poweruser start
+        if(!keepConnectionsAlive) {
+            this.keepAliveTask.cancel();
+            this.i();
+        } else {
+            this.keepAliveTask.schedule();
+        }
+        // Poweruser end
         EnumProtocol enumprotocol = (EnumProtocol) this.m.attr(d).get();
 
         if (this.p != enumprotocol) {
@@ -175,7 +203,10 @@ public class NetworkManager extends SimpleChannelInboundHandler {
     }
 
     public void close(IChatBaseComponent ichatbasecomponent) {
-        this.preparing = false; // Poweruser
+        // Poweruser start
+        this.preparing = false;
+        this.keepAliveTask.cancel();
+        // Poweruser end
         if (this.m.isOpen()) {
             this.m.close();
             this.q = ichatbasecomponent;
@@ -220,6 +251,78 @@ public class NetworkManager extends SimpleChannelInboundHandler {
     public SocketAddress getRawAddress()
     {
         return this.m.remoteAddress();
+    }
+
+    public static void setKeepConnectionsAlive(boolean active) {
+        boolean oldState = keepConnectionsAlive;
+        if(!oldState && active) {
+            packetsender = Executors.newSingleThreadScheduledExecutor(new MinetickThreadFactory("MinetickMod-PacketSender"));
+            keepConnectionsAlive = active;
+        } else if(oldState && !active){
+            keepConnectionsAlive = active;
+            if(packetsender != null) {
+                packetsender.shutdown();
+                packetsender = null;
+            }
+        }
+    }
+
+    private class SendTask implements Runnable {
+        private volatile boolean isSubmitted = false;
+
+        @Override
+        public void run() {
+            i();
+            this.isSubmitted = false;
+        }
+
+        public boolean isSubmitted() {
+            return this.isSubmitted;
+        }
+
+        public void submit() {
+            if(packetsender != null && !packetsender.isShutdown()) {
+                this.isSubmitted = true;
+                packetsender.submit(this);
+            }
+        }
+    }
+
+    private class KeepAliveTask implements Runnable {
+
+        private ScheduledFuture<?> future;
+        private long lastSendTimestamp = Long.MAX_VALUE;
+
+        @Override
+        public void run() {
+            if(System.currentTimeMillis() - this.lastSendTimestamp > 5000L) {
+                long i = System.nanoTime() / 100000L;
+                handle(new PacketPlayOutKeepAlive((int) i), new GenericFutureListener[0]);
+            }
+        }
+
+        public synchronized void schedule() {
+            if(!this.isScheduled() && packetsender != null) {
+                try {
+                    this.future = NetworkManager.packetsender.scheduleWithFixedDelay(this, 5L, 5L, TimeUnit.SECONDS);
+                } catch (RejectedExecutionException e) {}
+            }
+        }
+
+        public boolean isScheduled() {
+            return this.future != null;
+        }
+
+        public void cancel() {
+            if(this.isScheduled()) {
+                this.future.cancel(true);
+                this.future = null;
+            }
+        }
+
+        public void markTimeOfLastSentPacket() {
+            this.lastSendTimestamp = System.currentTimeMillis();
+        }
     }
     // Poweruser end
 }
