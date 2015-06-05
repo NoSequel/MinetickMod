@@ -1,5 +1,7 @@
 package de.minetick.modcommands;
 
+import java.io.IOException;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -32,10 +34,14 @@ public class ReloadSettingsCommand extends Command {
 
         FileConfiguration[] configs;
 
+        String errorMsg = ChatColor.GOLD + "[MinetickMod]" + ChatColor.RED + " Reloading failed!\n" + ChatColor.RESET;
         try {
             configs = MinetickMod.getConfig().reload();
+        } catch (IOException e) {
+            this.sendMessage(sender, errorMsg + e.getMessage());
+            return true;
         } catch (InvalidConfigurationException e) {
-            this.sendMessage(sender, e.getMessage());
+            this.sendMessage(sender, errorMsg + e.getMessage());
             return true;
         }
         FileConfiguration old = configs[0];
