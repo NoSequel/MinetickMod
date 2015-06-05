@@ -97,6 +97,8 @@ public class MinetickMod {
         try {
             this.mainConfig = new MinetickModConfig(new File("minetickmod.yml"));
             this.pathSearchThrottler = new PathSearchThrottlerThread(this.mainConfig.getPathSearchPoolSize());
+        } catch (IOException e) {
+            this.failedToLoadConfig = true;
         } catch (InvalidConfigurationException e) {
             this.failedToLoadConfig = true;
         } catch (NullPointerException e) {

@@ -1,6 +1,7 @@
 package de.minetick;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -49,7 +50,7 @@ public class MinetickModConfig {
     private File viewdistanceConfigFile;
     private FileConfiguration viewdistanceConfig;
 
-    public MinetickModConfig(File configFile) throws InvalidConfigurationException {
+    public MinetickModConfig(File configFile) throws IOException, InvalidConfigurationException {
         this.configFile = configFile;
         this.configuration = this.loadConfig(configFile);
         try {
@@ -73,7 +74,7 @@ public class MinetickModConfig {
         }
     }
 
-    public FileConfiguration[] reload() throws InvalidConfigurationException {
+    public FileConfiguration[] reload() throws IOException, InvalidConfigurationException {
         FileConfiguration[] configs = new FileConfiguration[2];
         configs[0] = this.configuration;
         this.configuration = this.loadConfig(this.configFile);
@@ -130,14 +131,16 @@ public class MinetickModConfig {
         }
     }
 
-    private FileConfiguration loadConfig(File file) throws InvalidConfigurationException {
-        YamlConfiguration config;
+    private FileConfiguration loadConfig(File file) throws IOException, InvalidConfigurationException {
+        YamlConfiguration config = new YamlConfiguration();
+        config.options().copyDefaults(true);
         if(file.exists() && file.isFile()) {
-            config = YamlConfiguration.loadConfiguration(file);
-            config.options().copyDefaults(true);
+            try {
+                config.load(file);
+            } catch (FileNotFoundException e) {
+                // Can not happen, I check if the file exists first
+            }
         } else {
-            config = new YamlConfiguration();
-            config.options().copyDefaults(true);
             File bukkitFile = new File("bukkit.yml");
             if(bukkitFile.exists() && bukkitFile.isFile()) {
                 FileConfiguration bukkitConfig = YamlConfiguration.loadConfiguration(bukkitFile);
