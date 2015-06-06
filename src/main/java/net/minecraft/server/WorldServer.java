@@ -28,7 +28,9 @@ import org.bukkit.event.weather.WeatherChangeEvent;
 
 // Poweruser start
 import de.minetick.ChunkGenerationPolicy;
+import de.minetick.WorldTicker;
 import de.minetick.antixray.AntiXRay;
+import de.minetick.profiler.Profiler;
 // Poweruser end
 
 public class WorldServer extends World {
@@ -57,6 +59,7 @@ public class WorldServer extends World {
     // Poweruser start
     private PriorityQueue<NextTickListEntry> N;
     private ChunkGenerationPolicy chunkGenerationPolicy;
+    private WorldTicker worldTicker;
 
     public void cancelHeavyCalculations(boolean cancel) {
         this.cancelHeavyCalculations = cancel;
@@ -74,6 +77,13 @@ public class WorldServer extends World {
         } else {
             return 0;
         }
+    }
+
+    public WorldTicker getWorldTicker(Profiler profiler) {
+        if(this.worldTicker == null) {
+            this.worldTicker = new WorldTicker(this, profiler);
+        }
+        return this.worldTicker;
     }
     // Poweruser end
 
