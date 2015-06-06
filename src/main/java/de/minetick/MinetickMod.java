@@ -265,7 +265,7 @@ public class MinetickMod {
     }
 
     public Future<?> tickWorld(WorldServer worldServer) {
-        return this.worldTickerService.submit(new WorldTicker(worldServer, this.profiler));
+        return this.worldTickerService.submit(worldServer.getWorldTicker(this.profiler));
     }
 
     public static void queuePathSearch(PathSearchJob pathSearchJob) {
