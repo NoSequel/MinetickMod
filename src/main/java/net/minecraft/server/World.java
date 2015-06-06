@@ -28,11 +28,12 @@ import org.bukkit.event.weather.WeatherChangeEvent;
 import org.bukkit.event.weather.ThunderChangeEvent;
 // CraftBukkit end
 
-import de.minetick.LockObject;
+// Poweruser start
 import de.minetick.MinetickMod;
 import de.minetick.antixray.AntiXRay;
 import de.minetick.profiler.WorldProfile;
 import de.minetick.profiler.WorldProfile.WorldProfileSection;
+// Poweruser end
 
 public abstract class World implements IBlockAccess {
 
@@ -91,6 +92,7 @@ public abstract class World implements IBlockAccess {
     private long lastTickAvg = 0L;
     private List<Entity> dimensionChangeQueue = Collections.synchronizedList(new LinkedList<Entity>());
     public AntiXRay antiXRay = null;
+    private static Object playerTickLock = new Object();
 
     private static ThreadLocal<List> getCubesList = new ThreadLocal<List>() {
         @Override
@@ -1324,7 +1326,8 @@ public abstract class World implements IBlockAccess {
                     int previousTicksLived = entity.ticksLived;
                     if(entity.isImportantEntity() || entity.ticksLived < 120 || this.findNearbyPlayer(entity, (activationRange)) != null || this.random.nextFloat() < tickChance) {
                         if(entity.isPlayer()) {
-                            synchronized(LockObject.playerTickLock) {
+                            // TODO: Check if synchronized ticking of players is still necessary
+                            synchronized(playerTickLock) {
                                 this.playerJoinedWorld(entity);
                             }
                         } else {

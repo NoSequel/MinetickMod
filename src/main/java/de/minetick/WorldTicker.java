@@ -9,15 +9,14 @@ import de.minetick.profiler.WorldProfile.WorldProfileSection;
 public class WorldTicker implements Runnable {
     private WorldServer worldToTick;
     private String worldName;
-    private LockObject lock;
+    private static Object updatePlayersLock = new Object();
 
     private Profiler profiler;
 
-    public WorldTicker(WorldServer world, Profiler prof, LockObject lock) {
+    public WorldTicker(WorldServer world, Profiler prof) {
         this.profiler = prof;
         this.worldToTick = world;
         this.worldName = this.worldToTick.getWorld().getName();
-        this.lock = lock;
     }
 
     @Override
@@ -31,7 +30,7 @@ public class WorldTicker implements Runnable {
             throwable1.printStackTrace();
         }
         worldProfile.start(WorldProfileSection.UPDATE_PLAYERS);
-        synchronized(this.lock.updatePlayersLock) {
+        synchronized(updatePlayersLock) {
             this.worldToTick.getTracker().updatePlayers();
         }
         worldProfile.stop(WorldProfileSection.UPDATE_PLAYERS);

@@ -76,7 +76,6 @@ public class MinetickMod {
     private ExecutorService nbtFileService = Executors.newSingleThreadExecutor(new MinetickThreadFactory(Thread.NORM_PRIORITY - 2, "MinetickMod_NBTFileSaver"));
     private ExecutorService worldTickerService = Executors.newCachedThreadPool(new MinetickThreadFactory(Thread.NORM_PRIORITY + 1, "MinetickMod_WorldTicker"));
     private PathSearchThrottlerThread pathSearchThrottler;
-    private LockObject worldTickerLock = new LockObject();
     private ScheduledFuture<Object> tickTimerTask;
     private static MinetickMod instance;
     private Profiler profiler;
@@ -266,7 +265,7 @@ public class MinetickMod {
     }
 
     public Future<?> tickWorld(WorldServer worldServer) {
-        return this.worldTickerService.submit(new WorldTicker(worldServer, this.profiler, this.worldTickerLock));
+        return this.worldTickerService.submit(new WorldTicker(worldServer, this.profiler));
     }
 
     public static void queuePathSearch(PathSearchJob pathSearchJob) {
