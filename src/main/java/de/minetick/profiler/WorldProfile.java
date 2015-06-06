@@ -95,6 +95,16 @@ public class WorldProfile extends Profile {
         }
     }
 
+    @Override
+    public void setCurrentPlayerNumber(int count) {
+        this.updatePlayers.setCurrentPlayerNumber(count);
+    }
+
+    @Override
+    public int getPlayerAvg() {
+        return this.updatePlayers.getPlayerAvg();
+    }
+
     private void gatherRecords() {
         List<String> data = new LinkedList<String>();
         data.add("T: " + this.getLastAvgFloat());

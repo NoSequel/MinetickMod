@@ -21,8 +21,11 @@ public class WorldTicker implements Runnable {
 
     @Override
     public void run() {
-        WorldProfile worldProfile = this.profiler.getWorldProfile(this.worldName);
-        worldProfile.start();
+        this.tickWorld(true);
+    }
+
+    public void tickWorld(boolean threaded) {
+        WorldProfile worldProfile = this.getWorldProfile();
         try {
             this.worldToTick.tickEntities();
         } catch (Throwable throwable1) {
@@ -35,11 +38,26 @@ public class WorldTicker implements Runnable {
         }
         worldProfile.stop(WorldProfileSection.UPDATE_PLAYERS);
 
+        if(threaded) {
+            this.loadAndGenerateChunks(threaded);
+        }
+        worldProfile.setCurrentPlayerNumber(this.worldToTick.players.size());
+        if(threaded) {
+            this.worldToTick.setLastTickAvg(worldProfile.getLastThreadAvg());
+        }
+    }
+
+    public void loadAndGenerateChunks(boolean threaded) {
+        WorldProfile worldProfile = this.getWorldProfile();
         worldProfile.start(WorldProfileSection.CHUNK_LOADING);
         this.worldToTick.loadAndGenerateChunks();
         worldProfile.stop(WorldProfileSection.CHUNK_LOADING);
-        worldProfile.stop();
-        worldProfile.setCurrentPlayerNumber(this.worldToTick.players.size());
-        this.worldToTick.setLastTickAvg(worldProfile.getLastThreadAvg());
+        if(!threaded) {
+            this.worldToTick.setLastTickAvg(worldProfile.getLastAvg());
+        }
+    }
+
+    public WorldProfile getWorldProfile() {
+        return this.profiler.getWorldProfile(this.worldName);
     }
 }

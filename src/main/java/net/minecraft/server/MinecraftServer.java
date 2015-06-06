@@ -44,10 +44,12 @@ import org.bukkit.event.world.WorldSaveEvent;
 
 // Poweruser start
 import de.minetick.AutoSaveJob;
+import de.minetick.WorldTicker;
 import de.minetick.AutoSaveJob.JobDetail;
 import de.minetick.MinetickMod;
 import de.minetick.profiler.Profile;
 import de.minetick.profiler.ProfilingComperator;
+import de.minetick.profiler.WorldProfile;
 import de.minetick.profiler.WorldProfile.WorldProfileSection;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -745,10 +747,12 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
         }
 
         this.worldTickers.clear();
+        this.cancelHeavyCalculationsForAllWorlds(false);
         for(i = 0; i < worldCount; i++) {
             WorldServer worldserver = this.sortedWorldsArray[i];
-            worldserver.cancelHeavyCalculations(false);
-            this.minetickMod.getProfiler().getWorldProfile(worldserver.getWorld().getName()).start(WorldProfileSection.DO_TICK);
+            WorldTicker ticker = worldserver.getWorldTicker(this.minetickMod.getProfiler());
+            WorldProfile worldProfile = ticker.getWorldProfile();
+            worldProfile.start(WorldProfileSection.DO_TICK);
             try {
                 worldserver.doTick();
             } catch (Throwable throwable) {
@@ -756,18 +760,29 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
                 worldserver.a(crashreport);
                 throw new ReportedException(crashreport);
             }
-            this.minetickMod.getProfiler().getWorldProfile(worldserver.getWorld().getName()).stop(WorldProfileSection.DO_TICK);
-            this.worldTickers.add(this.minetickMod.tickWorld(worldserver));
+            worldProfile.stop(WorldProfileSection.DO_TICK);
+            if(MinetickMod.getConfig().isThreadedWorldsEnabled()) {
+                this.worldTickers.add(this.minetickMod.tickWorld(ticker));
+            } else {
+                ticker.tickWorld(false);
+            }
         }
-        for(Future<?> f: this.worldTickers) {
-            try {
-                f.get();
-            } catch (InterruptedException e) {
-                this.h(e.toString());
-                e.printStackTrace();
-            } catch (ExecutionException e) {
-                this.h(e.toString());
-                e.printStackTrace();
+        if(MinetickMod.getConfig().isThreadedWorldsEnabled()) {
+            for(Future<?> f: this.worldTickers) {
+                try {
+                    f.get();
+                } catch (InterruptedException e) {
+                    this.h(e.toString());
+                    e.printStackTrace();
+                } catch (ExecutionException e) {
+                    this.h(e.toString());
+                    e.printStackTrace();
+                }
+            }
+        } else {
+            for(i = 0; i < worldCount; i++) {
+                WorldServer worldserver = this.sortedWorldsArray[i];
+                worldserver.getWorldTicker(this.minetickMod.getProfiler()).loadAndGenerateChunks(false);
             }
         }
         this.minetickMod.cancelTimerTask(false);
