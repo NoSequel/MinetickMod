@@ -48,6 +48,7 @@ public class MinetickModConfig {
     private HashSet<EntityType> entitiesToDelete = new HashSet<EntityType>();
     private File viewdistanceConfigFile;
     private FileConfiguration viewdistanceConfig;
+    private boolean threadedWorlds;
 
     public MinetickModConfig(File configFile) throws IOException, InvalidConfigurationException {
         this.configFile = configFile;
@@ -97,6 +98,7 @@ public class MinetickModConfig {
         PathSearchThrottlerThread.adjustPoolSize(this.getPathSearchPoolSize());
         PlayerChunkManager.packetsPerTick = this.getPacketsPerTick();
         NetworkManager.setKeepConnectionsAlive(this.getKeepConnectionsAlive());
+        this.threadedWorlds = this.getThreadedWorldsEnabled();
     }
 
     private void loadEntitiesToDelete(List<String> entitiesToDelete) {
@@ -377,5 +379,13 @@ public class MinetickModConfig {
 
     public boolean getKeepConnectionsAlive() {
         return configuration.getBoolean("minetickmod.keepConnectionsAlive");
+    }
+
+    private boolean getThreadedWorldsEnabled() {
+        return configuration.getBoolean("minetickmod.threadedWorlds");
+    }
+
+    public boolean isThreadedWorldsEnabled() {
+        return this.threadedWorlds;
     }
 }
