@@ -66,7 +66,6 @@ import net.minecraft.server.NetworkManager;
 import net.minecraft.server.PacketPlayOutMapChunk;
 import net.minecraft.server.PacketPlayOutMapChunkBulk;
 import net.minecraft.server.PlayerChunkMap;
-import net.minecraft.server.WorldServer;
 
 public class MinetickMod {
 
@@ -264,8 +263,8 @@ public class MinetickMod {
         return def;
     }
 
-    public Future<?> tickWorld(WorldServer worldServer) {
-        return this.worldTickerService.submit(worldServer.getWorldTicker(this.profiler));
+    public Future<?> tickWorld(WorldTicker worldticker) {
+        return this.worldTickerService.submit(worldticker);
     }
 
     public static void queuePathSearch(PathSearchJob pathSearchJob) {

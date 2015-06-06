@@ -174,8 +174,8 @@ public class Profile {
         for(i = 0; i < this.records.length && i <= this.lastIndex; i++) {
             if(this.records[i] != null) {
                 avg += this.records[i].getTime();
+                playerAvg += this.records[i].getPlayerNumber();
                 if(this.writeEnabled) {
-                    playerAvg += this.records[i].getPlayerNumber();
                     chunks += this.records[i].getGeneratedChunks();
                     calls += this.records[i].getCount();
                     if(this.records[i].getTime() > max) {

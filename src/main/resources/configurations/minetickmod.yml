@@ -2,6 +2,7 @@ minetickmod:
     profiler-log-interval: 30
     profiler-write-log: false
     profiler-write-interval: 10
+    threadedWorlds: true
     orebfuscatedWorlds: []
     packetCompressionLevel: 7
     packetBuilderThreadPoolSize: -1
