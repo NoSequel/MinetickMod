@@ -315,7 +315,7 @@ public class MinetickMod {
                 logger.severe("Error \""+ e.getMessage() +"\" while saving file: " + this.file.getAbsolutePath());
                 e.printStackTrace();
             } finally {
-                if(fileOutputStream != null) {
+                if(fileoutputstream != null) {
                     try {
                         fileoutputstream.close();
                     } catch (IOException e) {}
