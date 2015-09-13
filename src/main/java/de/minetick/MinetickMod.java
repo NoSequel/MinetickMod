@@ -68,7 +68,7 @@ public class MinetickMod {
     private Profiler profiler;
     private int timerDelay = 45;
     private ScheduledExecutorService timerService = Executors.newScheduledThreadPool(2, new MinetickThreadFactory(Thread.NORM_PRIORITY + 2, "MinetickMod_TimerService"));
-    private ExecutorService nbtFileService = Executors.newCachedThreadPool(new MinetickThreadFactory(Thread.NORM_PRIORITY - 2, "MinetickMod_NBTFileSaver"));
+    private ExecutorService nbtFileService = Executors.newSingleThreadExecutor(new MinetickThreadFactory(Thread.NORM_PRIORITY - 2, "MinetickMod_NBTFileSaver"));
     private ExecutorService worldTickerService = Executors.newCachedThreadPool(new MinetickThreadFactory(Thread.NORM_PRIORITY + 1, "MinetickMod_WorldTicker"));
     private PathSearchThrottlerThread pathSearchThrottler;
     private LockObject worldTickerLock = new LockObject();
@@ -302,11 +302,11 @@ public class MinetickMod {
         }
 
         public Object call() {
+            FileOutputStream fileoutputstream = null;
             try {
                 long start = System.currentTimeMillis();
-                FileOutputStream fileoutputstream = new FileOutputStream(this.file);
+                fileoutputstream = new FileOutputStream(this.file);
                 NBTCompressedStreamTools.a(this.compound, (OutputStream) fileoutputstream);
-                fileoutputstream.close();
                 long duration = System.currentTimeMillis() - start;
                 if(duration > 1000L) {
                     logger.info("Saving the file \"" + this.file.getAbsolutePath() + "\" took " + ((float)(duration/100L) / 10.0F) + " seconds.");
@@ -314,6 +314,12 @@ public class MinetickMod {
             } catch (Exception e) {
                 logger.severe("Error \""+ e.getMessage() +"\" while saving file: " + this.file.getAbsolutePath());
                 e.printStackTrace();
+            } finally {
+                if(fileOutputStream != null) {
+                    try {
+                        fileoutputstream.close();
+                    } catch (IOException e) {}
+                }
             }
             this.compound = null;
             this.file = null;
