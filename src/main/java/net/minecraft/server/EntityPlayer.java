@@ -86,6 +86,34 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
         }
         this.chunkQueue = pcsq;
     }
+
+    private enum VDSetting {
+        FAR(0, 16),
+        NORMAL(1, 8),
+        SHORT(2, 5),
+        TINY(3, 3);
+
+        private int id;
+        private int vd;
+
+        private VDSetting(int id, int vd) {
+            this.id = id;
+            this.vd = vd;
+        }
+
+        public static int getViewDistance(int id) {
+            for(VDSetting setting: values()) {
+                if(setting.id == id) {
+                    return setting.getViewDistance();
+                }
+            }
+            return VDSetting.NORMAL.getViewDistance();
+        }
+
+        public int getViewDistance() {
+            return this.vd;
+        }
+    }
     // Poweruser end
 
     public EntityPlayer(MinecraftServer minecraftserver, World world, String s, PlayerInteractManager playerinteractmanager) {
@@ -900,7 +928,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
             this.bU = i;
         }
 
-        this.setViewDistance(packet204localeandviewdistance.f()); // Poweruser
+        this.setViewDistance(VDSetting.getViewDistance(packet204localeandviewdistance.f())); // Poweruser
 
         this.bV = packet204localeandviewdistance.g();
         this.bW = packet204localeandviewdistance.h();
