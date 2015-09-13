@@ -88,6 +88,7 @@ public class MinetickMod {
     private FileConfiguration modConfig;
     private boolean bungeeCordSupport;
     private List<String> bungeeAddresses;
+    private boolean clientControlledVD;
 
     private static boolean initDone = false;
     private static MinetickMod instance;
@@ -188,6 +189,7 @@ public class MinetickMod {
 
             this.bungeeCordSupport = craftserver.getMinetickModBungeeCordSupport();
             this.bungeeAddresses = craftserver.getMinetickModBungeeAddresses();
+            this.clientControlledVD = craftserver.getMinetickModClientControlledVD();
         }
     }
 
@@ -246,7 +248,7 @@ public class MinetickMod {
             } catch(InterruptedException e) {}
         }
         try {
-            if(this.modConfig != null) {
+            if(this.modConfig != null && this.clientControlledVD) {
                 this.modConfig.save(this.configFile);
             }
         } catch (IOException e){
@@ -377,7 +379,7 @@ public class MinetickMod {
     }
 
     public static boolean setPlayerViewDistance(String playerName, int viewDistance) {
-        if(instance.modConfig != null) {
+        if(instance.modConfig != null && instance.clientControlledVD) {
             instance.modConfig.set(playerName.toLowerCase(), Math.max(viewDistance, minimumViewDistance()));
             return true;
         }
@@ -386,7 +388,7 @@ public class MinetickMod {
 
     public static int getPlayerViewDistance(String playerName, PlayerChunkMap map) {
         int defaultVD = map.getViewDistance();
-        if(instance.modConfig != null) {
+        if(instance.modConfig != null && instance.clientControlledVD) {
             int playerVD = instance.modConfig.getInt(playerName.toLowerCase(), defaultVD);
             playerVD = Math.max(playerVD, minimumViewDistance());
             return Math.min(playerVD, defaultVD);

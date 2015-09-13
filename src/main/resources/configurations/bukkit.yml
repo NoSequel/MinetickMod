@@ -67,6 +67,7 @@ minetickmod:
         HIGH: 3
         MODERATE: 2
         LOW: 1
+    clientControlledViewdistance: false
     notGeneratingWorlds: []
     maxEntityLifeTime: 10
     entitiesWithLimitedLifeTime: []

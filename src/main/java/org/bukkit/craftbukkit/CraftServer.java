@@ -1499,5 +1499,9 @@ public final class CraftServer implements Server {
     public List<String> getMinetickModBungeeAddresses() {
         return configuration.getStringList("minetickmod.bungeeAddresses");
     }
+
+    public boolean getMinetickModClientControlledVD() {
+        return configuration.getBoolean("minetickmod.clientControlledViewdistance", false);
+    }
     // Poweruser end
 }
