@@ -11,6 +11,14 @@ import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
 
+// Poweruser start
+import de.minetick.ChunkGenerationPolicy;
+import de.minetick.LockObject;
+import de.minetick.WorldTicker;
+import de.minetick.antixray.AntiXRay;
+import de.minetick.profiler.Profiler;
+// Poweruser end
+
 // CraftBukkit start
 import org.bukkit.WeatherType;
 import org.bukkit.block.BlockState;
@@ -20,9 +28,6 @@ import org.bukkit.event.block.BlockFormEvent;
 import org.bukkit.event.weather.LightningStrikeEvent;
 import org.bukkit.event.weather.ThunderChangeEvent;
 import org.bukkit.event.weather.WeatherChangeEvent;
-
-import de.minetick.ChunkGenerationPolicy;
-import de.minetick.antixray.AntiXRay;
 
 public class WorldServer extends World implements org.bukkit.BlockChangeDelegate {
     // CraftBukkit end
@@ -49,6 +54,7 @@ public class WorldServer extends World implements org.bukkit.BlockChangeDelegate
     private long lastTickAvg = 0L;
     private PriorityQueue<NextTickListEntry> priorityQueue;
     private ChunkGenerationPolicy chunkGenerationPolicy;
+    private WorldTicker worldTicker;
 
     public void setLastTickAvg(long avg) {
         this.lastTickAvg = avg;
@@ -74,6 +80,13 @@ public class WorldServer extends World implements org.bukkit.BlockChangeDelegate
         } else {
             return 0;
         }
+    }
+
+    public WorldTicker getWorldTicker(Profiler profiler, LockObject worldTickLock) {
+        if(this.worldTicker == null) {
+            this.worldTicker = new WorldTicker(this, profiler, worldTickLock);
+        }
+        return this.worldTicker;
     }
     // Poweruser end
 
