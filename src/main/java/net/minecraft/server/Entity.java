@@ -114,8 +114,13 @@ public abstract class Entity {
 
     // Poweruser start
     protected boolean isImportantEntity = false;
+
+    private boolean isPassengerImportant() {
+        return this.passenger != null && this.passenger.isImportantEntity();
+    }
+
     public boolean isImportantEntity() {
-        return this.isImportantEntity;
+        return this.isImportantEntity || this.isPassengerImportant();
     }
 
     protected boolean allowedToTeleport = true;
