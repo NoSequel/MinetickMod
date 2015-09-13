@@ -32,6 +32,12 @@ import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.util.Vector;
 // CraftBukkit end
 
+// Poweruser start
+import de.minetick.MinetickMod;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+// Poweruser end
+
 public abstract class PlayerList {
 
     private static final SimpleDateFormat d = new SimpleDateFormat("yyyy-MM-dd \'at\' HH:mm:ss z");
@@ -298,7 +304,13 @@ public abstract class PlayerList {
         // depending on the outcome.
         EntityPlayer entity = new EntityPlayer(this.server, this.server.getWorldServer(0), s, this.server.O() ? new DemoPlayerInteractManager(this.server.getWorldServer(0)) : new PlayerInteractManager(this.server.getWorldServer(0)));
         Player player = entity.getBukkitEntity();
-        PlayerLoginEvent event = new PlayerLoginEvent(player, hostname, pendingconnection.getSocket().getInetAddress());
+        // Poweruser start
+        InetAddress clientAddress = pendingconnection.getSocket().getInetAddress();
+        if(MinetickMod.getBungeeCordSupport()) {
+            clientAddress = ((InetSocketAddress) pendingconnection.networkManager.getSocketAddress()).getAddress();
+        }
+        PlayerLoginEvent event = new PlayerLoginEvent(player, hostname, clientAddress);
+        // Poweruser end
 
         SocketAddress socketaddress = pendingconnection.networkManager.getSocketAddress();
 

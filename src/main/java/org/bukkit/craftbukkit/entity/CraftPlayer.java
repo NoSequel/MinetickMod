@@ -1072,4 +1072,10 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
         }
         collection.add(new AttributeModifiable(getHandle().aX(), (new AttributeRanged("generic.maxHealth", scaledHealth ? healthScale : getMaxHealth(), 0.0D, Float.MAX_VALUE)).a("Max Health").a(true)));
     }
+
+    // Poweruser start
+    public InetSocketAddress getRawAddress() {
+        return ( getHandle().playerConnection == null ) ? null : (InetSocketAddress) getHandle().playerConnection.networkManager.getSocket().getRemoteSocketAddress();
+    }
+    // Poweruser end
 }

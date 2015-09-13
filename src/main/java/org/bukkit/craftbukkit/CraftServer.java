@@ -135,6 +135,7 @@ import com.google.common.collect.MapMaker;
 import net.minecraft.server.Packet56MapChunkBulk;
 import de.minetick.ChunkGenerationPolicy;
 import de.minetick.MinetickChunkCoordComparator.ChunkPriority;
+import de.minetick.MinetickMod;
 // Poweruser end
 
 import jline.console.ConsoleReader;
@@ -476,6 +477,7 @@ public final class CraftServer implements Server {
     }
 
     public long getConnectionThrottle() {
+        if(MinetickMod.getBungeeCordSupport()) { return -1; } // Poweruser
         return this.configuration.getInt("settings.connection-throttle");
     }
 
@@ -1488,6 +1490,14 @@ public final class CraftServer implements Server {
                 }
             }
         }
+    }
+
+    public boolean getMinetickModBungeeCordSupport() {
+        return configuration.getBoolean("minetickmod.bungeeCordSupport", false);
+    }
+
+    public List<String> getMinetickModBungeeAddresses() {
+        return configuration.getStringList("minetickmod.bungeeAddresses");
     }
     // Poweruser end
 }

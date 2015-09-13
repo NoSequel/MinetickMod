@@ -5,6 +5,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.InetAddress;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -85,6 +86,8 @@ public class MinetickMod {
     private int minimumPathSearchOffloadDistance = 8;
     private File configFile;
     private FileConfiguration modConfig;
+    private boolean bungeeCordSupport;
+    private List<String> bungeeAddresses;
 
     private static boolean initDone = false;
     private static MinetickMod instance;
@@ -182,6 +185,9 @@ public class MinetickMod {
                 logger.severe(e.toString());
                 e.printStackTrace();
             }
+
+            this.bungeeCordSupport = craftserver.getMinetickModBungeeCordSupport();
+            this.bungeeAddresses = craftserver.getMinetickModBungeeAddresses();
         }
     }
 
@@ -380,5 +386,13 @@ public class MinetickMod {
             return Math.min(playerVD, defaultVD);
         }
         return defaultVD;
+    }
+
+    public static boolean isBungeeAddress(InetAddress address) {
+        return instance.bungeeAddresses.contains(address.getHostAddress());
+    }
+
+    public static boolean getBungeeCordSupport() {
+        return instance.bungeeCordSupport;
     }
 }

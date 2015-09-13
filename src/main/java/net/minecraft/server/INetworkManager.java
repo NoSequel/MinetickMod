@@ -19,4 +19,10 @@ public interface INetworkManager {
     int e();
 
     void a(String s, Object... aobject);
+
+    // Poweruser start
+    java.net.Socket getSocket();
+
+    void setSocketAddress(java.net.SocketAddress address);
+    // Poweruser end
 }

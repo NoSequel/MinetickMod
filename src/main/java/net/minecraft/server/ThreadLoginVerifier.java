@@ -13,6 +13,11 @@ import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerPreLoginEvent;
 // CraftBukkit end
 
+// Poweruser start
+import de.minetick.MinetickMod;
+import java.net.InetAddress;
+// Poweruser end
+
 class ThreadLoginVerifier extends Thread {
 
     final PendingConnection pendingConnection;
@@ -46,11 +51,20 @@ class ThreadLoginVerifier extends Thread {
                 return;
             }
 
-            AsyncPlayerPreLoginEvent asyncEvent = new AsyncPlayerPreLoginEvent(PendingConnection.d(this.pendingConnection), this.pendingConnection.getSocket().getInetAddress());
+            //AsyncPlayerPreLoginEvent asyncEvent = new AsyncPlayerPreLoginEvent(PendingConnection.d(this.pendingConnection), this.pendingConnection.getSocket().getInetAddress());
+            // Poweruser start
+            InetAddress clientAddress = this.pendingConnection.getSocket().getInetAddress();
+            if(MinetickMod.getBungeeCordSupport()) {
+                clientAddress = ((java.net.InetSocketAddress) this.pendingConnection.networkManager.getSocketAddress()).getAddress();
+            }
+            AsyncPlayerPreLoginEvent asyncEvent = new AsyncPlayerPreLoginEvent(PendingConnection.d(this.pendingConnection), clientAddress);
+            // Poweruser end
+
             this.server.getPluginManager().callEvent(asyncEvent);
 
             if (PlayerPreLoginEvent.getHandlerList().getRegisteredListeners().length != 0) {
-                final PlayerPreLoginEvent event = new PlayerPreLoginEvent(PendingConnection.d(this.pendingConnection), this.pendingConnection.getSocket().getInetAddress());
+                //final PlayerPreLoginEvent event = new PlayerPreLoginEvent(PendingConnection.d(this.pendingConnection), this.pendingConnection.getSocket().getInetAddress());
+                final PlayerPreLoginEvent event = new PlayerPreLoginEvent(PendingConnection.d(this.pendingConnection), clientAddress); // Poweruser
                 if (asyncEvent.getResult() != PlayerPreLoginEvent.Result.ALLOWED) {
                     event.disallow(asyncEvent.getResult(), asyncEvent.getKickMessage());
                 }

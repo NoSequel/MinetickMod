@@ -29,7 +29,7 @@ public class NetworkManager implements INetworkManager {
     private final Object h = new Object();
     private final IConsoleLogManager i;
     public Socket socket; // CraftBukkit - private -> public
-    private final SocketAddress k;
+    private SocketAddress k; // Poweruser - remove final
     private volatile DataInputStream input;
     private volatile DataOutputStream output;
     private volatile boolean n = true;
@@ -445,6 +445,11 @@ public class NetworkManager implements INetworkManager {
         public boolean isEqualOrHigherThan(SendQueueFillLevel sqfl) {
             return this.value >= sqfl.value;
         }
+    }
+
+    @Override
+    public void setSocketAddress(SocketAddress address) {
+        this.k = address;
     }
     // Poweruser end
 }

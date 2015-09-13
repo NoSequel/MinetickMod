@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Random;
 import javax.crypto.SecretKey;
 
+import de.minetick.MinetickMod; // Poweruser
+
 public class PendingConnection extends Connection {
 
     private static Random random = new Random();
@@ -236,4 +238,17 @@ public class PendingConnection extends Connection {
     static boolean a(PendingConnection pendingconnection, boolean flag) {
         return pendingconnection.h = flag;
     }
+
+    // Poweruser start - Spigot's BungeeCord support
+    @Override
+    public void a(Packet250CustomPayload pcp) {
+        if (pcp.tag.equals("BungeeCord") && MinetickMod.getBungeeCordSupport() && MinetickMod.isBungeeAddress(getSocket().getInetAddress())) {
+            com.google.common.io.ByteArrayDataInput in = com.google.common.io.ByteStreams.newDataInput(pcp.data);
+            String subTag = in.readUTF();
+            if (subTag.equals("Login")) {
+                networkManager.setSocketAddress(new java.net.InetSocketAddress(in.readUTF(), in.readInt()));
+            }
+        }
+    }
+    // Poweruser end
 }

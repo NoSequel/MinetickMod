@@ -91,3 +91,6 @@ minetickmod:
     - SLIME
     - SQUID
     - ZOMBIE
+    bungeeCordSupport: false
+    bungeeAddresses:
+    - 127.0.0.1
