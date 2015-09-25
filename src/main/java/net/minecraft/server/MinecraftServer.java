@@ -69,7 +69,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
     private final List n = new ArrayList();
     private final ICommandHandler o;
     public final MethodProfiler methodProfiler = new MethodProfiler();
-    private final ServerConnection p;
+    private ServerConnection p; // Poweruser
     private final ServerPing q = new ServerPing();
     private final Random r = new Random();
     private String serverIp;
@@ -146,7 +146,7 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
         this.d = proxy;
         this.minetickMod = new MinetickMod(); // Poweruser
         // this.universe = file1; // CraftBukkit
-        this.p = new ServerConnection(this);
+        //this.p = new ServerConnection(this); // Poweruser
         this.o = new CommandDispatcher();
         // this.convertable = new WorldLoaderServer(file1); // CraftBukkit - moved to DedicatedServer.init
         this.T = new YggdrasilAuthenticationService(proxy, UUID.randomUUID().toString());
@@ -1356,6 +1356,11 @@ public abstract class MinecraftServer implements ICommandListener, Runnable, IMo
     }
 
     public ServerConnection ai() {
+        // Poweruser start
+        if(this.p == null) {
+            this.p = new ServerConnection(this);
+        }
+        // Poweruser end
         return this.p;
     }
 

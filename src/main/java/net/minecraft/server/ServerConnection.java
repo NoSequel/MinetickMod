@@ -19,7 +19,8 @@ import org.apache.logging.log4j.Logger;
 public class ServerConnection {
 
     private static final Logger b = LogManager.getLogger();
-    private static final NioEventLoopGroup c = new NioEventLoopGroup(0, (new ThreadFactoryBuilder()).setNameFormat("Netty IO #%d").setDaemon(true).build());
+    //private static final NioEventLoopGroup c = new NioEventLoopGroup(0, (new ThreadFactoryBuilder()).setNameFormat("Netty IO #%d").setDaemon(true).build());
+    private static NioEventLoopGroup c; // Poweruser
     private final MinecraftServer d;
     public volatile boolean a;
     private final List e = Collections.synchronizedList(new ArrayList());
@@ -28,6 +29,13 @@ public class ServerConnection {
     public ServerConnection(MinecraftServer minecraftserver) {
         this.d = minecraftserver;
         this.a = true;
+        // Poweruser start
+        if(c == null) {
+            int nettyThreads = de.minetick.MinetickMod.getConfig().getNettyThreadCount();
+            System.setProperty( "io.netty.eventLoopThreads", Integer.toString( nettyThreads ) );
+            c = new NioEventLoopGroup(nettyThreads, (new ThreadFactoryBuilder()).setNameFormat("Netty IO #%d").setDaemon(true).build());
+        }
+        // Poweruser end
     }
 
     public void a(InetAddress inetaddress, int i) {

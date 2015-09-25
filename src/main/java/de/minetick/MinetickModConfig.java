@@ -388,4 +388,8 @@ public class MinetickModConfig {
     public boolean isThreadedWorldsEnabled() {
         return this.threadedWorlds;
     }
+
+    public int getNettyThreadCount() {
+        return Math.max(1, configuration.getInt("minetickmod.netty-threads", 4));
+    }
 }

@@ -41,3 +41,4 @@ minetickmod:
     - ZOMBIE
     bungeeCordSupport: false
     keepConnectionsAlive: false
+    netty-threads: 4
